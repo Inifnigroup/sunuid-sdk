@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test SDK SunuID - Endpoints PHP</title>
+    <title>Test SDK SunuID - CDN Version</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,6 +36,7 @@
             padding: 20px;
             border: 2px dashed #ccc;
             border-radius: 10px;
+            min-height: 200px;
         }
         
         button {
@@ -96,42 +97,54 @@
             margin: 10px 0;
             font-size: 12px;
         }
+        
+        .cdn-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔧 Test SDK SunuID - Endpoints PHP</h1>
+        <h1>🧪 Test SDK SunuID - CDN Version</h1>
         
-        <div id="status" class="status info">
-            Initialisation en cours...
+        <div class="cdn-info">
+            <h3>📦 SDK Chargé via CDN</h3>
+            <p><strong>Source:</strong> jsDelivr CDN</p>
+            <p><strong>Version:</strong> 1.0.13</p>
+            <p><strong>URL:</strong> https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.13/dist/sunuid-sdk.min.js</p>
         </div>
+        
+        <div class="status" id="status">Prêt pour les tests</div>
         
         <!-- Configuration -->
         <div class="config-section">
-            <h3>Configuration</h3>
-            <div>
-                <label>Client ID:</label>
-                <input type="text" id="clientId" placeholder="Votre Client ID" value="test_client">
-            </div>
-            <div>
-                <label>Secret ID:</label>
-                <input type="text" id="secretId" placeholder="Votre Secret ID" value="test_secret">
-            </div>
+            <h3>⚙️ Configuration</h3>
+            <input type="text" id="clientId" placeholder="Client ID" value="1754174441_36C4685215935D1F">
+            <input type="text" id="secretId" placeholder="Secret ID" value="e29c66f185c389eedf7a1e8a242aba741cd659deaa6a9f8d50aa2dec98cce49d">
         </div>
         
         <!-- Tests -->
         <div>
-                    <button onclick="testSDKInit()">Test Initialisation SDK</button>
-        <button onclick="testConnectivity()">Test Connectivité</button>
-        <button onclick="testQRGeneration()">Test Génération QR</button>
-        <button onclick="testQRStatus()">Test Statut QR</button>
-        <button onclick="testQRConfirm()">Test Confirmation QR</button>
-        <button onclick="testDirectAPI()">Test API Directe</button>
-        <button onclick="clearLog()">Effacer Log</button>
+            <h3>🧪 Tests</h3>
+            <button onclick="testSDKInit()">Test Initialisation SDK</button>
+            <button onclick="testConnectivity()">Test Connectivité</button>
+            <button onclick="testQRGeneration()">Test Génération QR</button>
+            <button onclick="testQRStatus()">Test Statut QR</button>
+            <button onclick="testQRConfirm()">Test Confirmation QR</button>
+            <button onclick="testDirectAPI()">Test API Directe</button>
+            <button onclick="clearLog()">Effacer Log</button>
         </div>
         
-        <div class="qr-container" id="qr-container">
-            <p>Le QR code apparaîtra ici après génération</p>
+        <!-- QR Container -->
+        <div class="endpoint-test">
+            <h4>📱 QR Code</h4>
+            <div class="qr-container" id="qr-container">
+                <p>Le QR code apparaîtra ici après génération</p>
+            </div>
         </div>
         
         <div class="log" id="log">
@@ -139,8 +152,8 @@
         </div>
     </div>
 
-    <!-- Inclure le SDK -->
-    <script src="src/sunuid-sdk.js?v=1.0.13"></script>
+    <!-- Inclure le SDK via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.13/dist/sunuid-sdk.min.js"></script>
     
     <script>
         let sunuid = null;
@@ -173,6 +186,38 @@
                 clientId: document.getElementById('clientId').value,
                 secretId: document.getElementById('secretId').value
             };
+        }
+        
+        // Test d'initialisation SDK
+        async function testSDKInit() {
+            try {
+                log('🧪 Test d\'initialisation SDK (CDN)...');
+                
+                // Vérifier si initSunuID est disponible
+                if (typeof window.initSunuID === 'undefined') {
+                    log('❌ Erreur: initSunuID n\'est pas défini', 'error');
+                    log('🔍 Vérification des objets disponibles:', 'info');
+                    log('- window.SunuID: ' + (typeof window.SunuID !== 'undefined'), 'info');
+                    log('- window.initSunuID: ' + (typeof window.initSunuID !== 'undefined'), 'info');
+                    return false;
+                }
+                
+                const config = getConfig();
+                log('🔑 Configuration: ' + JSON.stringify(config), 'info');
+                
+                // Initialiser le SDK
+                sunuid = window.initSunuID({
+                    apiUrl: 'https://api.sunuid.fayma.sn',
+                    clientId: config.clientId,
+                    secretId: config.secretId
+                });
+                
+                log('✅ SDK initialisé avec succès (CDN)', 'success');
+                return true;
+            } catch (error) {
+                log('❌ Erreur initialisation SDK: ' + error.message, 'error');
+                return false;
+            }
         }
         
         // Test de connectivité
@@ -253,13 +298,11 @@
                         updateStatus('API directe échoue', 'error');
                     }
                 } catch (parseError) {
-                    log('❌ Réponse non-JSON: ' + responseText, 'error');
-                    updateStatus('Réponse non-JSON', 'error');
+                    log('❌ Erreur parsing JSON: ' + parseError.message, 'error');
+                    updateStatus('Erreur parsing JSON', 'error');
                 }
-                
             } catch (error) {
                 log('❌ Erreur API directe: ' + error.message, 'error');
-                log('🔍 Type d\'erreur: ' + error.name, 'warning');
                 log('🔍 Stack: ' + error.stack, 'warning');
                 updateStatus('Erreur API directe', 'error');
             }
@@ -390,41 +433,9 @@
             }
         }
         
-        // Test d'initialisation SDK
-        async function testSDKInit() {
-            try {
-                log('🧪 Test d\'initialisation SDK...');
-                
-                // Vérifier si initSunuID est disponible
-                if (typeof window.initSunuID === 'undefined') {
-                    log('❌ Erreur: initSunuID n\'est pas défini', 'error');
-                    log('🔍 Vérification des objets disponibles:', 'info');
-                    log('- window.SunuID: ' + (typeof window.SunuID !== 'undefined'), 'info');
-                    log('- window.initSunuID: ' + (typeof window.initSunuID !== 'undefined'), 'info');
-                    return false;
-                }
-                
-                const config = getConfig();
-                log('🔑 Configuration: ' + JSON.stringify(config), 'info');
-                
-                // Initialiser le SDK
-                sunuid = window.initSunuID({
-                    apiUrl: 'https://api.sunuid.fayma.sn',
-                    clientId: config.clientId,
-                    secretId: config.secretId
-                });
-                
-                log('✅ SDK initialisé avec succès', 'success');
-                return true;
-            } catch (error) {
-                log('❌ Erreur initialisation SDK: ' + error.message, 'error');
-                return false;
-            }
-        }
-        
         // Initialisation
         window.onload = function() {
-            log('🚀 Initialisation du test SDK...');
+            log('🚀 Initialisation du test SDK (CDN)...');
             updateStatus('Prêt pour les tests', 'info');
             
             // Afficher les informations de débogage

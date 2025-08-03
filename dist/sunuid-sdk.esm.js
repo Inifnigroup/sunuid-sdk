@@ -285,6 +285,7 @@ function _toPropertyKey(t) {
                 _context.p = 5;
                 _t = _context.v;
                 console.error('Erreur API détectée:', _t.message);
+                console.log('Affichage du message "Service non disponible" pour auth');
                 this.displayServiceUnavailable(containerId, 'auth');
                 throw new Error('Service non disponible');
               case 6:
@@ -342,6 +343,7 @@ function _toPropertyKey(t) {
                 _context2.p = 5;
                 _t2 = _context2.v;
                 console.error('Erreur API détectée:', _t2.message);
+                console.log('Affichage du message "Service non disponible" pour kyc');
                 this.displayServiceUnavailable(containerId, 'kyc');
                 throw new Error('Service non disponible');
               case 6:
@@ -439,6 +441,7 @@ function _toPropertyKey(t) {
     }, {
       key: "displayServiceUnavailable",
       value: function displayServiceUnavailable(containerId, type) {
+        console.log("displayServiceUnavailable appel\xE9e pour ".concat(containerId, ", type: ").concat(type));
         var container = document.getElementById(containerId);
         if (!container) {
           console.error("Container ".concat(containerId, " non trouv\xE9"));
