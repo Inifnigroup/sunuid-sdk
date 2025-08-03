@@ -58,7 +58,7 @@
 
             try {
                 // Essayer d'abord l'API réelle
-                const response = await this.makeRequest('/auth/qr-generate', {
+                const response = await this.makeRequest('/auth/qr-generate.php', {
                     type: 'auth',
                     ...options
                 });
@@ -113,7 +113,7 @@
 
             try {
                 // Essayer d'abord l'API réelle
-                const response = await this.makeRequest('/auth/qr-generate', {
+                const response = await this.makeRequest('/auth/qr-generate.php', {
                     type: 'kyc',
                     ...options
                 });
@@ -165,7 +165,7 @@
          */
         async checkQRStatus(qrId) {
             try {
-                const response = await this.makeRequest('/auth/qr-status', {
+                const response = await this.makeRequest('/auth/qr-status.php', {
                     qr_id: qrId
                 });
 

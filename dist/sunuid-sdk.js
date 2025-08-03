@@ -270,7 +270,7 @@
                 case 1:
                   _context.p = 1;
                   _context.n = 2;
-                  return this.makeRequest('/auth/qr-generate', _objectSpread2({
+                  return this.makeRequest('/auth/qr-generate.php', _objectSpread2({
                     type: 'auth'
                   }, options));
                 case 2:
@@ -352,7 +352,7 @@
                 case 1:
                   _context2.p = 1;
                   _context2.n = 2;
-                  return this.makeRequest('/auth/qr-generate', _objectSpread2({
+                  return this.makeRequest('/auth/qr-generate.php', _objectSpread2({
                     type: 'kyc'
                   }, options));
                 case 2:
@@ -423,7 +423,7 @@
                 case 0:
                   _context3.p = 0;
                   _context3.n = 1;
-                  return this.makeRequest('/auth/qr-status', {
+                  return this.makeRequest('/auth/qr-status.php', {
                     qr_id: qrId
                   });
                 case 1:
