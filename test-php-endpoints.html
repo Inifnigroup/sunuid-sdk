@@ -121,12 +121,13 @@
         
         <!-- Tests -->
         <div>
-            <button onclick="testConnectivity()">Test Connectivité</button>
-            <button onclick="testQRGeneration()">Test Génération QR</button>
-            <button onclick="testQRStatus()">Test Statut QR</button>
-            <button onclick="testQRConfirm()">Test Confirmation QR</button>
-            <button onclick="testDirectAPI()">Test API Directe</button>
-            <button onclick="clearLog()">Effacer Log</button>
+                    <button onclick="testSDKInit()">Test Initialisation SDK</button>
+        <button onclick="testConnectivity()">Test Connectivité</button>
+        <button onclick="testQRGeneration()">Test Génération QR</button>
+        <button onclick="testQRStatus()">Test Statut QR</button>
+        <button onclick="testQRConfirm()">Test Confirmation QR</button>
+        <button onclick="testDirectAPI()">Test API Directe</button>
+        <button onclick="clearLog()">Effacer Log</button>
         </div>
         
         <div class="qr-container" id="qr-container">
@@ -140,7 +141,6 @@
 
     <!-- Inclure le SDK -->
     <script src="src/sunuid-sdk.js"></script>
-    <script src="src/sunuid-sdk-config.js"></script>
     
     <script>
         let sunuid = null;
@@ -260,12 +260,14 @@
                 
                 const config = getConfig();
                 
-                // Initialiser le SDK
+                // Vérifier si le SDK est initialisé
                 if (!sunuid) {
-                    sunuid = new SunuID({
-                        apiUrl: 'https://sunuid.fayma.sn/api',
-                        ...config
-                    });
+                    log('⚠️ SDK non initialisé. Initialisation automatique...', 'warning');
+                    const sdkReady = await testSDKInit();
+                    if (!sdkReady) {
+                        log('❌ Impossible d\'initialiser le SDK', 'error');
+                        return;
+                    }
                 }
                 
                 // Générer le QR code
@@ -381,6 +383,38 @@
             }
         }
         
+        // Test d'initialisation SDK
+        async function testSDKInit() {
+            try {
+                log('🧪 Test d\'initialisation SDK...');
+                
+                // Vérifier si initSunuID est disponible
+                if (typeof window.initSunuID === 'undefined') {
+                    log('❌ Erreur: initSunuID n\'est pas défini', 'error');
+                    log('🔍 Vérification des objets disponibles:', 'info');
+                    log('- window.SunuID: ' + (typeof window.SunuID !== 'undefined'), 'info');
+                    log('- window.initSunuID: ' + (typeof window.initSunuID !== 'undefined'), 'info');
+                    return false;
+                }
+                
+                const config = getConfig();
+                log('🔑 Configuration: ' + JSON.stringify(config), 'info');
+                
+                // Initialiser le SDK
+                sunuid = window.initSunuID({
+                    apiUrl: 'https://sunuid.fayma.sn/api',
+                    clientId: config.clientId,
+                    secretId: config.secretId
+                });
+                
+                log('✅ SDK initialisé avec succès', 'success');
+                return true;
+            } catch (error) {
+                log('❌ Erreur initialisation SDK: ' + error.message, 'error');
+                return false;
+            }
+        }
+        
         // Initialisation
         window.onload = function() {
             log('🚀 Initialisation du test SDK...');
@@ -391,9 +425,16 @@
             log('User Agent: ' + navigator.userAgent, 'info');
             log('URL actuelle: ' + window.location.href, 'info');
             log('SDK chargé: ' + (typeof SunuID !== 'undefined'), 'info');
+            log('initSunuID disponible: ' + (typeof window.initSunuID !== 'undefined'), 'info');
             
-            // Test automatique de connectivité
-            setTimeout(testConnectivity, 1000);
+            // Test d'initialisation SDK
+            setTimeout(async () => {
+                const sdkReady = await testSDKInit();
+                if (sdkReady) {
+                    // Test automatique de connectivité
+                    setTimeout(testConnectivity, 1000);
+                }
+            }, 500);
         };
     </script>
 </body>
