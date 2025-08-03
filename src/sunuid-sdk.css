@@ -3,286 +3,275 @@
  * 
  * @version 1.0.0
  * @author SunuID Team
+ * @license MIT
  */
 
-/* Conteneur principal */
-.sunuid-qr-container {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+/* Conteneur principal du QR code */
+.sunuid-qr-code {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     max-width: 400px;
     margin: 0 auto;
-    padding: 24px;
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
-
-/* Thème clair */
-.sunuid-theme-light {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border: 1px solid #e2e8f0;
-    color: #1a202c;
-}
-
-/* Thème sombre */
-.sunuid-theme-dark {
-    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-    border: 1px solid #4a5568;
-    color: #f7fafc;
-}
-
-/* En-tête */
-.sunuid-qr-header {
-    text-align: center;
-    margin-bottom: 24px;
-}
-
-.sunuid-qr-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0 0 8px 0;
-    background: linear-gradient(135deg, #4caf50, #66bb6a);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.sunuid-theme-dark .sunuid-qr-title {
-    background: linear-gradient(135deg, #4caf50, #81c784);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.sunuid-qr-subtitle {
-    font-size: 0.9rem;
-    color: #718096;
-    margin: 0;
-    line-height: 1.5;
-}
-
-.sunuid-theme-dark .sunuid-qr-subtitle {
-    color: #a0aec0;
-}
-
-/* QR Code */
-.sunuid-qr-code {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 24px;
-}
-
-.sunuid-qr-image {
-    width: 200px;
-    height: 200px;
+    padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    background: white;
+    text-align: center;
 }
 
-.sunuid-qr-image:hover {
-    transform: scale(1.02);
+/* En-tête du QR code */
+.sunuid-qr-header {
+    margin-bottom: 20px;
 }
 
-.sunuid-qr-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 12px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.sunuid-theme-dark .sunuid-qr-overlay {
-    background: rgba(26, 32, 44, 0.9);
-}
-
-.sunuid-qr-overlay.loading {
-    opacity: 1;
-}
-
-/* Spinner */
-.sunuid-qr-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #e2e8f0;
-    border-top: 4px solid #4caf50;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-.sunuid-theme-dark .sunuid-qr-spinner {
-    border: 4px solid #4a5568;
-    border-top: 4px solid #4caf50;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Pied de page */
-.sunuid-qr-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 16px;
-    border-top: 1px solid #e2e8f0;
-}
-
-.sunuid-theme-dark .sunuid-qr-footer {
-    border-top: 1px solid #4a5568;
-}
-
-.sunuid-qr-timer {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    color: #718096;
-    margin: 0;
-}
-
-.sunuid-theme-dark .sunuid-qr-timer {
-    color: #a0aec0;
-}
-
-.sunuid-qr-timer i {
-    color: #4caf50;
-}
-
-.sunuid-qr-timer span {
+.sunuid-qr-header h3 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
     font-weight: 600;
-    color: #4caf50;
+    color: #333;
 }
 
-/* Bouton d'actualisation */
-.sunuid-qr-refresh {
-    background: linear-gradient(135deg, #4caf50, #66bb6a);
-    color: white;
-    border: none;
-    padding: 8px 16px;
+/* Timer */
+.sunuid-timer {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.sunuid-timer span {
+    font-weight: 500;
+}
+
+#sunuid-timer {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Image du QR code */
+.sunuid-qr-image {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f9fa;
     border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    border: 2px dashed #dee2e6;
 }
 
-.sunuid-qr-refresh:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+.sunuid-qr-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
 }
 
-.sunuid-qr-refresh:active {
-    transform: translateY(0);
+/* Instructions */
+.sunuid-qr-instructions {
+    margin: 15px 0;
 }
 
-.sunuid-qr-refresh i {
-    font-size: 0.8rem;
+.sunuid-qr-instructions p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
 }
 
-/* États spéciaux */
-.sunuid-qr-container.expired {
-    opacity: 0.7;
+/* Statut */
+.sunuid-qr-status {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    background: #f8f9fa;
+    border-left: 4px solid #007bff;
 }
 
-.sunuid-qr-container.expired .sunuid-qr-image {
-    filter: grayscale(100%);
+.sunuid-qr-status p {
+    margin: 0;
+    font-size: 14px;
+    color: #495057;
 }
 
-.sunuid-qr-container.success {
-    border-color: #4caf50;
-    box-shadow: 0 8px 32px rgba(76, 175, 80, 0.2);
+/* Thèmes */
+.sunuid-theme-light {
+    background: white;
+    color: #333;
 }
 
-.sunuid-qr-container.error {
-    border-color: #f44336;
-    box-shadow: 0 8px 32px rgba(244, 67, 54, 0.2);
+.sunuid-theme-dark {
+    background: #2c3e50;
+    color: white;
+}
+
+.sunuid-theme-dark .sunuid-qr-header h3 {
+    color: white;
+}
+
+.sunuid-theme-dark .sunuid-timer {
+    color: #bdc3c7;
+}
+
+.sunuid-theme-dark .sunuid-qr-image {
+    background: #34495e;
+    border-color: #7f8c8d;
+}
+
+.sunuid-theme-dark .sunuid-qr-instructions p {
+    color: #bdc3c7;
+}
+
+.sunuid-theme-dark .sunuid-qr-status {
+    background: #34495e;
+    border-left-color: #3498db;
+}
+
+.sunuid-theme-dark .sunuid-qr-status p {
+    color: #ecf0f1;
+}
+
+/* États de statut */
+.sunuid-status-pending {
+    border-left-color: #ffc107;
+}
+
+.sunuid-status-confirmed {
+    border-left-color: #28a745;
+}
+
+.sunuid-status-expired {
+    border-left-color: #dc3545;
+}
+
+.sunuid-status-error {
+    border-left-color: #dc3545;
+}
+
+/* Animations */
+@keyframes sunuid-pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.sunuid-qr-code.loading .sunuid-qr-image {
+    animation: sunuid-pulse 2s infinite;
 }
 
 /* Responsive */
 @media (max-width: 480px) {
-    .sunuid-qr-container {
-        padding: 16px;
-        margin: 0 8px;
+    .sunuid-qr-code {
+        padding: 15px;
+        margin: 10px;
     }
     
-    .sunuid-qr-title {
-        font-size: 1.3rem;
+    .sunuid-qr-header h3 {
+        font-size: 16px;
     }
     
     .sunuid-qr-image {
-        width: 160px;
-        height: 160px;
-    }
-    
-    .sunuid-qr-footer {
-        flex-direction: column;
-        gap: 12px;
-        text-align: center;
-    }
-    
-    .sunuid-qr-refresh {
-        width: 100%;
-        justify-content: center;
+        padding: 10px;
     }
 }
 
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Boutons (si utilisés) */
+.sunuid-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 5px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.sunuid-qr-container {
-    animation: fadeIn 0.5s ease-out;
+.sunuid-btn-primary {
+    background: #007bff;
+    color: white;
 }
 
-/* États de chargement */
-.sunuid-qr-container.loading .sunuid-qr-overlay {
-    opacity: 1;
+.sunuid-btn-primary:hover {
+    background: #0056b3;
 }
 
-/* Message d'erreur */
-.sunuid-qr-error {
+.sunuid-btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.sunuid-btn-secondary:hover {
+    background: #545b62;
+}
+
+/* Messages d'erreur */
+.sunuid-error {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    font-size: 14px;
+}
+
+/* Messages de succès */
+.sunuid-success {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    font-size: 14px;
+}
+
+/* Spinner de chargement */
+.sunuid-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: sunuid-spin 1s linear infinite;
+}
+
+@keyframes sunuid-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Utilitaires */
+.sunuid-hidden {
+    display: none !important;
+}
+
+.sunuid-text-center {
     text-align: center;
-    padding: 16px;
-    background: #fef2f2;
-    border: 1px solid #fecaca;
+}
+
+.sunuid-text-left {
+    text-align: left;
+}
+
+.sunuid-text-right {
+    text-align: right;
+}
+
+.sunuid-mt-10 {
+    margin-top: 10px;
+}
+
+.sunuid-mb-10 {
+    margin-bottom: 10px;
+}
+
+.sunuid-p-10 {
+    padding: 10px;
+}
+
+.sunuid-rounded {
     border-radius: 8px;
-    color: #dc2626;
-    margin-top: 16px;
 }
 
-.sunuid-theme-dark .sunuid-qr-error {
-    background: #2d1b1b;
-    border-color: #7f1d1d;
-    color: #fca5a5;
-}
-
-/* Message de succès */
-.sunuid-qr-success {
-    text-align: center;
-    padding: 16px;
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    border-radius: 8px;
-    color: #16a34a;
-    margin-top: 16px;
-}
-
-.sunuid-theme-dark .sunuid-qr-success {
-    background: #1b2d1b;
-    border-color: #1d7d1d;
-    color: #a5f3a5;
+.sunuid-shadow {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 } 

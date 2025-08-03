@@ -12,6 +12,7 @@
     // Configuration par défaut
     const DEFAULT_CONFIG = {
         apiUrl: 'https://sunuid.fayma.sn/api',
+        partnerId: null,
         clientId: null,
         secretId: null,
         theme: 'light',
@@ -40,8 +41,8 @@
          * Initialisation du SDK
          */
         init() {
-            if (!this.config.clientId || !this.config.secretId) {
-                throw new Error('SunuID: clientId et secretId sont requis');
+            if (!this.config.partnerId || !this.config.clientId || !this.config.secretId) {
+                throw new Error('SunuID: partnerId, clientId et secretId sont requis');
             }
 
             this.isInitialized = true;
@@ -57,49 +58,21 @@
             }
 
             try {
-                // Essayer d'abord l'API réelle
                 const response = await this.makeRequest('/auth/qr-generate.php', {
                     type: 'auth',
                     ...options
                 });
 
                 if (response.success) {
-                    this.displayQRCode(containerId, response.data.qr_code_url, 'auth', options);
+                    this.displayQRCode(containerId, response.data.qrCodeUrl, 'auth', options);
                     this.startAutoRefresh(containerId, 'auth', options);
                     return response.data;
                 } else {
-                    throw new Error(response.message);
+                    throw new Error(response.message || 'Erreur lors de la génération du QR code');
                 }
             } catch (error) {
-                console.warn('Erreur API détectée, génération d\'un QR code de test:', error.message);
-                console.log('Type d\'erreur:', error.name, 'Message:', error.message);
-                
-                // En cas d'échec de l'API (CORS, 500, ou autre), générer un QR code de test
-                const testData = {
-                    type: 'auth',
-                    clientId: this.config.clientId,
-                    timestamp: Date.now(),
-                    sessionId: 'test_' + Math.random().toString(36).substr(2, 9),
-                    apiUrl: this.config.apiUrl,
-                    error: error.message,
-                    errorType: error.name,
-                    ...options
-                };
-                
-                const qrData = JSON.stringify(testData);
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
-                
-                this.displayQRCode(containerId, qrUrl, 'auth', options);
-                this.startAutoRefresh(containerId, 'auth', options);
-                
-                return {
-                    success: true,
-                    data: {
-                        qr_code_url: qrUrl,
-                        qr_id: testData.sessionId,
-                        expires_at: Date.now() + 30000
-                    }
-                };
+                this.handleError(error);
+                throw error;
             }
         }
 
@@ -112,64 +85,18 @@
             }
 
             try {
-                // Essayer d'abord l'API réelle
                 const response = await this.makeRequest('/auth/qr-generate.php', {
                     type: 'kyc',
                     ...options
                 });
 
                 if (response.success) {
-                    this.displayQRCode(containerId, response.data.qr_code_url, 'kyc', options);
+                    this.displayQRCode(containerId, response.data.qrCodeUrl, 'kyc', options);
                     this.startAutoRefresh(containerId, 'kyc', options);
                     return response.data;
                 } else {
-                    throw new Error(response.message);
+                    throw new Error(response.message || 'Erreur lors de la génération du QR code KYC');
                 }
-            } catch (error) {
-                console.warn('Erreur API détectée, génération d\'un QR code de test:', error.message);
-                console.log('Type d\'erreur:', error.name, 'Message:', error.message);
-                
-                // En cas d'échec de l'API (CORS, 500, ou autre), générer un QR code de test
-                const testData = {
-                    type: 'kyc',
-                    clientId: this.config.clientId,
-                    timestamp: Date.now(),
-                    sessionId: 'test_' + Math.random().toString(36).substr(2, 9),
-                    kycType: options.kycType || 'full',
-                    requiredFields: options.requiredFields || ['identity', 'address', 'phone'],
-                    apiUrl: this.config.apiUrl,
-                    error: error.message,
-                    errorType: error.name,
-                    ...options
-                };
-                
-                const qrData = JSON.stringify(testData);
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
-                
-                this.displayQRCode(containerId, qrUrl, 'kyc', options);
-                this.startAutoRefresh(containerId, 'kyc', options);
-                
-                return {
-                    success: true,
-                    data: {
-                        qr_code_url: qrUrl,
-                        qr_id: testData.sessionId,
-                        expires_at: Date.now() + 30000
-                    }
-                };
-            }
-        }
-
-        /**
-         * Vérifier le statut d'un QR code
-         */
-        async checkQRStatus(qrId) {
-            try {
-                const response = await this.makeRequest('/auth/qr-status.php', {
-                    qr_id: qrId
-                });
-
-                return response.data;
             } catch (error) {
                 this.handleError(error);
                 throw error;
@@ -177,7 +104,31 @@
         }
 
         /**
-         * Afficher le QR code dans le conteneur
+         * Vérifier le statut d'un QR code
+         */
+        async checkQRStatus(sessionId) {
+            if (!this.isInitialized) {
+                throw new Error('SunuID: SDK non initialisé');
+            }
+
+            try {
+                const response = await this.makeRequest('/auth/qr-status.php', {
+                    sessionId: sessionId
+                });
+
+                if (response.success) {
+                    return response.data;
+                } else {
+                    throw new Error(response.message || 'Erreur lors de la vérification du statut');
+                }
+            } catch (error) {
+                this.handleError(error);
+                throw error;
+            }
+        }
+
+        /**
+         * Afficher un QR code dans un conteneur
          */
         displayQRCode(containerId, qrUrl, type, options = {}) {
             const container = document.getElementById(containerId);
@@ -185,68 +136,59 @@
                 throw new Error(`Conteneur avec l'ID "${containerId}" non trouvé`);
             }
 
-            const theme = options.theme || this.config.theme;
-            const language = options.language || this.config.language;
+            // Nettoyer le conteneur
+            container.innerHTML = '';
 
-            container.innerHTML = `
-                <div class="sunuid-qr-container sunuid-theme-${theme}">
-                    <div class="sunuid-qr-header">
-                        <h3 class="sunuid-qr-title">
-                            ${type === 'auth' ? '🔐 Authentification' : '📋 Vérification KYC'}
-                        </h3>
-                        <p class="sunuid-qr-subtitle">
-                            ${type === 'auth' ? 
-                                'Scannez ce QR code avec l\'application SunuID pour vous connecter' :
-                                'Scannez ce QR code avec l\'application SunuID pour compléter votre profil'
-                            }
-                        </p>
+            // Créer l'élément QR code
+            const qrElement = document.createElement('div');
+            qrElement.className = 'sunuid-qr-code';
+            qrElement.innerHTML = `
+                <div class="sunuid-qr-header">
+                    <h3>${type === 'auth' ? 'Authentification' : 'Vérification KYC'}</h3>
+                    <div class="sunuid-timer">
+                        <span>Expire dans: </span>
+                        <span id="sunuid-timer">30</span>
+                        <span> secondes</span>
                     </div>
-                    <div class="sunuid-qr-code">
-                        <img src="${qrUrl}" alt="QR Code SunuID" class="sunuid-qr-image">
-                        <div class="sunuid-qr-overlay">
-                            <div class="sunuid-qr-spinner"></div>
-                        </div>
-                    </div>
-                    <div class="sunuid-qr-footer">
-                        <p class="sunuid-qr-timer">
-                            <i class="fa-solid fa-clock"></i>
-                            <span id="sunuid-timer">30</span> secondes
-                        </p>
-                        <button class="sunuid-qr-refresh" onclick="sunuidInstance.refreshQR('${containerId}', '${type}', ${JSON.stringify(options)})">
-                            <i class="fa-solid fa-sync-alt"></i>
-                            Actualiser
-                        </button>
-                    </div>
+                </div>
+                <div class="sunuid-qr-image">
+                    <img src="${qrUrl}" alt="QR Code SunuID" style="max-width: 300px; height: auto;">
+                </div>
+                <div class="sunuid-qr-instructions">
+                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>
+                </div>
+                <div class="sunuid-qr-status" id="sunuid-status">
+                    <p>En attente de scan...</p>
                 </div>
             `;
 
-            this.qrCode = {
-                containerId,
-                type,
-                options,
-                qrUrl
-            };
+            container.appendChild(qrElement);
 
+            // Démarrer le timer
             this.startTimer();
+
+            // Appliquer le thème
+            this.applyTheme(options.theme || this.config.theme);
         }
 
         /**
-         * Actualiser le QR code
+         * Rafraîchir un QR code
          */
         async refreshQR(containerId, type, options = {}) {
             try {
-                if (type === 'auth') {
-                    await this.generateAuthQR(containerId, options);
-                } else {
-                    await this.generateKYCQR(containerId, options);
-                }
+                const result = type === 'auth' 
+                    ? await this.generateAuthQR(containerId, options)
+                    : await this.generateKYCQR(containerId, options);
+                
+                return result;
             } catch (error) {
                 this.handleError(error);
+                throw error;
             }
         }
 
         /**
-         * Démarrer le timer de rafraîchissement automatique
+         * Démarrer le rafraîchissement automatique
          */
         startAutoRefresh(containerId, type, options) {
             if (!this.config.autoRefresh) return;
@@ -288,38 +230,46 @@
         async makeRequest(endpoint, data) {
             const url = `${this.config.apiUrl}${endpoint}`;
             
-            // Préparer les données avec les identifiants
-            const requestData = {
-                ...data,
-                client_id: this.config.clientId,
-                secret_id: this.config.secretId
-            };
-            
             try {
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-SunuID-Client-ID': this.config.clientId,
+                        'X-SunuID-Secret-ID': this.config.secretId,
+                        'X-SunuID-Partner-ID': this.config.partnerId,
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify(requestData)
+                    body: JSON.stringify(data)
                 });
 
                 if (!response.ok) {
-                    console.warn(`Erreur HTTP ${response.status}: ${response.statusText}`);
-                    throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
+                    const errorText = await response.text();
+                    let errorData;
+                    try {
+                        errorData = JSON.parse(errorText);
+                    } catch (e) {
+                        errorData = { message: errorText };
+                    }
+                    
+                    throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
                 }
 
-                return await response.json();
+                const result = await response.json();
+                return result;
             } catch (error) {
-                // Si c'est une erreur CORS, on la gère spécifiquement
-                if (error.name === 'TypeError' && error.message.includes('CORS')) {
-                    console.warn('Erreur CORS détectée, utilisation de QR codes de test');
-                    throw new Error('CORS_ERROR');
-                }
-                // Pour toutes les autres erreurs (500, 404, etc.)
-                console.warn('Erreur API détectée:', error.message);
+                console.error('Erreur API SunuID:', error);
                 throw error;
+            }
+        }
+
+        /**
+         * Appliquer le thème
+         */
+        applyTheme(theme) {
+            const container = document.querySelector('.sunuid-qr-code');
+            if (container) {
+                container.className = `sunuid-qr-code sunuid-theme-${theme}`;
             }
         }
 
