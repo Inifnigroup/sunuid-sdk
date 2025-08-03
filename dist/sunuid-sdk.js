@@ -204,7 +204,7 @@
 
     // Configuration par défaut
     var DEFAULT_CONFIG = {
-      apiUrl: 'https://sunuid.fayma.sn/api',
+      apiUrl: 'https://sunuid.fayma.sn/api/auth',
       clientId: null,
       secretId: null,
       theme: 'light',
@@ -270,7 +270,7 @@
                 case 1:
                   _context.p = 1;
                   _context.n = 2;
-                  return this.makeRequest('/auth/qr-generate.php', _objectSpread2({
+                  return this.makeRequest('/qr-generate', _objectSpread2({
                     type: 'auth'
                   }, options));
                 case 2:
@@ -354,7 +354,7 @@
                 case 1:
                   _context2.p = 1;
                   _context2.n = 2;
-                  return this.makeRequest('/auth/qr-generate.php', _objectSpread2({
+                  return this.makeRequest('/qr-generate', _objectSpread2({
                     type: 'kyc'
                   }, options));
                 case 2:
@@ -431,7 +431,7 @@
                 case 1:
                   _context3.p = 1;
                   _context3.n = 2;
-                  return this.makeRequest('/auth/qr-status.php', {
+                  return this.makeRequest('/qr-status', {
                     sessionId: sessionId
                   });
                 case 2:

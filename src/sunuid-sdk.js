@@ -11,7 +11,7 @@
 
     // Configuration par défaut
     const DEFAULT_CONFIG = {
-        apiUrl: 'https://sunuid.fayma.sn/api/auth',
+        apiUrl: window.SunuIDConfig?.apiUrl || 'https://sunuid.fayma.sn/api/auth',
         clientId: null,
         secretId: null,
         theme: 'light',
@@ -285,7 +285,9 @@
          * Effectuer une requête API
          */
         async makeRequest(endpoint, data) {
-            const url = `${this.config.apiUrl}${endpoint}`;
+            // Utiliser l'endpoint depuis la configuration si disponible
+            const endpointPath = window.SunuIDConfig?.endpoints?.[endpoint.replace('/', '')] || endpoint;
+            const url = `${this.config.apiUrl}${endpointPath}`;
             
             try {
                 const response = await fetch(url, {
