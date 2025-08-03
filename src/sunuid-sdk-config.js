@@ -9,15 +9,15 @@
 // Configuration par défaut pour le SDK
 window.SunuIDConfig = {
     // URL de l'API
-    apiUrl: 'https://sunuid.fayma.sn/api',
+    apiUrl: 'https://sunuid.fayma.sn/api/auth',
     
     // Endpoints spécifiques
     endpoints: {
-        qrGenerate: '/auth/qr-generate.php',
-        qrStatus: '/auth/qr-status.php',
-        qrConfirm: '/auth/qr-confirm.php',
-        debug: '/auth/debug.php',
-        test: '/auth/test-sdk.php'
+        qrGenerate: '/qr-generate',
+        qrStatus: '/qr-status',
+        qrConfirm: '/qr-confirm',
+        debug: '/debug',
+        test: '/test-sdk'
     },
     
     // Configuration par défaut

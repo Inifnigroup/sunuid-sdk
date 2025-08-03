@@ -11,7 +11,7 @@
 
     // Configuration par défaut
     const DEFAULT_CONFIG = {
-        apiUrl: 'https://sunuid.fayma.sn/api',
+        apiUrl: 'https://sunuid.fayma.sn/api/auth',
         clientId: null,
         secretId: null,
         theme: 'light',
@@ -57,7 +57,7 @@
             }
 
             try {
-                const response = await this.makeRequest('/auth/qr-generate.php', {
+                const response = await this.makeRequest('/qr-generate', {
                     type: 'auth',
                     ...options
                 });
@@ -113,7 +113,7 @@
             }
 
             try {
-                const response = await this.makeRequest('/auth/qr-generate.php', {
+                const response = await this.makeRequest('/qr-generate', {
                     type: 'kyc',
                     ...options
                 });
@@ -169,7 +169,7 @@
             }
 
             try {
-                const response = await this.makeRequest('/auth/qr-status.php', {
+                const response = await this.makeRequest('/qr-status', {
                     sessionId: sessionId
                 });
 
