@@ -40,8 +40,7 @@ npm install sunuid-sdk
 
 ```javascript
 const sunuid = initSunuID({
-    apiUrl: 'https://sunuid.sn/api',
-    partnerId: 'VOTRE_PARTNER_ID',
+    apiUrl: 'https://sunuid.fayma.sn/api',
     clientId: 'VOTRE_CLIENT_ID',
     secretId: 'VOTRE_SECRET_ID',
     theme: 'light'
@@ -103,8 +102,7 @@ sunuid.generateKYCQR('kyc-qr-container', {
     <script src="https://unpkg.com/sunuid-sdk@1.0.0/dist/sunuid-sdk.js"></script>
     <script>
         const sunuid = initSunuID({
-            apiUrl: 'https://sunuid.sn/api',
-            partnerId: 'VOTRE_PARTNER_ID',
+            apiUrl: 'https://sunuid.fayma.sn/api',
             clientId: 'VOTRE_CLIENT_ID',
             secretId: 'VOTRE_SECRET_ID',
             theme: 'light',
@@ -128,8 +126,7 @@ sunuid.generateKYCQR('kyc-qr-container', {
 
 | Option | Type | Défaut | Description |
 |--------|------|--------|-------------|
-| `apiUrl` | string | `'https://sunuid.sn/api'` | URL de l'API SunuID |
-| `partnerId` | string | - | ID du partenaire (requis) |
+| `apiUrl` | string | `'https://sunuid.fayma.sn/api'` | URL de l'API SunuID |
 | `clientId` | string | - | Clé client (requise) |
 | `secretId` | string | - | Clé secrète (requise) |
 | `theme` | string | `'light'` | Thème: `'light'` ou `'dark'` |
@@ -212,10 +209,9 @@ sunuid.destroy();
 ## 🛡️ Sécurité
 
 ### Authentification
-Le SDK utilise les clés API du partenaire pour s'authentifier :
+Le SDK utilise les clés API pour s'authentifier :
 - `X-SunuID-Client-ID`
 - `X-SunuID-Secret-ID`
-- `X-SunuID-Partner-ID`
 
 ### Validation
 - Vérification des paramètres requis

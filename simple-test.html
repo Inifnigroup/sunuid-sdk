@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Simple QR Code</title>
+    <link rel="stylesheet" href="src/sunuid-sdk.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .qr-container {
+            min-height: 300px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            background-color: #f9f9f9;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Simple - QR Codes SunuID</h1>
+    
+    <div class="container">
+        <h2>Test d'initialisation</h2>
+        <button onclick="initSDK()">Initialiser le SDK</button>
+        <div id="init-status"></div>
+    </div>
+    
+    <div class="container">
+        <h2>Test QR Code d'Authentification</h2>
+        <button onclick="generateAuthQR()">Générer QR Auth</button>
+        <div id="auth-status"></div>
+        <div id="auth-qr-container" class="qr-container">
+            <p>QR Code d'authentification apparaîtra ici</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Test QR Code KYC</h2>
+        <button onclick="generateKYCQR()">Générer QR KYC</button>
+        <div id="kyc-status"></div>
+        <div id="kyc-qr-container" class="qr-container">
+            <p>QR Code KYC apparaîtra ici</p>
+        </div>
+    </div>
+
+    <script src="dist/sunuid-sdk.js"></script>
+    <script>
+        let sunuidInstance = null;
+        
+        function logStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        function initSDK() {
+            try {
+                sunuidInstance = initSunuID({
+                    apiUrl: 'https://sunuid.fayma.sn/api',
+                    clientId: '1754174441_36C4685215935D1F',
+                    secretId: 'e29c66f185c389eedf7a1e8a242aba741cd659deaa6a9f8d50aa2dec98cce49d',
+                    theme: 'light',
+                    onSuccess: function(data) {
+                        console.log('✅ Succès:', data);
+                        logStatus('auth-status', `✅ Authentification réussie: ${JSON.stringify(data)}`, 'success');
+                    },
+                    onError: function(error) {
+                        console.error('❌ Erreur:', error);
+                        logStatus('auth-status', `❌ Erreur: ${error.message}`, 'error');
+                    },
+                    onExpired: function() {
+                        console.log('⏰ QR expiré');
+                        logStatus('auth-status', '⏰ QR code expiré', 'info');
+                    }
+                });
+                
+                logStatus('init-status', '✅ SDK initialisé avec succès', 'success');
+                console.log('SDK initialisé:', sunuidInstance);
+                
+            } catch (error) {
+                logStatus('init-status', `❌ Erreur d'initialisation: ${error.message}`, 'error');
+                console.error('Erreur d\'initialisation:', error);
+            }
+        }
+        
+        async function generateAuthQR() {
+            if (!sunuidInstance) {
+                logStatus('auth-status', '❌ SDK non initialisé. Initialisez d\'abord le SDK.', 'error');
+                return;
+            }
+            
+            try {
+                logStatus('auth-status', '🔄 Génération du QR code d\'authentification...', 'info');
+                
+                const result = await sunuidInstance.generateAuthQR('auth-qr-container', {
+                    theme: 'light',
+                    redirectUrl: 'https://example.com/dashboard'
+                });
+                
+                logStatus('auth-status', '✅ QR code d\'authentification généré avec succès', 'success');
+                console.log('Résultat Auth QR:', result);
+                
+            } catch (error) {
+                logStatus('auth-status', `❌ Erreur de génération: ${error.message}`, 'error');
+                console.error('Erreur Auth QR:', error);
+            }
+        }
+        
+        async function generateKYCQR() {
+            if (!sunuidInstance) {
+                logStatus('kyc-status', '❌ SDK non initialisé. Initialisez d\'abord le SDK.', 'error');
+                return;
+            }
+            
+            try {
+                logStatus('kyc-status', '🔄 Génération du QR code KYC...', 'info');
+                
+                const result = await sunuidInstance.generateKYCQR('kyc-qr-container', {
+                    theme: 'dark',
+                    kycType: 'full',
+                    requiredFields: ['identity', 'address', 'phone']
+                });
+                
+                logStatus('kyc-status', '✅ QR code KYC généré avec succès', 'success');
+                console.log('Résultat KYC QR:', result);
+                
+            } catch (error) {
+                logStatus('kyc-status', `❌ Erreur de génération: ${error.message}`, 'error');
+                console.error('Erreur KYC QR:', error);
+            }
+        }
+        
+        // Test automatique au chargement
+        window.addEventListener('load', function() {
+            console.log('🧪 Test simple chargé');
+            console.log('SDK disponible:', typeof window.SunuID !== 'undefined');
+            console.log('Fonction initSunuID disponible:', typeof window.initSunuID !== 'undefined');
+        });
+    </script>
+</body>
+</html> 
