@@ -63,9 +63,15 @@
                 });
 
                 if (response.success) {
-                    this.displayQRCode(containerId, response.data.qrCodeUrl, 'auth', options);
+                    // Construire l'URL complète de l'image QR
+                    const qrImageUrl = `${this.config.apiUrl}${response.data.qrcode}`;
+                    this.displayQRCode(containerId, qrImageUrl, 'auth', options);
                     this.startAutoRefresh(containerId, 'auth', options);
-                    return response.data;
+                    return {
+                        ...response.data,
+                        qrCodeUrl: qrImageUrl,
+                        sessionId: response.data.service_id
+                    };
                 } else {
                     throw new Error(response.message || 'Erreur lors de la génération du QR code');
                 }
@@ -92,9 +98,15 @@
                 });
 
                 if (response.success) {
-                    this.displayQRCode(containerId, response.data.qrCodeUrl, 'kyc', options);
+                    // Construire l'URL complète de l'image QR
+                    const qrImageUrl = `${this.config.apiUrl}${response.data.qrcode}`;
+                    this.displayQRCode(containerId, qrImageUrl, 'kyc', options);
                     this.startAutoRefresh(containerId, 'kyc', options);
-                    return response.data;
+                    return {
+                        ...response.data,
+                        qrCodeUrl: qrImageUrl,
+                        sessionId: response.data.service_id
+                    };
                 } else {
                     throw new Error(response.message || 'Erreur lors de la génération du QR code KYC');
                 }
@@ -116,11 +128,11 @@
 
             try {
                 const response = await this.makeRequest('/qr-status', {
-                    sessionId: sessionId
+                    serviceId: sessionId
                 });
 
                 if (response.success) {
-                return response.data;
+                    return response.data;
                 } else {
                     throw new Error(response.message || 'Erreur lors de la vérification du statut');
                 }
