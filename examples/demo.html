@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SunuID SDK - Démonstration</title>
+    <link rel="stylesheet" href="css/sunuid-sdk.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .demo-header {
+            background: linear-gradient(135deg, #4caf50, #66bb6a);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .demo-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .demo-header p {
+            margin: 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .demo-content {
+            padding: 40px;
+        }
+        
+        .demo-section {
+            margin-bottom: 40px;
+        }
+        
+        .demo-section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-card {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .demo-card h3 {
+            color: #4caf50;
+            margin-bottom: 16px;
+            font-size: 1.3rem;
+        }
+        
+        .theme-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .theme-btn {
+            padding: 8px 16px;
+            border: 2px solid #4caf50;
+            background: white;
+            color: #4caf50;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-btn.active {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .theme-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        .demo-info {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+        
+        .demo-info h4 {
+            color: #2d3748;
+            margin: 0 0 10px 0;
+        }
+        
+        .demo-info ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .demo-info li {
+            margin-bottom: 5px;
+            color: #4a5568;
+        }
+        
+        .code-example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .demo-header h1 {
+                font-size: 2rem;
+            }
+            
+            .demo-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🔐 SunuID SDK</h1>
+            <p>Démonstration d'intégration des QR codes d'authentification et KYC</p>
+        </div>
+        
+        <div class="demo-content">
+            <!-- Section Authentification -->
+            <div class="demo-section">
+                <h2>🔐 Authentification</h2>
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <h3>QR Code d'Authentification</h3>
+                        <div class="theme-toggle">
+                            <button class="theme-btn active" onclick="switchTheme('auth', 'light')">Thème Clair</button>
+                            <button class="theme-btn" onclick="switchTheme('auth', 'dark')">Thème Sombre</button>
+                        </div>
+                        <div id="auth-qr-container"></div>
+                        <div class="demo-info">
+                            <h4>Fonctionnalités :</h4>
+                            <ul>
+                                <li>Connexion sécurisée avec SunuID</li>
+                                <li>Actualisation automatique</li>
+                                <li>Compte à rebours</li>
+                                <li>Thèmes personnalisables</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="demo-card">
+                        <h3>Code d'Intégration</h3>
+                        <div class="code-example">
+// Initialisation
+const sunuid = initSunuID({
+    apiUrl: 'https://sunuid.sn/api',
+    partnerId: 'VOTRE_PARTNER_ID',
+    clientId: 'VOTRE_CLIENT_ID',
+    secretId: 'VOTRE_SECRET_ID',
+    theme: 'light'
+});
+
+// Générer QR code
+sunuid.generateAuthQR('auth-qr-container', {
+    theme: 'light',
+    redirectUrl: 'https://votre-site.com/dashboard'
+});
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section KYC -->
+            <div class="demo-section">
+                <h2>📋 Vérification KYC</h2>
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <h3>QR Code KYC</h3>
+                        <div class="theme-toggle">
+                            <button class="theme-btn" onclick="switchTheme('kyc', 'light')">Thème Clair</button>
+                            <button class="theme-btn active" onclick="switchTheme('kyc', 'dark')">Thème Sombre</button>
+                        </div>
+                        <div id="kyc-qr-container"></div>
+                        <div class="demo-info">
+                            <h4>Fonctionnalités :</h4>
+                            <ul>
+                                <li>Vérification d'identité</li>
+                                <li>Collecte de documents</li>
+                                <li>Validation automatique</li>
+                                <li>Suivi en temps réel</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="demo-card">
+                        <h3>Code d'Intégration</h3>
+                        <div class="code-example">
+// Générer QR code KYC
+sunuid.generateKYCQR('kyc-qr-container', {
+    theme: 'dark',
+    kycType: 'full',
+    requiredFields: ['identity', 'address', 'phone'],
+    redirectUrl: 'https://votre-site.com/kyc-complete'
+});
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Configuration -->
+            <div class="demo-section">
+                <h2>⚙️ Configuration</h2>
+                <div class="demo-card">
+                    <h3>Options Avancées</h3>
+                    <div class="code-example">
+const config = {
+    apiUrl: 'https://sunuid.sn/api',
+    partnerId: 'VOTRE_PARTNER_ID',
+    clientId: 'VOTRE_CLIENT_ID',
+    secretId: 'VOTRE_SECRET_ID',
+    theme: 'light',           // 'light' ou 'dark'
+    language: 'fr',           // 'fr', 'en', 'ar'
+    autoRefresh: true,        // Actualisation automatique
+    refreshInterval: 30000,   // 30 secondes
+    onSuccess: function(data) {
+        console.log('Succès:', data);
+        window.location.href = '/dashboard';
+    },
+    onError: function(error) {
+        console.error('Erreur:', error);
+    },
+    onExpired: function() {
+        console.log('QR expiré');
+    }
+};
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/sunuid-sdk.js"></script>
+    <script>
+        // Configuration de démonstration
+        const sunuid = initSunuID({
+            apiUrl: 'http://localhost:8000/api',
+            partnerId: '1',
+            clientId: 'test_client_123',
+            secretId: 'test_secret_456',
+            theme: 'light',
+            autoRefresh: true,
+            refreshInterval: 30000,
+            onSuccess: function(data) {
+                console.log('Authentification réussie:', data);
+                alert('Authentification réussie !');
+            },
+            onError: function(error) {
+                console.error('Erreur:', error);
+                alert('Erreur: ' + error.message);
+            },
+            onExpired: function() {
+                console.log('QR code expiré');
+                alert('QR code expiré, actualisation...');
+            }
+        });
+
+        // Générer les QR codes initiaux
+        sunuid.generateAuthQR('auth-qr-container', { theme: 'light' });
+        sunuid.generateKYCQR('kyc-qr-container', { theme: 'dark' });
+
+        // Fonction pour changer de thème
+        function switchTheme(type, theme) {
+            // Mettre à jour les boutons
+            const buttons = document.querySelectorAll(`[onclick*="${type}"]`);
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(theme === 'light' ? 'Clair' : 'Sombre')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Régénérer le QR code avec le nouveau thème
+            if (type === 'auth') {
+                sunuid.generateAuthQR('auth-qr-container', { theme: theme });
+            } else {
+                sunuid.generateKYCQR('kyc-qr-container', { theme: theme });
+            }
+        }
+    </script>
+</body>
+</html> 
