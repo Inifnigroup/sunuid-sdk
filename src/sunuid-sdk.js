@@ -11,7 +11,7 @@
 
     // Configuration par défaut
     const DEFAULT_CONFIG = {
-        apiUrl: window.SunuIDConfig?.apiUrl || 'https://sunuid.fayma.sn/api/auth',
+        apiUrl: window.SunuIDConfig?.apiUrl || 'https://api.sunuid.fayma.sn',
         clientId: null,
         secretId: null,
         theme: 'light',
@@ -174,7 +174,7 @@
                 });
 
                 if (response.success) {
-                    return response.data;
+                return response.data;
                 } else {
                     throw new Error(response.message || 'Erreur lors de la vérification du statut');
                 }
@@ -200,20 +200,20 @@
             const qrElement = document.createElement('div');
             qrElement.className = 'sunuid-qr-code';
             qrElement.innerHTML = `
-                <div class="sunuid-qr-header">
+                    <div class="sunuid-qr-header">
                     <h3>${type === 'auth' ? 'Authentification' : 'Vérification KYC'}</h3>
                     <div class="sunuid-timer">
                         <span>Expire dans: </span>
                         <span id="sunuid-timer">30</span>
                         <span> secondes</span>
                     </div>
-                </div>
+                        </div>
                 <div class="sunuid-qr-image">
                     <img src="${qrUrl}" alt="QR Code SunuID" style="max-width: 300px; height: auto;">
-                </div>
+                    </div>
                 <div class="sunuid-qr-instructions">
                     <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>
-                </div>
+                    </div>
                 <div class="sunuid-qr-status" id="sunuid-status">
                     <p>En attente de scan...</p>
                 </div>

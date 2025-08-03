@@ -197,11 +197,11 @@ function _toPropertyKey(t) {
  * @license MIT
  */
 
-(function (window) {
+(function (window, _window$SunuIDConfig) {
 
   // Configuration par défaut
   var DEFAULT_CONFIG = {
-    apiUrl: 'https://sunuid.fayma.sn/api/auth',
+    apiUrl: ((_window$SunuIDConfig = window.SunuIDConfig) === null || _window$SunuIDConfig === void 0 ? void 0 : _window$SunuIDConfig.apiUrl) || 'https://sunuid.fayma.sn/api/auth',
     clientId: null,
     secretId: null,
     theme: 'light',
@@ -598,11 +598,14 @@ function _toPropertyKey(t) {
       key: "makeRequest",
       value: (function () {
         var _makeRequest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(endpoint, data) {
-          var url, response, errorText, errorData, result, _t7;
+          var _window$SunuIDConfig2;
+          var endpointPath, url, response, errorText, errorData, result, _t7;
           return _regenerator().w(function (_context6) {
             while (1) switch (_context6.p = _context6.n) {
               case 0:
-                url = "".concat(this.config.apiUrl).concat(endpoint);
+                // Utiliser l'endpoint depuis la configuration si disponible
+                endpointPath = ((_window$SunuIDConfig2 = window.SunuIDConfig) === null || _window$SunuIDConfig2 === void 0 || (_window$SunuIDConfig2 = _window$SunuIDConfig2.endpoints) === null || _window$SunuIDConfig2 === void 0 ? void 0 : _window$SunuIDConfig2[endpoint.replace('/', '')]) || endpoint;
+                url = "".concat(this.config.apiUrl).concat(endpointPath);
                 _context6.p = 1;
                 _context6.n = 2;
                 return fetch(url, {

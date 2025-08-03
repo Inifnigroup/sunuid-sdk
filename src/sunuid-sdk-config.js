@@ -9,7 +9,7 @@
 // Configuration par défaut pour le SDK
 window.SunuIDConfig = {
     // URL de l'API
-    apiUrl: 'https://sunuid.fayma.sn/api/auth',
+    apiUrl: 'https://api.sunuid.fayma.sn',
     
     // Endpoints spécifiques
     endpoints: {
