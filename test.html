@@ -125,7 +125,7 @@
             try {
                 // Test avec paramètres valides
                 sunuidInstance = initSunuID({
-                    apiUrl: 'https://sunuid.fayma.sn/api',
+                    apiUrl: 'https://api.sunuid.fayma.sn',
                     clientId: '1754174441_36C4685215935D1F',
                     secretId: 'e29c66f185c389eedf7a1e8a242aba741cd659deaa6a9f8d50aa2dec98cce49d',
                     theme: 'light'
@@ -144,7 +144,7 @@
             try {
                 // Test sans clientId
                 initSunuID({
-                    apiUrl: 'https://sunuid.fayma.sn/api/',
+                    apiUrl: 'https://api.sunuid.fayma.sn',
                     secretId: 'e29c66f185c389eedf7a1e8a242aba741cd659deaa6a9f8d50aa2dec98cce49d'
                 });
                 logResult('validation-result', '❌ La validation devrait échouer sans clientId', 'error');
@@ -159,7 +159,7 @@
             try {
                 // Test sans secretId
                 initSunuID({
-                    apiUrl: 'https://sunuid.fayma.sn/api',
+                    apiUrl: 'https://api.sunuid.fayma.sn',
                     clientId: '1754174441_36C4685215935D1F'
                 });
                 logResult('validation-result', '❌ La validation devrait échouer sans secretId', 'error');

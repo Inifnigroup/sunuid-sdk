@@ -181,7 +181,7 @@
                 log('Test de connectivité en cours...');
                 updateStatus('Test de connectivité...', 'info');
                 
-                const response = await fetch('https://sunuid.fayma.sn/api/auth/debug.php');
+                const response = await fetch('https://api.sunuid.fayma.sn/auth/debug.php');
                 const data = await response.json();
                 
                 if (data.success) {
@@ -207,7 +207,7 @@
                 updateStatus('Test API directe...', 'info');
                 
                 const config = getConfig();
-                const url = 'https://sunuid.fayma.sn/api/auth/qr-generate.php';
+                const url = 'https://api.sunuid.fayma.sn/auth/qr-generate.php';
                 
                 log(`🌐 URL: ${url}`, 'info');
                 log(`🔑 Headers: X-SunuID-Client-ID=${config.clientId}, X-SunuID-Secret-ID=${config.secretId}`, 'info');
@@ -314,7 +314,7 @@
                 const config = getConfig();
                 
                 // Test direct de l'endpoint
-                const response = await fetch('https://sunuid.fayma.sn/api/auth/qr-status.php', {
+                const response = await fetch('https://api.sunuid.fayma.sn/auth/qr-status.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -355,7 +355,7 @@
                 const config = getConfig();
                 
                 // Test direct de l'endpoint
-                const response = await fetch('https://sunuid.fayma.sn/api/auth/qr-confirm.php', {
+                const response = await fetch('https://api.sunuid.fayma.sn/auth/qr-confirm.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -402,7 +402,7 @@
                 
                 // Initialiser le SDK
                 sunuid = window.initSunuID({
-                    apiUrl: 'https://sunuid.fayma.sn/api',
+                    apiUrl: 'https://api.sunuid.fayma.sn',
                     clientId: config.clientId,
                     secretId: config.secretId
                 });
