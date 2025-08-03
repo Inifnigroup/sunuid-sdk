@@ -41,7 +41,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sunuid/sunuid-sdk.git"
+    "url": "git+https://github.com/sunuid/sunuid-sdk.git"
   },
   "bugs": {
     "url": "https://github.com/sunuid/sunuid-sdk/issues"
