@@ -63,8 +63,9 @@
                 });
 
                 if (response.success) {
-                    // Construire l'URL complète de l'image QR
-                    const qrImageUrl = `${this.config.apiUrl}${response.data.qrcode}`;
+                    // Construire l'URL complète de l'image QR avec la base URL pour les images
+                    const imageBaseUrl = 'https://sunuid.fayma.sn';
+                    const qrImageUrl = `${imageBaseUrl}${response.data.qrcode}`;
                     this.displayQRCode(containerId, qrImageUrl, 'auth', options);
                     this.startAutoRefresh(containerId, 'auth', options);
                     return {
@@ -98,8 +99,9 @@
                 });
 
                 if (response.success) {
-                    // Construire l'URL complète de l'image QR
-                    const qrImageUrl = `${this.config.apiUrl}${response.data.qrcode}`;
+                    // Construire l'URL complète de l'image QR avec la base URL pour les images
+                    const imageBaseUrl = 'https://sunuid.fayma.sn';
+                    const qrImageUrl = `${imageBaseUrl}${response.data.qrcode}`;
                     this.displayQRCode(containerId, qrImageUrl, 'kyc', options);
                     this.startAutoRefresh(containerId, 'kyc', options);
                     return {

@@ -253,6 +253,7 @@
           var _generateAuthQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(containerId) {
             var options,
               response,
+              qrImageUrl,
               _args = arguments,
               _t;
             return _regenerator().w(function (_context) {
@@ -276,9 +277,14 @@
                     _context.n = 3;
                     break;
                   }
-                  this.displayQRCode(containerId, response.data.qrCodeUrl, 'auth', options);
+                  // Construire l'URL complète de l'image QR
+                  qrImageUrl = "".concat(this.config.apiUrl).concat(response.data.qrcode);
+                  this.displayQRCode(containerId, qrImageUrl, 'auth', options);
                   this.startAutoRefresh(containerId, 'auth', options);
-                  return _context.a(2, response.data);
+                  return _context.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
+                    qrCodeUrl: qrImageUrl,
+                    sessionId: response.data.service_id
+                  }));
                 case 3:
                   throw new Error(response.message || 'Erreur lors de la génération du QR code');
                 case 4:
@@ -311,6 +317,7 @@
           var _generateKYCQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(containerId) {
             var options,
               response,
+              qrImageUrl,
               _args2 = arguments,
               _t2;
             return _regenerator().w(function (_context2) {
@@ -334,9 +341,14 @@
                     _context2.n = 3;
                     break;
                   }
-                  this.displayQRCode(containerId, response.data.qrCodeUrl, 'kyc', options);
+                  // Construire l'URL complète de l'image QR
+                  qrImageUrl = "".concat(this.config.apiUrl).concat(response.data.qrcode);
+                  this.displayQRCode(containerId, qrImageUrl, 'kyc', options);
                   this.startAutoRefresh(containerId, 'kyc', options);
-                  return _context2.a(2, response.data);
+                  return _context2.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
+                    qrCodeUrl: qrImageUrl,
+                    sessionId: response.data.service_id
+                  }));
                 case 3:
                   throw new Error(response.message || 'Erreur lors de la génération du QR code KYC');
                 case 4:
@@ -380,7 +392,7 @@
                   _context3.p = 1;
                   _context3.n = 2;
                   return this.makeRequest('/qr-status', {
-                    sessionId: sessionId
+                    serviceId: sessionId
                   });
                 case 2:
                   response = _context3.v;
