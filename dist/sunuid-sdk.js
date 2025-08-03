@@ -204,7 +204,7 @@
 
     // Configuration par défaut
     var DEFAULT_CONFIG = {
-      apiUrl: ((_window$SunuIDConfig = window.SunuIDConfig) === null || _window$SunuIDConfig === void 0 ? void 0 : _window$SunuIDConfig.apiUrl) || 'https://sunuid.fayma.sn/api/auth',
+      apiUrl: ((_window$SunuIDConfig = window.SunuIDConfig) === null || _window$SunuIDConfig === void 0 ? void 0 : _window$SunuIDConfig.apiUrl) || 'https://api.sunuid.fayma.sn',
       clientId: null,
       secretId: null,
       theme: 'light',
@@ -480,7 +480,7 @@
           // Créer l'élément QR code
           var qrElement = document.createElement('div');
           qrElement.className = 'sunuid-qr-code';
-          qrElement.innerHTML = "\n                <div class=\"sunuid-qr-header\">\n                    <h3>".concat(type === 'auth' ? 'Authentification' : 'Vérification KYC', "</h3>\n                    <div class=\"sunuid-timer\">\n                        <span>Expire dans: </span>\n                        <span id=\"sunuid-timer\">30</span>\n                        <span> secondes</span>\n                    </div>\n                </div>\n                <div class=\"sunuid-qr-image\">\n                    <img src=\"").concat(qrUrl, "\" alt=\"QR Code SunuID\" style=\"max-width: 300px; height: auto;\">\n                </div>\n                <div class=\"sunuid-qr-instructions\">\n                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>\n                </div>\n                <div class=\"sunuid-qr-status\" id=\"sunuid-status\">\n                    <p>En attente de scan...</p>\n                </div>\n            ");
+          qrElement.innerHTML = "\n                    <div class=\"sunuid-qr-header\">\n                    <h3>".concat(type === 'auth' ? 'Authentification' : 'Vérification KYC', "</h3>\n                    <div class=\"sunuid-timer\">\n                        <span>Expire dans: </span>\n                        <span id=\"sunuid-timer\">30</span>\n                        <span> secondes</span>\n                    </div>\n                        </div>\n                <div class=\"sunuid-qr-image\">\n                    <img src=\"").concat(qrUrl, "\" alt=\"QR Code SunuID\" style=\"max-width: 300px; height: auto;\">\n                    </div>\n                <div class=\"sunuid-qr-instructions\">\n                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>\n                    </div>\n                <div class=\"sunuid-qr-status\" id=\"sunuid-status\">\n                    <p>En attente de scan...</p>\n                </div>\n            ");
           container.appendChild(qrElement);
 
           // Démarrer le timer
