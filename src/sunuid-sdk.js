@@ -12,7 +12,6 @@
     // Configuration par défaut
     const DEFAULT_CONFIG = {
         apiUrl: 'https://sunuid.fayma.sn/api',
-        partnerId: null,
         clientId: null,
         secretId: null,
         theme: 'light',
@@ -41,8 +40,8 @@
          * Initialisation du SDK
          */
         init() {
-            if (!this.config.partnerId || !this.config.clientId || !this.config.secretId) {
-                throw new Error('SunuID: partnerId, clientId et secretId sont requis');
+            if (!this.config.clientId || !this.config.secretId) {
+                throw new Error('SunuID: clientId et secretId sont requis');
             }
 
             this.isInitialized = true;
@@ -237,7 +236,6 @@
                         'Content-Type': 'application/json',
                         'X-SunuID-Client-ID': this.config.clientId,
                         'X-SunuID-Secret-ID': this.config.secretId,
-                        'X-SunuID-Partner-ID': this.config.partnerId,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(data)

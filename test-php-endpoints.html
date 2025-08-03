@@ -88,6 +88,14 @@
             margin-top: 0;
             color: #333;
         }
+        
+        .debug-info {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
@@ -101,10 +109,6 @@
         <!-- Configuration -->
         <div class="config-section">
             <h3>Configuration</h3>
-            <div>
-                <label>Partner ID:</label>
-                <input type="text" id="partnerId" placeholder="Votre Partner ID" value="test_partner">
-            </div>
             <div>
                 <label>Client ID:</label>
                 <input type="text" id="clientId" placeholder="Votre Client ID" value="test_client">
@@ -121,6 +125,7 @@
             <button onclick="testQRGeneration()">Test Génération QR</button>
             <button onclick="testQRStatus()">Test Statut QR</button>
             <button onclick="testQRConfirm()">Test Confirmation QR</button>
+            <button onclick="testDirectAPI()">Test API Directe</button>
             <button onclick="clearLog()">Effacer Log</button>
         </div>
         
@@ -165,7 +170,6 @@
         // Fonction pour obtenir la configuration
         function getConfig() {
             return {
-                partnerId: document.getElementById('partnerId').value,
                 clientId: document.getElementById('clientId').value,
                 secretId: document.getElementById('secretId').value
             };
@@ -191,7 +195,60 @@
                 }
             } catch (error) {
                 log('❌ Erreur de connectivité: ' + error.message, 'error');
+                log('🔍 Détails de l\'erreur: ' + JSON.stringify(error), 'warning');
                 updateStatus('Erreur de connectivité', 'error');
+            }
+        }
+        
+        // Test API directe
+        async function testDirectAPI() {
+            try {
+                log('Test API directe en cours...');
+                updateStatus('Test API directe...', 'info');
+                
+                const config = getConfig();
+                const url = 'https://sunuid.fayma.sn/api/auth/qr-generate.php';
+                
+                log(`🌐 URL: ${url}`, 'info');
+                log(`🔑 Headers: X-SunuID-Client-ID=${config.clientId}, X-SunuID-Secret-ID=${config.secretId}`, 'info');
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-SunuID-Client-ID': config.clientId,
+                        'X-SunuID-Secret-ID': config.secretId
+                    },
+                    body: JSON.stringify({
+                        type: 'auth',
+                        metadata: { test: true }
+                    })
+                });
+                
+                log(`📡 Status: ${response.status} ${response.statusText}`, 'info');
+                
+                const responseText = await response.text();
+                log(`📄 Réponse brute: ${responseText}`, 'info');
+                
+                try {
+                    const data = JSON.parse(responseText);
+                    if (data.success) {
+                        log('✅ API directe fonctionne', 'success');
+                        updateStatus('API directe fonctionne', 'success');
+                    } else {
+                        log('❌ API directe échoue: ' + data.message, 'error');
+                        updateStatus('API directe échoue', 'error');
+                    }
+                } catch (parseError) {
+                    log('❌ Réponse non-JSON: ' + responseText, 'error');
+                    updateStatus('Réponse non-JSON', 'error');
+                }
+                
+            } catch (error) {
+                log('❌ Erreur API directe: ' + error.message, 'error');
+                log('🔍 Type d\'erreur: ' + error.name, 'warning');
+                log('🔍 Stack: ' + error.stack, 'warning');
+                updateStatus('Erreur API directe', 'error');
             }
         }
         
@@ -227,6 +284,10 @@
                 
             } catch (error) {
                 log('❌ Erreur génération QR: ' + error.message, 'error');
+                log('🔍 Type d\'erreur: ' + error.name, 'warning');
+                if (error.stack) {
+                    log('🔍 Stack: ' + error.stack, 'warning');
+                }
                 updateStatus('Erreur génération QR', 'error');
             }
         }
@@ -250,8 +311,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'X-SunuID-Client-ID': config.clientId,
-                        'X-SunuID-Secret-ID': config.secretId,
-                        'X-SunuID-Partner-ID': config.partnerId
+                        'X-SunuID-Secret-ID': config.secretId
                     },
                     body: JSON.stringify({
                         sessionId: currentSessionId
@@ -292,8 +352,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'X-SunuID-Client-ID': config.clientId,
-                        'X-SunuID-Secret-ID': config.secretId,
-                        'X-SunuID-Partner-ID': config.partnerId
+                        'X-SunuID-Secret-ID': config.secretId
                     },
                     body: JSON.stringify({
                         sessionId: currentSessionId,
@@ -320,6 +379,12 @@
         window.onload = function() {
             log('🚀 Initialisation du test SDK...');
             updateStatus('Prêt pour les tests', 'info');
+            
+            // Afficher les informations de débogage
+            log('🔍 Informations de débogage:', 'info');
+            log('User Agent: ' + navigator.userAgent, 'info');
+            log('URL actuelle: ' + window.location.href, 'info');
+            log('SDK chargé: ' + (typeof SunuID !== 'undefined'), 'info');
             
             // Test automatique de connectivité
             setTimeout(testConnectivity, 1000);

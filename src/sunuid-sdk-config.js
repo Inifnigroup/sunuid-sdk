@@ -52,7 +52,7 @@ window.SunuIDConfig = {
     
     // Validation des paramètres
     validation: {
-        requiredFields: ['partnerId', 'clientId', 'secretId'],
+        requiredFields: ['clientId', 'secretId'],
         allowedTypes: ['auth', 'kyc', 'payment', 'verification'],
         maxMetadataSize: 1024 // 1KB
     }

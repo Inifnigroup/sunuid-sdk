@@ -205,6 +205,7 @@
     // Configuration par défaut
     var DEFAULT_CONFIG = {
       apiUrl: 'https://sunuid.fayma.sn/api',
+      partnerId: null,
       clientId: null,
       secretId: null,
       theme: 'light',
@@ -237,8 +238,8 @@
       return _createClass(SunuID, [{
         key: "init",
         value: function init() {
-          if (!this.config.clientId || !this.config.secretId) {
-            throw new Error('SunuID: clientId et secretId sont requis');
+          if (!this.config.partnerId || !this.config.clientId || !this.config.secretId) {
+            throw new Error('SunuID: partnerId, clientId et secretId sont requis');
           }
           this.isInitialized = true;
           console.log('SunuID SDK initialisé avec succès');
@@ -253,9 +254,6 @@
           var _generateAuthQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(containerId) {
             var options,
               response,
-              testData,
-              qrData,
-              qrUrl,
               _args = arguments,
               _t;
             return _regenerator().w(function (_context) {
@@ -279,42 +277,19 @@
                     _context.n = 3;
                     break;
                   }
-                  this.displayQRCode(containerId, response.data.qr_code_url, 'auth', options);
+                  this.displayQRCode(containerId, response.data.qrCodeUrl, 'auth', options);
                   this.startAutoRefresh(containerId, 'auth', options);
                   return _context.a(2, response.data);
                 case 3:
-                  throw new Error(response.message);
+                  throw new Error(response.message || 'Erreur lors de la génération du QR code');
                 case 4:
                   _context.n = 6;
                   break;
                 case 5:
                   _context.p = 5;
                   _t = _context.v;
-                  console.warn('Erreur API détectée, génération d\'un QR code de test:', _t.message);
-                  console.log('Type d\'erreur:', _t.name, 'Message:', _t.message);
-
-                  // En cas d'échec de l'API (CORS, 500, ou autre), générer un QR code de test
-                  testData = _objectSpread2({
-                    type: 'auth',
-                    clientId: this.config.clientId,
-                    timestamp: Date.now(),
-                    sessionId: 'test_' + Math.random().toString(36).substr(2, 9),
-                    apiUrl: this.config.apiUrl,
-                    error: _t.message,
-                    errorType: _t.name
-                  }, options);
-                  qrData = JSON.stringify(testData);
-                  qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=".concat(encodeURIComponent(qrData));
-                  this.displayQRCode(containerId, qrUrl, 'auth', options);
-                  this.startAutoRefresh(containerId, 'auth', options);
-                  return _context.a(2, {
-                    success: true,
-                    data: {
-                      qr_code_url: qrUrl,
-                      qr_id: testData.sessionId,
-                      expires_at: Date.now() + 30000
-                    }
-                  });
+                  this.handleError(_t);
+                  throw _t;
                 case 6:
                   return _context.a(2);
               }
@@ -335,9 +310,6 @@
           var _generateKYCQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(containerId) {
             var options,
               response,
-              testData,
-              qrData,
-              qrUrl,
               _args2 = arguments,
               _t2;
             return _regenerator().w(function (_context2) {
@@ -361,44 +333,19 @@
                     _context2.n = 3;
                     break;
                   }
-                  this.displayQRCode(containerId, response.data.qr_code_url, 'kyc', options);
+                  this.displayQRCode(containerId, response.data.qrCodeUrl, 'kyc', options);
                   this.startAutoRefresh(containerId, 'kyc', options);
                   return _context2.a(2, response.data);
                 case 3:
-                  throw new Error(response.message);
+                  throw new Error(response.message || 'Erreur lors de la génération du QR code KYC');
                 case 4:
                   _context2.n = 6;
                   break;
                 case 5:
                   _context2.p = 5;
                   _t2 = _context2.v;
-                  console.warn('Erreur API détectée, génération d\'un QR code de test:', _t2.message);
-                  console.log('Type d\'erreur:', _t2.name, 'Message:', _t2.message);
-
-                  // En cas d'échec de l'API (CORS, 500, ou autre), générer un QR code de test
-                  testData = _objectSpread2({
-                    type: 'kyc',
-                    clientId: this.config.clientId,
-                    timestamp: Date.now(),
-                    sessionId: 'test_' + Math.random().toString(36).substr(2, 9),
-                    kycType: options.kycType || 'full',
-                    requiredFields: options.requiredFields || ['identity', 'address', 'phone'],
-                    apiUrl: this.config.apiUrl,
-                    error: _t2.message,
-                    errorType: _t2.name
-                  }, options);
-                  qrData = JSON.stringify(testData);
-                  qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=".concat(encodeURIComponent(qrData));
-                  this.displayQRCode(containerId, qrUrl, 'kyc', options);
-                  this.startAutoRefresh(containerId, 'kyc', options);
-                  return _context2.a(2, {
-                    success: true,
-                    data: {
-                      qr_code_url: qrUrl,
-                      qr_id: testData.sessionId,
-                      expires_at: Date.now() + 30000
-                    }
-                  });
+                  this.handleError(_t2);
+                  throw _t2;
                 case 6:
                   return _context2.a(2);
               }
@@ -416,28 +363,43 @@
       }, {
         key: "checkQRStatus",
         value: (function () {
-          var _checkQRStatus = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(qrId) {
+          var _checkQRStatus = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(sessionId) {
             var response, _t3;
             return _regenerator().w(function (_context3) {
               while (1) switch (_context3.p = _context3.n) {
                 case 0:
-                  _context3.p = 0;
-                  _context3.n = 1;
-                  return this.makeRequest('/auth/qr-status.php', {
-                    qr_id: qrId
-                  });
+                  if (this.isInitialized) {
+                    _context3.n = 1;
+                    break;
+                  }
+                  throw new Error('SunuID: SDK non initialisé');
                 case 1:
-                  response = _context3.v;
-                  return _context3.a(2, response.data);
+                  _context3.p = 1;
+                  _context3.n = 2;
+                  return this.makeRequest('/auth/qr-status.php', {
+                    sessionId: sessionId
+                  });
                 case 2:
-                  _context3.p = 2;
+                  response = _context3.v;
+                  if (!response.success) {
+                    _context3.n = 3;
+                    break;
+                  }
+                  return _context3.a(2, response.data);
+                case 3:
+                  throw new Error(response.message || 'Erreur lors de la vérification du statut');
+                case 4:
+                  _context3.n = 6;
+                  break;
+                case 5:
+                  _context3.p = 5;
                   _t3 = _context3.v;
                   this.handleError(_t3);
                   throw _t3;
-                case 3:
+                case 6:
                   return _context3.a(2);
               }
-            }, _callee3, this, [[0, 2]]);
+            }, _callee3, this, [[1, 5]]);
           }));
           function checkQRStatus(_x3) {
             return _checkQRStatus.apply(this, arguments);
@@ -445,7 +407,7 @@
           return checkQRStatus;
         }()
         /**
-         * Afficher le QR code dans le conteneur
+         * Afficher un QR code dans un conteneur
          */
         )
       }, {
@@ -456,28 +418,35 @@
           if (!container) {
             throw new Error("Conteneur avec l'ID \"".concat(containerId, "\" non trouv\xE9"));
           }
-          var theme = options.theme || this.config.theme;
-          options.language || this.config.language;
-          container.innerHTML = "\n                <div class=\"sunuid-qr-container sunuid-theme-".concat(theme, "\">\n                    <div class=\"sunuid-qr-header\">\n                        <h3 class=\"sunuid-qr-title\">\n                            ").concat(type === 'auth' ? '🔐 Authentification' : '📋 Vérification KYC', "\n                        </h3>\n                        <p class=\"sunuid-qr-subtitle\">\n                            ").concat(type === 'auth' ? 'Scannez ce QR code avec l\'application SunuID pour vous connecter' : 'Scannez ce QR code avec l\'application SunuID pour compléter votre profil', "\n                        </p>\n                    </div>\n                    <div class=\"sunuid-qr-code\">\n                        <img src=\"").concat(qrUrl, "\" alt=\"QR Code SunuID\" class=\"sunuid-qr-image\">\n                        <div class=\"sunuid-qr-overlay\">\n                            <div class=\"sunuid-qr-spinner\"></div>\n                        </div>\n                    </div>\n                    <div class=\"sunuid-qr-footer\">\n                        <p class=\"sunuid-qr-timer\">\n                            <i class=\"fa-solid fa-clock\"></i>\n                            <span id=\"sunuid-timer\">30</span> secondes\n                        </p>\n                        <button class=\"sunuid-qr-refresh\" onclick=\"sunuidInstance.refreshQR('").concat(containerId, "', '").concat(type, "', ").concat(JSON.stringify(options), ")\">\n                            <i class=\"fa-solid fa-sync-alt\"></i>\n                            Actualiser\n                        </button>\n                    </div>\n                </div>\n            ");
-          this.qrCode = {
-            containerId: containerId,
-            type: type,
-            options: options,
-            qrUrl: qrUrl
-          };
+
+          // Nettoyer le conteneur
+          container.innerHTML = '';
+
+          // Créer l'élément QR code
+          var qrElement = document.createElement('div');
+          qrElement.className = 'sunuid-qr-code';
+          qrElement.innerHTML = "\n                <div class=\"sunuid-qr-header\">\n                    <h3>".concat(type === 'auth' ? 'Authentification' : 'Vérification KYC', "</h3>\n                    <div class=\"sunuid-timer\">\n                        <span>Expire dans: </span>\n                        <span id=\"sunuid-timer\">30</span>\n                        <span> secondes</span>\n                    </div>\n                </div>\n                <div class=\"sunuid-qr-image\">\n                    <img src=\"").concat(qrUrl, "\" alt=\"QR Code SunuID\" style=\"max-width: 300px; height: auto;\">\n                </div>\n                <div class=\"sunuid-qr-instructions\">\n                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>\n                </div>\n                <div class=\"sunuid-qr-status\" id=\"sunuid-status\">\n                    <p>En attente de scan...</p>\n                </div>\n            ");
+          container.appendChild(qrElement);
+
+          // Démarrer le timer
           this.startTimer();
+
+          // Appliquer le thème
+          this.applyTheme(options.theme || this.config.theme);
         }
 
         /**
-         * Actualiser le QR code
+         * Rafraîchir un QR code
          */
       }, {
         key: "refreshQR",
         value: (function () {
           var _refreshQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(containerId, type) {
             var options,
+              result,
               _args4 = arguments,
-              _t4;
+              _t4,
+              _t5;
             return _regenerator().w(function (_context4) {
               while (1) switch (_context4.p = _context4.n) {
                 case 0:
@@ -490,22 +459,26 @@
                   _context4.n = 2;
                   return this.generateAuthQR(containerId, options);
                 case 2:
-                  _context4.n = 4;
+                  _t4 = _context4.v;
+                  _context4.n = 5;
                   break;
                 case 3:
                   _context4.n = 4;
                   return this.generateKYCQR(containerId, options);
                 case 4:
-                  _context4.n = 6;
-                  break;
-                case 5:
-                  _context4.p = 5;
                   _t4 = _context4.v;
-                  this.handleError(_t4);
+                case 5:
+                  result = _t4;
+                  return _context4.a(2, result);
                 case 6:
+                  _context4.p = 6;
+                  _t5 = _context4.v;
+                  this.handleError(_t5);
+                  throw _t5;
+                case 7:
                   return _context4.a(2);
               }
-            }, _callee4, this, [[1, 5]]);
+            }, _callee4, this, [[1, 6]]);
           }));
           function refreshQR(_x4, _x5) {
             return _refreshQR.apply(this, arguments);
@@ -513,7 +486,7 @@
           return refreshQR;
         }()
         /**
-         * Démarrer le timer de rafraîchissement automatique
+         * Démarrer le rafraîchissement automatique
          */
         )
       }, {
@@ -522,7 +495,7 @@
           var _this = this;
           if (!this.config.autoRefresh) return;
           this.refreshTimer = setInterval(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5() {
-            var _t5;
+            var _t6;
             return _regenerator().w(function (_context5) {
               while (1) switch (_context5.p = _context5.n) {
                 case 0:
@@ -534,8 +507,8 @@
                   break;
                 case 2:
                   _context5.p = 2;
-                  _t5 = _context5.v;
-                  console.warn('Erreur lors du rafraîchissement automatique:', _t5);
+                  _t6 = _context5.v;
+                  console.warn('Erreur lors du rafraîchissement automatique:', _t6);
                 case 3:
                   return _context5.a(2);
               }
@@ -573,55 +546,57 @@
         key: "makeRequest",
         value: (function () {
           var _makeRequest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(endpoint, data) {
-            var url, requestData, response, _t6;
+            var url, response, errorText, errorData, result, _t7;
             return _regenerator().w(function (_context6) {
               while (1) switch (_context6.p = _context6.n) {
                 case 0:
-                  url = "".concat(this.config.apiUrl).concat(endpoint); // Préparer les données avec les identifiants
-                  requestData = _objectSpread2(_objectSpread2({}, data), {}, {
-                    client_id: this.config.clientId,
-                    secret_id: this.config.secretId
-                  });
+                  url = "".concat(this.config.apiUrl).concat(endpoint);
                   _context6.p = 1;
                   _context6.n = 2;
                   return fetch(url, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
+                      'X-SunuID-Client-ID': this.config.clientId,
+                      'X-SunuID-Secret-ID': this.config.secretId,
+                      'X-SunuID-Partner-ID': this.config.partnerId,
                       'Accept': 'application/json'
                     },
-                    body: JSON.stringify(requestData)
+                    body: JSON.stringify(data)
                   });
                 case 2:
                   response = _context6.v;
                   if (response.ok) {
-                    _context6.n = 3;
+                    _context6.n = 4;
                     break;
                   }
-                  console.warn("Erreur HTTP ".concat(response.status, ": ").concat(response.statusText));
-                  throw new Error("Erreur HTTP: ".concat(response.status, " - ").concat(response.statusText));
+                  _context6.n = 3;
+                  return response.text();
                 case 3:
-                  _context6.n = 4;
-                  return response.json();
-                case 4:
-                  return _context6.a(2, _context6.v);
-                case 5:
-                  _context6.p = 5;
-                  _t6 = _context6.v;
-                  if (!(_t6.name === 'TypeError' && _t6.message.includes('CORS'))) {
-                    _context6.n = 6;
-                    break;
+                  errorText = _context6.v;
+                  try {
+                    errorData = JSON.parse(errorText);
+                  } catch (e) {
+                    errorData = {
+                      message: errorText
+                    };
                   }
-                  console.warn('Erreur CORS détectée, utilisation de QR codes de test');
-                  throw new Error('CORS_ERROR');
+                  throw new Error(errorData.message || "Erreur HTTP: ".concat(response.status));
+                case 4:
+                  _context6.n = 5;
+                  return response.json();
+                case 5:
+                  result = _context6.v;
+                  return _context6.a(2, result);
                 case 6:
-                  // Pour toutes les autres erreurs (500, 404, etc.)
-                  console.warn('Erreur API détectée:', _t6.message);
-                  throw _t6;
+                  _context6.p = 6;
+                  _t7 = _context6.v;
+                  console.error('Erreur API SunuID:', _t7);
+                  throw _t7;
                 case 7:
                   return _context6.a(2);
               }
-            }, _callee6, this, [[1, 5]]);
+            }, _callee6, this, [[1, 6]]);
           }));
           function makeRequest(_x6, _x7) {
             return _makeRequest.apply(this, arguments);
@@ -629,9 +604,21 @@
           return makeRequest;
         }()
         /**
-         * Gérer les erreurs
+         * Appliquer le thème
          */
         )
+      }, {
+        key: "applyTheme",
+        value: function applyTheme(theme) {
+          var container = document.querySelector('.sunuid-qr-code');
+          if (container) {
+            container.className = "sunuid-qr-code sunuid-theme-".concat(theme);
+          }
+        }
+
+        /**
+         * Gérer les erreurs
+         */
       }, {
         key: "handleError",
         value: function handleError(error) {
