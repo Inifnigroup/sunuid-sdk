@@ -5,10 +5,10 @@
   "description": "SDK JavaScript pour l'intégration des QR codes d'authentification et KYC SunuID",
   "main": "dist/sunuid-sdk.js",
   "module": "dist/sunuid-sdk.esm.js",
-  "types": "dist/sunuid-sdk.d.ts",
+  "unpkg": "dist/sunuid-sdk.min.js",
+  "jsdelivr": "dist/sunuid-sdk.min.js",
   "files": [
     "dist",
-    "src",
     "README.md",
     "LICENSE"
   ],
@@ -19,6 +19,7 @@
     "lint": "eslint src/**/*.js",
     "format": "prettier --write src/**/*.js",
     "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
     "serve": "python3 -m http.server 8080",
     "demo": "open http://localhost:8080/examples/demo.html"
   },

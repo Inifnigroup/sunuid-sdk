@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Simple QR Code</title>
+    <title>Test CORS - QR Codes SunuID</title>
     <link rel="stylesheet" href="src/sunuid-sdk.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -62,10 +62,28 @@
             color: #0c5460;
             border: 1px solid #bee5eb;
         }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .cors-info {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
-    <h1>🧪 Test Simple - QR Codes SunuID</h1>
+    <h1>🧪 Test CORS - QR Codes SunuID</h1>
+    
+    <div class="cors-info">
+        <h3>ℹ️ Information CORS</h3>
+        <p>Ce test vérifie que les QR codes apparaissent même en cas d'erreur CORS.</p>
+        <p><strong>Attendu :</strong> Les QR codes de test devraient apparaître automatiquement si l'API retourne une erreur CORS.</p>
+    </div>
     
     <div class="container">
         <h2>Test d'initialisation</h2>
@@ -104,7 +122,7 @@
             try {
                 // Vérifier que le SDK est chargé
                 if (typeof window.initSunuID === 'undefined') {
-                    logStatus('init-status', '❌ SDK non chargé. Vérifiez que le fichier dist/sunuid-sdk.js existe.', 'error');
+                    logStatus('init-status', '❌ SDK non chargé. Vérifiez que le fichier src/sunuid-sdk.js existe.', 'error');
                     return;
                 }
                 
@@ -119,7 +137,11 @@
                     },
                     onError: function(error) {
                         console.error('❌ Erreur:', error);
-                        logStatus('auth-status', `❌ Erreur: ${error.message}`, 'error');
+                        if (error.message.includes('CORS')) {
+                            logStatus('auth-status', `⚠️ Erreur CORS détectée, QR code de test généré: ${error.message}`, 'warning');
+                        } else {
+                            logStatus('auth-status', `❌ Erreur: ${error.message}`, 'error');
+                        }
                     },
                     onExpired: function() {
                         console.log('⏰ QR expiré');
@@ -143,7 +165,7 @@
             }
             
             try {
-                logStatus('auth-status', '🔄 Génération du QR code d\'authentification...', 'info');
+                logStatus('auth-status', '🔄 Tentative de génération du QR code d\'authentification...', 'info');
                 
                 const result = await sunuidInstance.generateAuthQR('auth-qr-container', {
                     theme: 'light',
@@ -154,7 +176,11 @@
                 console.log('Résultat Auth QR:', result);
                 
             } catch (error) {
-                logStatus('auth-status', `❌ Erreur de génération: ${error.message}`, 'error');
+                if (error.message.includes('CORS')) {
+                    logStatus('auth-status', `⚠️ Erreur CORS, QR code de test généré: ${error.message}`, 'warning');
+                } else {
+                    logStatus('auth-status', `❌ Erreur de génération: ${error.message}`, 'error');
+                }
                 console.error('Erreur Auth QR:', error);
             }
         }
@@ -166,7 +192,7 @@
             }
             
             try {
-                logStatus('kyc-status', '🔄 Génération du QR code KYC...', 'info');
+                logStatus('kyc-status', '🔄 Tentative de génération du QR code KYC...', 'info');
                 
                 const result = await sunuidInstance.generateKYCQR('kyc-qr-container', {
                     theme: 'dark',
@@ -178,20 +204,24 @@
                 console.log('Résultat KYC QR:', result);
                 
             } catch (error) {
-                logStatus('kyc-status', `❌ Erreur de génération: ${error.message}`, 'error');
+                if (error.message.includes('CORS')) {
+                    logStatus('kyc-status', `⚠️ Erreur CORS, QR code de test généré: ${error.message}`, 'warning');
+                } else {
+                    logStatus('kyc-status', `❌ Erreur de génération: ${error.message}`, 'error');
+                }
                 console.error('Erreur KYC QR:', error);
             }
         }
         
         // Test automatique au chargement
         window.addEventListener('load', function() {
-            console.log('🧪 Test simple chargé');
+            console.log('🧪 Test CORS chargé');
             console.log('SDK disponible:', typeof window.SunuID !== 'undefined');
             console.log('Fonction initSunuID disponible:', typeof window.initSunuID !== 'undefined');
             
             // Vérifier que le SDK est chargé
             if (typeof window.initSunuID === 'undefined') {
-                logStatus('init-status', '❌ SDK non chargé. Vérifiez que le fichier dist/sunuid-sdk.js existe et est accessible.', 'error');
+                logStatus('init-status', '❌ SDK non chargé. Vérifiez que le fichier src/sunuid-sdk.js existe et est accessible.', 'error');
             } else {
                 logStatus('init-status', '✅ SDK chargé avec succès. Cliquez sur "Initialiser le SDK" pour commencer.', 'success');
             }

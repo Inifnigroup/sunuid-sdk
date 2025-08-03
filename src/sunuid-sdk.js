@@ -71,15 +71,18 @@
                     throw new Error(response.message);
                 }
             } catch (error) {
-                console.warn('Erreur API, génération d\'un QR code de test:', error.message);
+                console.warn('Erreur API détectée, génération d\'un QR code de test:', error.message);
+                console.log('Type d\'erreur:', error.name, 'Message:', error.message);
                 
-                // En cas d'échec de l'API, générer un QR code de test
+                // En cas d'échec de l'API (CORS, 500, ou autre), générer un QR code de test
                 const testData = {
                     type: 'auth',
                     clientId: this.config.clientId,
                     timestamp: Date.now(),
                     sessionId: 'test_' + Math.random().toString(36).substr(2, 9),
                     apiUrl: this.config.apiUrl,
+                    error: error.message,
+                    errorType: error.name,
                     ...options
                 };
                 
@@ -123,9 +126,10 @@
                     throw new Error(response.message);
                 }
             } catch (error) {
-                console.warn('Erreur API, génération d\'un QR code de test:', error.message);
+                console.warn('Erreur API détectée, génération d\'un QR code de test:', error.message);
+                console.log('Type d\'erreur:', error.name, 'Message:', error.message);
                 
-                // En cas d'échec de l'API, générer un QR code de test
+                // En cas d'échec de l'API (CORS, 500, ou autre), générer un QR code de test
                 const testData = {
                     type: 'kyc',
                     clientId: this.config.clientId,
@@ -134,6 +138,8 @@
                     kycType: options.kycType || 'full',
                     requiredFields: options.requiredFields || ['identity', 'address', 'phone'],
                     apiUrl: this.config.apiUrl,
+                    error: error.message,
+                    errorType: error.name,
                     ...options
                 };
                 
@@ -282,21 +288,39 @@
         async makeRequest(endpoint, data) {
             const url = `${this.config.apiUrl}${endpoint}`;
             
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-SunuID-Client-ID': this.config.clientId,
-                    'X-SunuID-Secret-ID': this.config.secretId
-                },
-                body: JSON.stringify(data)
-            });
+            // Préparer les données avec les identifiants
+            const requestData = {
+                ...data,
+                client_id: this.config.clientId,
+                secret_id: this.config.secretId
+            };
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
 
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP: ${response.status}`);
+                if (!response.ok) {
+                    console.warn(`Erreur HTTP ${response.status}: ${response.statusText}`);
+                    throw new Error(`Erreur HTTP: ${response.status} - ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                // Si c'est une erreur CORS, on la gère spécifiquement
+                if (error.name === 'TypeError' && error.message.includes('CORS')) {
+                    console.warn('Erreur CORS détectée, utilisation de QR codes de test');
+                    throw new Error('CORS_ERROR');
+                }
+                // Pour toutes les autres erreurs (500, 404, etc.)
+                console.warn('Erreur API détectée:', error.message);
+                throw error;
             }
-
-            return await response.json();
         }
 
         /**

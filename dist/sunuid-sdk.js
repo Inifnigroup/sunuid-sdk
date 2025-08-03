@@ -290,15 +290,18 @@
                 case 5:
                   _context.p = 5;
                   _t = _context.v;
-                  console.warn('Erreur API, génération d\'un QR code de test:', _t.message);
+                  console.warn('Erreur API détectée, génération d\'un QR code de test:', _t.message);
+                  console.log('Type d\'erreur:', _t.name, 'Message:', _t.message);
 
-                  // En cas d'échec de l'API, générer un QR code de test
+                  // En cas d'échec de l'API (CORS, 500, ou autre), générer un QR code de test
                   testData = _objectSpread2({
                     type: 'auth',
                     clientId: this.config.clientId,
                     timestamp: Date.now(),
                     sessionId: 'test_' + Math.random().toString(36).substr(2, 9),
-                    apiUrl: this.config.apiUrl
+                    apiUrl: this.config.apiUrl,
+                    error: _t.message,
+                    errorType: _t.name
                   }, options);
                   qrData = JSON.stringify(testData);
                   qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=".concat(encodeURIComponent(qrData));
@@ -369,9 +372,10 @@
                 case 5:
                   _context2.p = 5;
                   _t2 = _context2.v;
-                  console.warn('Erreur API, génération d\'un QR code de test:', _t2.message);
+                  console.warn('Erreur API détectée, génération d\'un QR code de test:', _t2.message);
+                  console.log('Type d\'erreur:', _t2.name, 'Message:', _t2.message);
 
-                  // En cas d'échec de l'API, générer un QR code de test
+                  // En cas d'échec de l'API (CORS, 500, ou autre), générer un QR code de test
                   testData = _objectSpread2({
                     type: 'kyc',
                     clientId: this.config.clientId,
@@ -379,7 +383,9 @@
                     sessionId: 'test_' + Math.random().toString(36).substr(2, 9),
                     kycType: options.kycType || 'full',
                     requiredFields: options.requiredFields || ['identity', 'address', 'phone'],
-                    apiUrl: this.config.apiUrl
+                    apiUrl: this.config.apiUrl,
+                    error: _t2.message,
+                    errorType: _t2.name
                   }, options);
                   qrData = JSON.stringify(testData);
                   qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=".concat(encodeURIComponent(qrData));
@@ -567,35 +573,55 @@
         key: "makeRequest",
         value: (function () {
           var _makeRequest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(endpoint, data) {
-            var url, response;
+            var url, requestData, response, _t6;
             return _regenerator().w(function (_context6) {
-              while (1) switch (_context6.n) {
+              while (1) switch (_context6.p = _context6.n) {
                 case 0:
-                  url = "".concat(this.config.apiUrl).concat(endpoint);
-                  _context6.n = 1;
+                  url = "".concat(this.config.apiUrl).concat(endpoint); // Préparer les données avec les identifiants
+                  requestData = _objectSpread2(_objectSpread2({}, data), {}, {
+                    client_id: this.config.clientId,
+                    secret_id: this.config.secretId
+                  });
+                  _context6.p = 1;
+                  _context6.n = 2;
                   return fetch(url, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      'X-SunuID-Client-ID': this.config.clientId,
-                      'X-SunuID-Secret-ID': this.config.secretId
+                      'Accept': 'application/json'
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(requestData)
                   });
-                case 1:
+                case 2:
                   response = _context6.v;
                   if (response.ok) {
-                    _context6.n = 2;
+                    _context6.n = 3;
                     break;
                   }
-                  throw new Error("Erreur HTTP: ".concat(response.status));
-                case 2:
-                  _context6.n = 3;
-                  return response.json();
+                  console.warn("Erreur HTTP ".concat(response.status, ": ").concat(response.statusText));
+                  throw new Error("Erreur HTTP: ".concat(response.status, " - ").concat(response.statusText));
                 case 3:
+                  _context6.n = 4;
+                  return response.json();
+                case 4:
                   return _context6.a(2, _context6.v);
+                case 5:
+                  _context6.p = 5;
+                  _t6 = _context6.v;
+                  if (!(_t6.name === 'TypeError' && _t6.message.includes('CORS'))) {
+                    _context6.n = 6;
+                    break;
+                  }
+                  console.warn('Erreur CORS détectée, utilisation de QR codes de test');
+                  throw new Error('CORS_ERROR');
+                case 6:
+                  // Pour toutes les autres erreurs (500, 404, etc.)
+                  console.warn('Erreur API détectée:', _t6.message);
+                  throw _t6;
+                case 7:
+                  return _context6.a(2);
               }
-            }, _callee6, this);
+            }, _callee6, this, [[1, 5]]);
           }));
           function makeRequest(_x6, _x7) {
             return _makeRequest.apply(this, arguments);

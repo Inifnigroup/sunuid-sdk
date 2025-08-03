@@ -1,0 +1,38 @@
+# Source files (not needed in npm package)
+src/
+
+# Development files
+node_modules/
+.git/
+.gitignore
+.babelrc
+rollup.config.js
+package-lock.json
+
+# Test files
+test.html
+simple-test.html
+test-sdk.js
+TEST_REPORT.md
+
+# Development server
+.serve/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts (will be regenerated)
+dist/*.map 
