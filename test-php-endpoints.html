@@ -140,7 +140,7 @@
     </div>
 
     <!-- Inclure le SDK -->
-    <script src="src/sunuid-sdk.js"></script>
+    <script src="src/sunuid-sdk.js?v=1.0.12"></script>
     
     <script>
         let sunuid = null;
@@ -278,17 +278,11 @@
                     }
                 });
                 
-                if (result.fallback) {
-                    log('⚠️ QR Code de test généré (API non accessible)', 'warning');
-                    log('Session ID: ' + result.sessionId, 'warning');
-                    log('Erreur API: ' + result.error, 'warning');
-                } else {
-                    log('✅ QR Code généré avec succès', 'success');
-                    log('Session ID: ' + result.sessionId, 'success');
-                }
+                log('✅ QR Code généré avec succès', 'success');
+                log('Session ID: ' + result.sessionId, 'success');
                 currentSessionId = result.sessionId;
                 
-                updateStatus(result.fallback ? 'QR Code de test généré' : 'QR Code généré avec succès', result.fallback ? 'warning' : 'success');
+                updateStatus('QR Code généré avec succès', 'success');
                 
             } catch (error) {
                 log('❌ Erreur génération QR: ' + error.message, 'error');

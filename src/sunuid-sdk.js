@@ -71,6 +71,7 @@
                 }
             } catch (error) {
                 console.error('Erreur API détectée:', error.message);
+                console.log('Affichage du message "Service non disponible" pour auth');
                 this.displayServiceUnavailable(containerId, 'auth');
                 throw new Error('Service non disponible');
             }
@@ -99,6 +100,7 @@
                 }
             } catch (error) {
                 console.error('Erreur API détectée:', error.message);
+                console.log('Affichage du message "Service non disponible" pour kyc');
                 this.displayServiceUnavailable(containerId, 'kyc');
                 throw new Error('Service non disponible');
             }
@@ -176,6 +178,7 @@
          * Afficher "Service non disponible"
          */
         displayServiceUnavailable(containerId, type) {
+            console.log(`displayServiceUnavailable appelée pour ${containerId}, type: ${type}`);
             const container = document.getElementById(containerId);
             if (!container) {
                 console.error(`Container ${containerId} non trouvé`);
