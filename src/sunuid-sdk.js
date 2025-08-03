@@ -70,37 +70,9 @@
                     throw new Error(response.message || 'Erreur lors de la génération du QR code');
                 }
             } catch (error) {
-                console.warn('Erreur API détectée, génération d\'un QR code de test:', error.message);
-                
-                // En cas d'échec de l'API (CORS, 500, ou autre), générer un QR code de test
-                const testData = {
-                    type: 'auth',
-                    clientId: this.config.clientId,
-                    timestamp: Date.now(),
-                    sessionId: 'test_' + Math.random().toString(36).substr(2, 9),
-                    apiUrl: this.config.apiUrl,
-                    error: error.message,
-                    errorType: error.name,
-                    fallback: true,
-                    ...options
-                };
-                
-                const qrData = JSON.stringify(testData);
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}`;
-                
-                this.displayQRCode(containerId, qrUrl, 'auth', options);
-                this.startAutoRefresh(containerId, 'auth', options);
-                
-                return {
-                    success: true,
-                    data: {
-                        sessionId: testData.sessionId,
-                        qrCodeUrl: qrUrl,
-                        expires: Date.now() + 30000,
-                        type: 'auth',
-                        fallback: true
-                    }
-                };
+                console.error('Erreur API détectée:', error.message);
+                this.displayServiceUnavailable(containerId, 'auth');
+                throw new Error('Service non disponible');
             }
         }
 
@@ -126,37 +98,9 @@
                     throw new Error(response.message || 'Erreur lors de la génération du QR code KYC');
                 }
             } catch (error) {
-                console.warn('Erreur API détectée, génération d\'un QR code KYC de test:', error.message);
-                
-                // En cas d'échec de l'API, générer un QR code de test
-                const testData = {
-                    type: 'kyc',
-                    clientId: this.config.clientId,
-                    timestamp: Date.now(),
-                    sessionId: 'test_' + Math.random().toString(36).substr(2, 9),
-                    apiUrl: this.config.apiUrl,
-                    error: error.message,
-                    errorType: error.name,
-                    fallback: true,
-                    ...options
-                };
-                
-                const qrData = JSON.stringify(testData);
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrData)}`;
-                
-                this.displayQRCode(containerId, qrUrl, 'kyc', options);
-                this.startAutoRefresh(containerId, 'kyc', options);
-                
-                return {
-                    success: true,
-                    data: {
-                        sessionId: testData.sessionId,
-                        qrCodeUrl: qrUrl,
-                        expires: Date.now() + 30000,
-                        type: 'kyc',
-                        fallback: true
-                    }
-                };
+                console.error('Erreur API détectée:', error.message);
+                this.displayServiceUnavailable(containerId, 'kyc');
+                throw new Error('Service non disponible');
             }
         }
 
@@ -229,6 +173,39 @@
         }
 
         /**
+         * Afficher "Service non disponible"
+         */
+        displayServiceUnavailable(containerId, type) {
+            const container = document.getElementById(containerId);
+            if (!container) {
+                console.error(`Container ${containerId} non trouvé`);
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="sunuid-service-unavailable" style="
+                    text-align: center;
+                    padding: 40px 20px;
+                    background: #f8f9fa;
+                    border: 2px dashed #dee2e6;
+                    border-radius: 10px;
+                    color: #6c757d;
+                    font-family: Arial, sans-serif;
+                ">
+                    <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                    <h3 style="margin: 0 0 10px 0; color: #495057;">Service Non Disponible</h3>
+                    <p style="margin: 0; font-size: 14px;">
+                        Le service d'authentification est temporairement indisponible.<br>
+                        Veuillez réessayer plus tard.
+                    </p>
+                    <div style="margin-top: 20px; font-size: 12px; color: #adb5bd;">
+                        Type: ${type.toUpperCase()}
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
          * Rafraîchir un QR code
          */
         async refreshQR(containerId, type, options = {}) {
@@ -239,7 +216,8 @@
                 
                 return result;
             } catch (error) {
-                this.handleError(error);
+                console.error('Erreur lors du rafraîchissement:', error.message);
+                this.displayServiceUnavailable(containerId, type);
                 throw error;
             }
         }
