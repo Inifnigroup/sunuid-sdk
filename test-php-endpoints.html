@@ -276,11 +276,17 @@
                     }
                 });
                 
-                log('✅ QR Code généré avec succès', 'success');
-                log('Session ID: ' + result.sessionId, 'success');
+                if (result.fallback) {
+                    log('⚠️ QR Code de test généré (API non accessible)', 'warning');
+                    log('Session ID: ' + result.sessionId, 'warning');
+                    log('Erreur API: ' + result.error, 'warning');
+                } else {
+                    log('✅ QR Code généré avec succès', 'success');
+                    log('Session ID: ' + result.sessionId, 'success');
+                }
                 currentSessionId = result.sessionId;
                 
-                updateStatus('QR Code généré avec succès', 'success');
+                updateStatus(result.fallback ? 'QR Code de test généré' : 'QR Code généré avec succès', result.fallback ? 'warning' : 'success');
                 
             } catch (error) {
                 log('❌ Erreur génération QR: ' + error.message, 'error');
