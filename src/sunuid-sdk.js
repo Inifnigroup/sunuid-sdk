@@ -19,8 +19,7 @@
         autoRefresh: true,
         refreshInterval: 30000, // 30 secondes
         onSuccess: null,
-        onError: null,
-        onExpired: null
+        onError: null
     };
 
     /**
@@ -162,12 +161,7 @@
             qrElement.innerHTML = `
                     <div class="sunuid-qr-header">
                     <h3>${type === 'auth' ? 'Authentification' : 'Vérification KYC'}</h3>
-                    <div class="sunuid-timer">
-                        <span>Expire dans: </span>
-                        <span id="sunuid-timer">30</span>
-                        <span> secondes</span>
                     </div>
-                        </div>
                 <div class="sunuid-qr-image">
                     <img src="${qrUrl}" alt="QR Code SunuID" style="max-width: 300px; height: auto;">
                     </div>
@@ -180,9 +174,6 @@
             `;
 
             container.appendChild(qrElement);
-
-            // Démarrer le timer
-            this.startTimer();
 
             // Appliquer le thème
             this.applyTheme(options.theme || this.config.theme);
@@ -257,24 +248,7 @@
         /**
          * Démarrer le timer de compte à rebours
          */
-        startTimer() {
-            let timeLeft = 30;
-            const timerElement = document.getElementById('sunuid-timer');
-            
-            const timer = setInterval(() => {
-                timeLeft--;
-                if (timerElement) {
-                    timerElement.textContent = timeLeft;
-                }
-                
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    if (this.config.onExpired) {
-                        this.config.onExpired();
-                    }
-                }
-            }, 1000);
-        }
+
 
         /**
          * Effectuer une requête API

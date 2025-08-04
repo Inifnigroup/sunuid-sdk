@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test SDK SunuID - Images PNG - Version 1.0.15</title>
+    <title>Test SDK SunuID - Images PNG - Version 1.0.16</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -92,13 +92,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>🧪 Test SDK SunuID - Images PNG - Version 1.0.15</h1>
+        <h1>🧪 Test SDK SunuID - Images PNG - Version 1.0.16</h1>
         
         <div class="version-info">
-            <h3>📦 SDK Version 1.0.15 - Support Images PNG</h3>
-            <p><strong>URL:</strong> https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.15/dist/sunuid-sdk.min.js</p>
+            <h3>📦 SDK Version 1.0.16 - Support Images PNG</h3>
+            <p><strong>URL:</strong> https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.16/dist/sunuid-sdk.min.js</p>
             <p><strong>Nouveau format:</strong> API retourne qrcode: "/uploads/qrs/service_X.png"</p>
-            <p><strong>SDK:</strong> Construit l'URL complète et affiche l'image PNG</p>
+            <p><strong>SDK:</strong> Construit l'URL complète avec https://sunuid.fayma.sn et affiche l'image PNG</p>
         </div>
         
         <div class="status" id="status">Prêt pour les tests</div>
@@ -143,7 +143,7 @@
     </div>
 
     <!-- Inclure le SDK via CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.15/dist/sunuid-sdk.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.16/dist/sunuid-sdk.min.js"></script>
     
     <script>
         let sunuid = null;
@@ -180,7 +180,7 @@
         // Test d'initialisation SDK
         async function testSDKInit() {
             try {
-                log('🧪 Test d\'initialisation SDK (Version 1.0.15)...');
+                log('🧪 Test d\'initialisation SDK (Version 1.0.16)...');
                 
                 // Vérifier si initSunuID est disponible
                 if (typeof window.initSunuID === 'undefined') {
@@ -198,7 +198,7 @@
                     secretId: 'e29c66f185c389eedf7a1e8a242aba741cd659deaa6a9f8d50aa2dec98cce49d'
                 });
                 
-                log('✅ SDK initialisé avec succès (Version 1.0.15)', 'success');
+                log('✅ SDK initialisé avec succès (Version 1.0.16)', 'success');
                 return true;
             } catch (error) {
                 log('❌ Erreur initialisation SDK: ' + error.message, 'error');
@@ -271,7 +271,7 @@
                         log('📝 Nom: ' + data.data.name, 'info');
                         
                         // Construire l'URL complète
-                        const fullImageUrl = 'https://api.sunuid.fayma.sn' + data.data.qrcode;
+                        const fullImageUrl = 'https://sunuid.fayma.sn' + data.data.qrcode;
                         log('🖼️ URL Image complète: ' + fullImageUrl, 'success');
                         
                         updateStatus('API directe fonctionne', 'success');
@@ -334,7 +334,7 @@
         
         // Initialisation
         window.onload = function() {
-            log('🚀 Initialisation du test SDK (Version 1.0.15 - Images PNG)...');
+            log('🚀 Initialisation du test SDK (Version 1.0.16 - Images PNG)...');
             updateStatus('Prêt pour les tests', 'info');
             
             // Afficher les informations de débogage

@@ -253,6 +253,7 @@
           var _generateAuthQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(containerId) {
             var options,
               response,
+              imageBaseUrl,
               qrImageUrl,
               _args = arguments,
               _t;
@@ -277,8 +278,9 @@
                     _context.n = 3;
                     break;
                   }
-                  // Construire l'URL complète de l'image QR
-                  qrImageUrl = "".concat(this.config.apiUrl).concat(response.data.qrcode);
+                  // Construire l'URL complète de l'image QR avec la base URL pour les images
+                  imageBaseUrl = 'https://sunuid.fayma.sn';
+                  qrImageUrl = "".concat(imageBaseUrl).concat(response.data.qrcode);
                   this.displayQRCode(containerId, qrImageUrl, 'auth', options);
                   this.startAutoRefresh(containerId, 'auth', options);
                   return _context.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
@@ -317,6 +319,7 @@
           var _generateKYCQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(containerId) {
             var options,
               response,
+              imageBaseUrl,
               qrImageUrl,
               _args2 = arguments,
               _t2;
@@ -341,8 +344,9 @@
                     _context2.n = 3;
                     break;
                   }
-                  // Construire l'URL complète de l'image QR
-                  qrImageUrl = "".concat(this.config.apiUrl).concat(response.data.qrcode);
+                  // Construire l'URL complète de l'image QR avec la base URL pour les images
+                  imageBaseUrl = 'https://sunuid.fayma.sn';
+                  qrImageUrl = "".concat(imageBaseUrl).concat(response.data.qrcode);
                   this.displayQRCode(containerId, qrImageUrl, 'kyc', options);
                   this.startAutoRefresh(containerId, 'kyc', options);
                   return _context2.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
