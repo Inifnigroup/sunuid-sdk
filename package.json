@@ -1,6 +1,6 @@
 {
   "name": "sunuid-sdk",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "type": "module",
   "description": "SDK JavaScript pour l'intégration des QR codes d'authentification et KYC SunuID",
   "main": "dist/sunuid-sdk.js",
