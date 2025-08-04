@@ -14,6 +14,7 @@
         apiUrl: window.SunuIDConfig?.apiUrl || 'https://api.sunuid.fayma.sn',
         clientId: null,
         secretId: null,
+        type: 1, // Type par défaut (1 = authentification)
         theme: 'light',
         language: 'fr',
         autoRefresh: true,
@@ -48,16 +49,16 @@
         }
 
         /**
-         * Générer un QR code d'authentification
+         * Générer un QR code avec le type configuré
          */
-        async generateAuthQR(containerId, options = {}) {
+        async generateQR(containerId, options = {}) {
             if (!this.isInitialized) {
                 throw new Error('SunuID: SDK non initialisé');
             }
 
             try {
                 const response = await this.makeRequest('/qr-generate', {
-                    type: 1, // Type 1 pour authentification
+                    type: this.config.type, // Utilise le type configuré
                     ...options
                 });
 
@@ -65,8 +66,8 @@
                     // Construire l'URL complète de l'image QR avec la base URL pour les images
                     const imageBaseUrl = 'https://sunuid.fayma.sn';
                     const qrImageUrl = `${imageBaseUrl}${response.data.qrcode}`;
-                    this.displayQRCode(containerId, qrImageUrl, 'auth', options);
-                    this.startAutoRefresh(containerId, 'auth', options);
+                    this.displayQRCode(containerId, qrImageUrl, this.config.type, options);
+                    this.startAutoRefresh(containerId, this.config.type, options);
                     return {
                         ...response.data,
                         qrCodeUrl: qrImageUrl,
@@ -77,47 +78,13 @@
                 }
             } catch (error) {
                 console.error('Erreur API détectée:', error.message);
-                console.log('Affichage du message "Service non disponible" pour auth');
-                this.displayServiceUnavailable(containerId, 'auth');
+                console.log('Affichage du message "Service non disponible" pour type ' + this.config.type);
+                this.displayServiceUnavailable(containerId, this.config.type);
                 throw new Error('Service non disponible');
             }
         }
 
-        /**
-         * Générer un QR code KYC
-         */
-        async generateKYCQR(containerId, options = {}) {
-            if (!this.isInitialized) {
-                throw new Error('SunuID: SDK non initialisé');
-            }
 
-            try {
-                const response = await this.makeRequest('/qr-generate', {
-                    type: 2, // Type 2 pour KYC
-                    ...options
-                });
-
-                if (response.success) {
-                    // Construire l'URL complète de l'image QR avec la base URL pour les images
-                    const imageBaseUrl = 'https://sunuid.fayma.sn';
-                    const qrImageUrl = `${imageBaseUrl}${response.data.qrcode}`;
-                    this.displayQRCode(containerId, qrImageUrl, 'kyc', options);
-                    this.startAutoRefresh(containerId, 'kyc', options);
-                    return {
-                        ...response.data,
-                        qrCodeUrl: qrImageUrl,
-                        sessionId: response.data.service_id
-                    };
-                } else {
-                    throw new Error(response.message || 'Erreur lors de la génération du QR code KYC');
-                }
-            } catch (error) {
-                console.error('Erreur API détectée:', error.message);
-                console.log('Affichage du message "Service non disponible" pour kyc');
-                this.displayServiceUnavailable(containerId, 'kyc');
-                throw new Error('Service non disponible');
-            }
-        }
 
         /**
          * Générer un QR code avec un type personnalisé
@@ -152,6 +119,24 @@
                 console.log('Affichage du message "Service non disponible" pour type ' + type);
                 this.displayServiceUnavailable(containerId, type);
                 throw new Error('Service non disponible');
+            }
+        }
+
+        // Alias pour maintenir la compatibilité
+        async generateAuthQR(containerId, options = {}) {
+            return this.generateQR(containerId, options);
+        }
+
+        async generateKYCQR(containerId, options = {}) {
+            // Sauvegarder le type actuel
+            const originalType = this.config.type;
+            // Changer temporairement le type pour KYC
+            this.config.type = 2;
+            try {
+                return await this.generateQR(containerId, options);
+            } finally {
+                // Restaurer le type original
+                this.config.type = originalType;
             }
         }
 
@@ -196,7 +181,7 @@
             qrElement.className = 'sunuid-qr-code';
             qrElement.innerHTML = `
                     <div class="sunuid-qr-header">
-                    <h3>${type === 1 ? 'Authentification' : type === 2 ? 'Vérification KYC' : 'Service Type ' + type}</h3>
+                    <h3>${type === 1 ? 'Authentification' : type === 2 ? 'Vérification KYC' : type === 3 ? 'Service Type 3' : 'Service Type ' + type}</h3>
                     </div>
                 <div class="sunuid-qr-image">
                     <img src="${qrUrl}" alt="QR Code SunuID" style="max-width: 300px; height: auto;">
@@ -252,18 +237,13 @@
         /**
          * Rafraîchir un QR code
          */
-        async refreshQR(containerId, type, options = {}) {
+        async refreshQR(containerId, options = {}) {
             try {
-                const result = type === 1 
-                    ? await this.generateAuthQR(containerId, options)
-                    : type === 2 
-                    ? await this.generateKYCQR(containerId, options)
-                    : await this.generateCustomQR(containerId, type, options);
-                
+                const result = await this.generateQR(containerId, options);
                 return result;
             } catch (error) {
                 console.error('Erreur lors du rafraîchissement:', error.message);
-                this.displayServiceUnavailable(containerId, type);
+                this.displayServiceUnavailable(containerId, this.config.type);
                 throw error;
             }
         }
