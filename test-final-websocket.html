@@ -130,14 +130,14 @@
 <body>
     <div class="container">
         <div class="success-banner">
-            <h1>🎉 SDK SunuID Version 1.0.22 - WebSocket Corrigé</h1>
+            <h1>🎉 SDK SunuID Version 1.0.23 - WebSocket Corrigé</h1>
             <p><strong>✅ Publié avec succès sur npm !</strong></p>
-            <p>Connexion WebSocket automatique + Correction des imports ES6</p>
+            <p>Connexion WebSocket automatique + Gestion des retry limités</p>
         </div>
         
         <div class="version-info">
-            <h3>📦 SDK Version 1.0.22 - Final</h3>
-            <p><strong>URL CDN:</strong> https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.22/dist/sunuid-sdk.min.js</p>
+            <h3>📦 SDK Version 1.0.23 - Final</h3>
+            <p><strong>URL CDN:</strong> https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.23/dist/sunuid-sdk.min.js</p>
             <p><strong>WebSocket:</strong> wss://samasocket.fayma.sn:9443</p>
             <p><strong>Correction:</strong> Import ES6 → CDN Socket.IO</p>
             <p><strong>Fonctionnalité:</strong> Connexion WebSocket automatique lors de l'initialisation</p>
@@ -210,8 +210,8 @@
     <!-- Inclure Socket.IO via CDN -->
     <script src="https://cdn.socket.io/4.7.0/socket.io.min.js"></script>
     
-    <!-- Inclure le SDK via CDN (Version 1.0.22) -->
-    <script src="https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.22/dist/sunuid-sdk.min.js"></script>
+    <!-- Inclure le SDK via CDN (Version 1.0.23) -->
+    <script src="https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.23/dist/sunuid-sdk.min.js"></script>
     
     <script>
         let sunuid = null;
@@ -307,7 +307,7 @@
         // Test d'initialisation SDK avec WebSocket
         async function testSDKInit() {
             try {
-                log('🧪 Test d\'initialisation SDK (Version 1.0.22 - WebSocket)...');
+                log('🧪 Test d\'initialisation SDK (Version 1.0.23 - WebSocket)...');
                 updateStatus('Initialisation SDK + WebSocket...', 'info');
                 
                 // Vérifier si initSunuID est disponible
@@ -458,16 +458,16 @@
         
         // Test de la version CDN
         function testCDNVersion() {
-            log('🌐 Test de la version CDN 1.0.22...', 'info');
-            log('📦 URL: https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.22/dist/sunuid-sdk.min.js', 'info');
+            log('🌐 Test de la version CDN 1.0.23...', 'info');
+            log('📦 URL: https://cdn.jsdelivr.net/npm/sunuid-sdk@1.0.23/dist/sunuid-sdk.min.js', 'info');
             log('✅ SDK chargé: ' + (typeof window.initSunuID !== 'undefined'), 'success');
             log('✅ Socket.IO disponible: ' + (typeof io !== 'undefined'), 'success');
-            log('✅ Version 1.0.22 prête pour production', 'success');
+            log('✅ Version 1.0.23 prête pour production', 'success');
         }
         
         // Initialisation
         window.onload = function() {
-            log('🚀 Initialisation du test final SDK (Version 1.0.22)...');
+            log('🚀 Initialisation du test final SDK (Version 1.0.23)...');
             updateStatus('Chargement SDK depuis CDN...', 'info');
             
             // Désactiver les boutons pendant le chargement

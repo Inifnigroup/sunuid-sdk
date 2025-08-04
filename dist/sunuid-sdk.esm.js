@@ -256,6 +256,16 @@ function _toPropertyKey(t) {
       value: function initWebSocket() {
         var _this = this;
         try {
+          // Vérifier si Socket.IO est disponible
+          if (typeof io === 'undefined') {
+            console.warn('⚠️ Socket.IO non disponible, WebSocket sera initialisé plus tard');
+            // Réessayer après un délai
+            setTimeout(function () {
+              return _this.initWebSocket();
+            }, 1000);
+            return;
+          }
+
           // Obtenir l'IP du client (simulation)
           var ip = this.getClientIP();
 
@@ -353,6 +363,8 @@ function _toPropertyKey(t) {
         if (this.socket && this.socket.connected) {
           this.socket.emit(event, data);
           console.log("\uD83D\uDCE4 \xC9v\xE9nement WebSocket \xE9mis: ".concat(event), data);
+        } else if (typeof io === 'undefined') {
+          console.warn('⚠️ Socket.IO non disponible, impossible d\'émettre l\'événement:', event);
         } else {
           console.warn('⚠️ WebSocket non connecté, impossible d\'émettre l\'événement:', event);
         }
@@ -368,6 +380,18 @@ function _toPropertyKey(t) {
           return 'not_initialized';
         }
         return this.socket.connected ? 'connected' : 'disconnected';
+      }
+
+      /**
+       * Forcer l'initialisation WebSocket (si Socket.IO devient disponible plus tard)
+       */
+    }, {
+      key: "forceWebSocketInit",
+      value: function forceWebSocketInit() {
+        if (typeof io !== 'undefined' && !this.socket) {
+          console.log('🔄 Forçage de l\'initialisation WebSocket...');
+          this.initWebSocket();
+        }
       }
 
       /**
