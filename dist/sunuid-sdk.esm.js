@@ -603,7 +603,10 @@ function _toPropertyKey(t) {
               case 0:
                 // Utiliser l'endpoint depuis la configuration si disponible
                 endpointPath = ((_window$SunuIDConfig2 = window.SunuIDConfig) === null || _window$SunuIDConfig2 === void 0 || (_window$SunuIDConfig2 = _window$SunuIDConfig2.endpoints) === null || _window$SunuIDConfig2 === void 0 ? void 0 : _window$SunuIDConfig2[endpoint.replace('/', '')]) || endpoint;
-                url = "".concat(this.config.apiUrl).concat(endpointPath);
+                url = "".concat(this.config.apiUrl).concat(endpointPath); // Log pour déboguer l'envoi du type
+                if (data.type !== undefined) {
+                  console.log("\uD83C\uDF10 Envoi requ\xEAte API - Type: ".concat(data.type, ", Endpoint: ").concat(endpoint));
+                }
                 _context8.p = 1;
                 _context8.n = 2;
                 return fetch(url, {

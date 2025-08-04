@@ -6,6 +6,8 @@
  * @license MIT
  */
 
+import { io } from 'socket.io-client';
+
 (function(window) {
     'use strict';
 
@@ -20,7 +22,9 @@
         autoRefresh: true,
         refreshInterval: 30000, // 30 secondes
         onSuccess: null,
-        onError: null
+        onError: null,
+        onStatusUpdate: null,
+        onExpired: null
     };
 
     /**
@@ -32,6 +36,7 @@
             this.qrCode = null;
             this.refreshTimer = null;
             this.isInitialized = false;
+            this.socket = null;
             
             this.init();
         }
@@ -46,6 +51,120 @@
 
             this.isInitialized = true;
             console.log('SunuID SDK initialisé avec succès');
+            
+            // Initialiser la connexion WebSocket
+            this.initWebSocket();
+        }
+
+        /**
+         * Initialiser la connexion WebSocket
+         */
+        initWebSocket() {
+            try {
+                // Obtenir l'IP du client (simulation)
+                const ip = this.getClientIP();
+                
+                // Initialiser la connexion WebSocket si elle n'existe pas
+                if (!this.socket) {
+                    this.socket = io('wss://samasocket.fayma.sn:9443', {
+                        query: {
+                            token: this.config.clientId,
+                            type: 'web',
+                            userId: this.config.clientId,
+                            username: ip
+                        }
+                    });
+
+                    // Gestion des événements WebSocket
+                    this.socket.on('connect', () => {
+                        console.log('🌐 WebSocket connecté avec succès');
+                        console.log('📊 Socket ID:', this.socket.id);
+                    });
+
+                    this.socket.on('disconnect', (reason) => {
+                        console.log('❌ WebSocket déconnecté:', reason);
+                    });
+
+                    this.socket.on('connect_error', (error) => {
+                        console.error('❌ Erreur connexion WebSocket:', error);
+                    });
+
+                    // Écouter les événements spécifiques
+                    this.socket.on('qr_status_update', (data) => {
+                        console.log('📱 Mise à jour statut QR reçue:', data);
+                        this.handleQRStatusUpdate(data);
+                    });
+
+                    this.socket.on('qr_scan_success', (data) => {
+                        console.log('✅ Scan QR réussi reçu:', data);
+                        this.handleQRScanSuccess(data);
+                    });
+
+                    this.socket.on('qr_expired', (data) => {
+                        console.log('⏰ QR expiré reçu:', data);
+                        this.handleQRExpired(data);
+                    });
+                }
+            } catch (error) {
+                console.error('❌ Erreur initialisation WebSocket:', error);
+            }
+        }
+
+        /**
+         * Obtenir l'IP du client (simulation)
+         */
+        getClientIP() {
+            // Simulation - en production, vous pourriez utiliser un service d'IP
+            return '127.0.0.1';
+        }
+
+        /**
+         * Gérer la mise à jour du statut QR
+         */
+        handleQRStatusUpdate(data) {
+            if (this.config.onStatusUpdate) {
+                this.config.onStatusUpdate(data);
+            }
+        }
+
+        /**
+         * Gérer le succès du scan QR
+         */
+        handleQRScanSuccess(data) {
+            if (this.config.onSuccess) {
+                this.config.onSuccess(data);
+            }
+        }
+
+        /**
+         * Gérer l'expiration du QR
+         */
+        handleQRExpired(data) {
+            if (this.config.onExpired) {
+                this.config.onExpired(data);
+            }
+        }
+
+        /**
+         * Émettre un événement WebSocket
+         */
+        emitWebSocketEvent(event, data) {
+            if (this.socket && this.socket.connected) {
+                this.socket.emit(event, data);
+                console.log(`📤 Événement WebSocket émis: ${event}`, data);
+            } else {
+                console.warn('⚠️ WebSocket non connecté, impossible d\'émettre l\'événement:', event);
+            }
+        }
+
+        /**
+         * Obtenir le statut de la connexion WebSocket
+         */
+        getWebSocketStatus() {
+            if (!this.socket) {
+                return 'not_initialized';
+            }
+            return this.socket.connected ? 'connected' : 'disconnected';
         }
 
         /**
@@ -68,6 +187,15 @@
                     const qrImageUrl = `${imageBaseUrl}${response.data.qrcode}`;
                     this.displayQRCode(containerId, qrImageUrl, this.config.type, options);
                     this.startAutoRefresh(containerId, this.config.type, options);
+                    
+                    // Émettre un événement WebSocket pour la génération du QR
+                    this.emitWebSocketEvent('qr_generated', {
+                        serviceId: response.data.service_id,
+                        type: this.config.type,
+                        qrCodeUrl: qrImageUrl,
+                        timestamp: Date.now()
+                    });
+                    
                     return {
                         ...response.data,
                         qrCodeUrl: qrImageUrl,
@@ -343,6 +471,13 @@
         destroy() {
             if (this.refreshTimer) {
                 clearInterval(this.refreshTimer);
+            }
+            
+            // Fermer la connexion WebSocket
+            if (this.socket) {
+                this.socket.disconnect();
+                this.socket = null;
+                console.log('🌐 WebSocket déconnecté');
             }
             
             this.isInitialized = false;

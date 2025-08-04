@@ -47,6 +47,9 @@
     "url": "https://github.com/sunuid/sunuid-sdk/issues"
   },
   "homepage": "https://docs.sunuid.sn",
+  "dependencies": {
+    "socket.io-client": "^4.7.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.22.0",
     "@babel/preset-env": "^7.22.0",
