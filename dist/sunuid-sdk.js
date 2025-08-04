@@ -207,6 +207,8 @@
       apiUrl: ((_window$SunuIDConfig = window.SunuIDConfig) === null || _window$SunuIDConfig === void 0 ? void 0 : _window$SunuIDConfig.apiUrl) || 'https://api.sunuid.fayma.sn',
       clientId: null,
       secretId: null,
+      type: 1,
+      // Type par défaut (1 = authentification)
       theme: 'light',
       language: 'fr',
       autoRefresh: true,
@@ -244,12 +246,12 @@
         }
 
         /**
-         * Générer un QR code d'authentification
+         * Générer un QR code avec le type configuré
          */
       }, {
-        key: "generateAuthQR",
+        key: "generateQR",
         value: (function () {
-          var _generateAuthQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(containerId) {
+          var _generateQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(containerId) {
             var options,
               response,
               imageBaseUrl,
@@ -269,7 +271,7 @@
                   _context.p = 1;
                   _context.n = 2;
                   return this.makeRequest('/qr-generate', _objectSpread2({
-                    type: 1
+                    type: this.config.type
                   }, options));
                 case 2:
                   response = _context.v;
@@ -280,8 +282,8 @@
                   // Construire l'URL complète de l'image QR avec la base URL pour les images
                   imageBaseUrl = 'https://sunuid.fayma.sn';
                   qrImageUrl = "".concat(imageBaseUrl).concat(response.data.qrcode);
-                  this.displayQRCode(containerId, qrImageUrl, 'auth', options);
-                  this.startAutoRefresh(containerId, 'auth', options);
+                  this.displayQRCode(containerId, qrImageUrl, this.config.type, options);
+                  this.startAutoRefresh(containerId, this.config.type, options);
                   return _context.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
                     qrCodeUrl: qrImageUrl,
                     sessionId: response.data.service_id
@@ -295,27 +297,27 @@
                   _context.p = 5;
                   _t = _context.v;
                   console.error('Erreur API détectée:', _t.message);
-                  console.log('Affichage du message "Service non disponible" pour auth');
-                  this.displayServiceUnavailable(containerId, 'auth');
+                  console.log('Affichage du message "Service non disponible" pour type ' + this.config.type);
+                  this.displayServiceUnavailable(containerId, this.config.type);
                   throw new Error('Service non disponible');
                 case 6:
                   return _context.a(2);
               }
             }, _callee, this, [[1, 5]]);
           }));
-          function generateAuthQR(_x) {
-            return _generateAuthQR.apply(this, arguments);
+          function generateQR(_x) {
+            return _generateQR.apply(this, arguments);
           }
-          return generateAuthQR;
+          return generateQR;
         }()
         /**
-         * Générer un QR code KYC
+         * Générer un QR code avec un type personnalisé
          */
         )
       }, {
-        key: "generateKYCQR",
+        key: "generateCustomQR",
         value: (function () {
-          var _generateKYCQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(containerId) {
+          var _generateCustomQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(containerId, type) {
             var options,
               response,
               imageBaseUrl,
@@ -325,7 +327,7 @@
             return _regenerator().w(function (_context2) {
               while (1) switch (_context2.p = _context2.n) {
                 case 0:
-                  options = _args2.length > 1 && _args2[1] !== undefined ? _args2[1] : {};
+                  options = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : {};
                   if (this.isInitialized) {
                     _context2.n = 1;
                     break;
@@ -335,7 +337,7 @@
                   _context2.p = 1;
                   _context2.n = 2;
                   return this.makeRequest('/qr-generate', _objectSpread2({
-                    type: 2
+                    type: type
                   }, options));
                 case 2:
                   response = _context2.v;
@@ -346,14 +348,14 @@
                   // Construire l'URL complète de l'image QR avec la base URL pour les images
                   imageBaseUrl = 'https://sunuid.fayma.sn';
                   qrImageUrl = "".concat(imageBaseUrl).concat(response.data.qrcode);
-                  this.displayQRCode(containerId, qrImageUrl, 'kyc', options);
-                  this.startAutoRefresh(containerId, 'kyc', options);
+                  this.displayQRCode(containerId, qrImageUrl, type, options);
+                  this.startAutoRefresh(containerId, type, options);
                   return _context2.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
                     qrCodeUrl: qrImageUrl,
                     sessionId: response.data.service_id
                   }));
                 case 3:
-                  throw new Error(response.message || 'Erreur lors de la génération du QR code KYC');
+                  throw new Error(response.message || 'Erreur lors de la génération du QR code');
                 case 4:
                   _context2.n = 6;
                   break;
@@ -361,131 +363,118 @@
                   _context2.p = 5;
                   _t2 = _context2.v;
                   console.error('Erreur API détectée:', _t2.message);
-                  console.log('Affichage du message "Service non disponible" pour kyc');
-                  this.displayServiceUnavailable(containerId, 'kyc');
+                  console.log('Affichage du message "Service non disponible" pour type ' + type);
+                  this.displayServiceUnavailable(containerId, type);
                   throw new Error('Service non disponible');
                 case 6:
                   return _context2.a(2);
               }
             }, _callee2, this, [[1, 5]]);
           }));
-          function generateKYCQR(_x2) {
+          function generateCustomQR(_x2, _x3) {
+            return _generateCustomQR.apply(this, arguments);
+          }
+          return generateCustomQR;
+        }() // Alias pour maintenir la compatibilité
+        )
+      }, {
+        key: "generateAuthQR",
+        value: function () {
+          var _generateAuthQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(containerId) {
+            var options,
+              _args3 = arguments;
+            return _regenerator().w(function (_context3) {
+              while (1) switch (_context3.n) {
+                case 0:
+                  options = _args3.length > 1 && _args3[1] !== undefined ? _args3[1] : {};
+                  return _context3.a(2, this.generateQR(containerId, options));
+              }
+            }, _callee3, this);
+          }));
+          function generateAuthQR(_x4) {
+            return _generateAuthQR.apply(this, arguments);
+          }
+          return generateAuthQR;
+        }()
+      }, {
+        key: "generateKYCQR",
+        value: function () {
+          var _generateKYCQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(containerId) {
+            var options,
+              originalType,
+              _args4 = arguments;
+            return _regenerator().w(function (_context4) {
+              while (1) switch (_context4.p = _context4.n) {
+                case 0:
+                  options = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : {};
+                  // Sauvegarder le type actuel
+                  originalType = this.config.type; // Changer temporairement le type pour KYC
+                  this.config.type = 2;
+                  _context4.p = 1;
+                  _context4.n = 2;
+                  return this.generateQR(containerId, options);
+                case 2:
+                  return _context4.a(2, _context4.v);
+                case 3:
+                  _context4.p = 3;
+                  // Restaurer le type original
+                  this.config.type = originalType;
+                  return _context4.f(3);
+                case 4:
+                  return _context4.a(2);
+              }
+            }, _callee4, this, [[1,, 3, 4]]);
+          }));
+          function generateKYCQR(_x5) {
             return _generateKYCQR.apply(this, arguments);
           }
           return generateKYCQR;
         }()
         /**
-         * Générer un QR code avec un type personnalisé
-         */
-        )
-      }, {
-        key: "generateCustomQR",
-        value: (function () {
-          var _generateCustomQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(containerId, type) {
-            var options,
-              response,
-              imageBaseUrl,
-              qrImageUrl,
-              _args3 = arguments,
-              _t3;
-            return _regenerator().w(function (_context3) {
-              while (1) switch (_context3.p = _context3.n) {
-                case 0:
-                  options = _args3.length > 2 && _args3[2] !== undefined ? _args3[2] : {};
-                  if (this.isInitialized) {
-                    _context3.n = 1;
-                    break;
-                  }
-                  throw new Error('SunuID: SDK non initialisé');
-                case 1:
-                  _context3.p = 1;
-                  _context3.n = 2;
-                  return this.makeRequest('/qr-generate', _objectSpread2({
-                    type: type
-                  }, options));
-                case 2:
-                  response = _context3.v;
-                  if (!response.success) {
-                    _context3.n = 3;
-                    break;
-                  }
-                  // Construire l'URL complète de l'image QR avec la base URL pour les images
-                  imageBaseUrl = 'https://sunuid.fayma.sn';
-                  qrImageUrl = "".concat(imageBaseUrl).concat(response.data.qrcode);
-                  this.displayQRCode(containerId, qrImageUrl, type, options);
-                  this.startAutoRefresh(containerId, type, options);
-                  return _context3.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
-                    qrCodeUrl: qrImageUrl,
-                    sessionId: response.data.service_id
-                  }));
-                case 3:
-                  throw new Error(response.message || 'Erreur lors de la génération du QR code');
-                case 4:
-                  _context3.n = 6;
-                  break;
-                case 5:
-                  _context3.p = 5;
-                  _t3 = _context3.v;
-                  console.error('Erreur API détectée:', _t3.message);
-                  console.log('Affichage du message "Service non disponible" pour type ' + type);
-                  this.displayServiceUnavailable(containerId, type);
-                  throw new Error('Service non disponible');
-                case 6:
-                  return _context3.a(2);
-              }
-            }, _callee3, this, [[1, 5]]);
-          }));
-          function generateCustomQR(_x3, _x4) {
-            return _generateCustomQR.apply(this, arguments);
-          }
-          return generateCustomQR;
-        }()
-        /**
          * Vérifier le statut d'un QR code
          */
-        )
       }, {
         key: "checkQRStatus",
         value: (function () {
-          var _checkQRStatus = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(sessionId) {
-            var response, _t4;
-            return _regenerator().w(function (_context4) {
-              while (1) switch (_context4.p = _context4.n) {
+          var _checkQRStatus = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(sessionId) {
+            var response, _t3;
+            return _regenerator().w(function (_context5) {
+              while (1) switch (_context5.p = _context5.n) {
                 case 0:
                   if (this.isInitialized) {
-                    _context4.n = 1;
+                    _context5.n = 1;
                     break;
                   }
                   throw new Error('SunuID: SDK non initialisé');
                 case 1:
-                  _context4.p = 1;
-                  _context4.n = 2;
+                  _context5.p = 1;
+                  _context5.n = 2;
                   return this.makeRequest('/qr-status', {
                     serviceId: sessionId
                   });
                 case 2:
-                  response = _context4.v;
+                  response = _context5.v;
                   if (!response.success) {
-                    _context4.n = 3;
+                    _context5.n = 3;
                     break;
                   }
-                  return _context4.a(2, response.data);
+                  return _context5.a(2, response.data);
                 case 3:
                   throw new Error(response.message || 'Erreur lors de la vérification du statut');
                 case 4:
-                  _context4.n = 6;
+                  _context5.n = 6;
                   break;
                 case 5:
-                  _context4.p = 5;
-                  _t4 = _context4.v;
-                  this.handleError(_t4);
-                  throw _t4;
+                  _context5.p = 5;
+                  _t3 = _context5.v;
+                  this.handleError(_t3);
+                  throw _t3;
                 case 6:
-                  return _context4.a(2);
+                  return _context5.a(2);
               }
-            }, _callee4, this, [[1, 5]]);
+            }, _callee5, this, [[1, 5]]);
           }));
-          function checkQRStatus(_x5) {
+          function checkQRStatus(_x6) {
             return _checkQRStatus.apply(this, arguments);
           }
           return checkQRStatus;
@@ -509,7 +498,7 @@
           // Créer l'élément QR code
           var qrElement = document.createElement('div');
           qrElement.className = 'sunuid-qr-code';
-          qrElement.innerHTML = "\n                    <div class=\"sunuid-qr-header\">\n                    <h3>".concat(type === 1 ? 'Authentification' : type === 2 ? 'Vérification KYC' : 'Service Type ' + type, "</h3>\n                    </div>\n                <div class=\"sunuid-qr-image\">\n                    <img src=\"").concat(qrUrl, "\" alt=\"QR Code SunuID\" style=\"max-width: 300px; height: auto;\">\n                    </div>\n                <div class=\"sunuid-qr-instructions\">\n                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>\n                    </div>\n                <div class=\"sunuid-qr-status\" id=\"sunuid-status\">\n                    <p>En attente de scan...</p>\n                </div>\n            ");
+          qrElement.innerHTML = "\n                    <div class=\"sunuid-qr-header\">\n                    <h3>".concat(type === 1 ? 'Authentification' : type === 2 ? 'Vérification KYC' : type === 3 ? 'Service Type 3' : 'Service Type ' + type, "</h3>\n                    </div>\n                <div class=\"sunuid-qr-image\">\n                    <img src=\"").concat(qrUrl, "\" alt=\"QR Code SunuID\" style=\"max-width: 300px; height: auto;\">\n                    </div>\n                <div class=\"sunuid-qr-instructions\">\n                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>\n                    </div>\n                <div class=\"sunuid-qr-status\" id=\"sunuid-status\">\n                    <p>En attente de scan...</p>\n                </div>\n            ");
           container.appendChild(qrElement);
 
           // Appliquer le thème
@@ -537,61 +526,33 @@
       }, {
         key: "refreshQR",
         value: (function () {
-          var _refreshQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(containerId, type) {
+          var _refreshQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(containerId) {
             var options,
               result,
-              _args5 = arguments,
-              _t5,
-              _t6,
-              _t7;
-            return _regenerator().w(function (_context5) {
-              while (1) switch (_context5.p = _context5.n) {
+              _args6 = arguments,
+              _t4;
+            return _regenerator().w(function (_context6) {
+              while (1) switch (_context6.p = _context6.n) {
                 case 0:
-                  options = _args5.length > 2 && _args5[2] !== undefined ? _args5[2] : {};
-                  _context5.p = 1;
-                  if (!(type === 1)) {
-                    _context5.n = 3;
-                    break;
-                  }
-                  _context5.n = 2;
-                  return this.generateAuthQR(containerId, options);
+                  options = _args6.length > 1 && _args6[1] !== undefined ? _args6[1] : {};
+                  _context6.p = 1;
+                  _context6.n = 2;
+                  return this.generateQR(containerId, options);
                 case 2:
-                  _t5 = _context5.v;
-                  _context5.n = 8;
-                  break;
+                  result = _context6.v;
+                  return _context6.a(2, result);
                 case 3:
-                  if (!(type === 2)) {
-                    _context5.n = 5;
-                    break;
-                  }
-                  _context5.n = 4;
-                  return this.generateKYCQR(containerId, options);
+                  _context6.p = 3;
+                  _t4 = _context6.v;
+                  console.error('Erreur lors du rafraîchissement:', _t4.message);
+                  this.displayServiceUnavailable(containerId, this.config.type);
+                  throw _t4;
                 case 4:
-                  _t6 = _context5.v;
-                  _context5.n = 7;
-                  break;
-                case 5:
-                  _context5.n = 6;
-                  return this.generateCustomQR(containerId, type, options);
-                case 6:
-                  _t6 = _context5.v;
-                case 7:
-                  _t5 = _t6;
-                case 8:
-                  result = _t5;
-                  return _context5.a(2, result);
-                case 9:
-                  _context5.p = 9;
-                  _t7 = _context5.v;
-                  console.error('Erreur lors du rafraîchissement:', _t7.message);
-                  this.displayServiceUnavailable(containerId, type);
-                  throw _t7;
-                case 10:
-                  return _context5.a(2);
+                  return _context6.a(2);
               }
-            }, _callee5, this, [[1, 9]]);
+            }, _callee6, this, [[1, 3]]);
           }));
-          function refreshQR(_x6, _x7) {
+          function refreshQR(_x7) {
             return _refreshQR.apply(this, arguments);
           }
           return refreshQR;
@@ -605,25 +566,25 @@
         value: function startAutoRefresh(containerId, type, options) {
           var _this = this;
           if (!this.config.autoRefresh) return;
-          this.refreshTimer = setInterval(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6() {
-            var _t8;
-            return _regenerator().w(function (_context6) {
-              while (1) switch (_context6.p = _context6.n) {
+          this.refreshTimer = setInterval(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7() {
+            var _t5;
+            return _regenerator().w(function (_context7) {
+              while (1) switch (_context7.p = _context7.n) {
                 case 0:
-                  _context6.p = 0;
-                  _context6.n = 1;
+                  _context7.p = 0;
+                  _context7.n = 1;
                   return _this.refreshQR(containerId, type, options);
                 case 1:
-                  _context6.n = 3;
+                  _context7.n = 3;
                   break;
                 case 2:
-                  _context6.p = 2;
-                  _t8 = _context6.v;
-                  console.warn('Erreur lors du rafraîchissement automatique:', _t8);
+                  _context7.p = 2;
+                  _t5 = _context7.v;
+                  console.warn('Erreur lors du rafraîchissement automatique:', _t5);
                 case 3:
-                  return _context6.a(2);
+                  return _context7.a(2);
               }
-            }, _callee6, null, [[0, 2]]);
+            }, _callee7, null, [[0, 2]]);
           })), this.config.refreshInterval);
         }
 
@@ -637,17 +598,17 @@
       }, {
         key: "makeRequest",
         value: (function () {
-          var _makeRequest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(endpoint, data) {
+          var _makeRequest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(endpoint, data) {
             var _window$SunuIDConfig2;
-            var endpointPath, url, response, errorText, errorData, result, _t9;
-            return _regenerator().w(function (_context7) {
-              while (1) switch (_context7.p = _context7.n) {
+            var endpointPath, url, response, errorText, errorData, result, _t6;
+            return _regenerator().w(function (_context8) {
+              while (1) switch (_context8.p = _context8.n) {
                 case 0:
                   // Utiliser l'endpoint depuis la configuration si disponible
                   endpointPath = ((_window$SunuIDConfig2 = window.SunuIDConfig) === null || _window$SunuIDConfig2 === void 0 || (_window$SunuIDConfig2 = _window$SunuIDConfig2.endpoints) === null || _window$SunuIDConfig2 === void 0 ? void 0 : _window$SunuIDConfig2[endpoint.replace('/', '')]) || endpoint;
                   url = "".concat(this.config.apiUrl).concat(endpointPath);
-                  _context7.p = 1;
-                  _context7.n = 2;
+                  _context8.p = 1;
+                  _context8.n = 2;
                   return fetch(url, {
                     method: 'POST',
                     headers: {
@@ -661,15 +622,15 @@
                     }))
                   });
                 case 2:
-                  response = _context7.v;
+                  response = _context8.v;
                   if (response.ok) {
-                    _context7.n = 4;
+                    _context8.n = 4;
                     break;
                   }
-                  _context7.n = 3;
+                  _context8.n = 3;
                   return response.text();
                 case 3:
-                  errorText = _context7.v;
+                  errorText = _context8.v;
                   try {
                     errorData = JSON.parse(errorText);
                   } catch (e) {
@@ -679,20 +640,20 @@
                   }
                   throw new Error(errorData.message || "Erreur HTTP: ".concat(response.status));
                 case 4:
-                  _context7.n = 5;
+                  _context8.n = 5;
                   return response.json();
                 case 5:
-                  result = _context7.v;
-                  return _context7.a(2, result);
+                  result = _context8.v;
+                  return _context8.a(2, result);
                 case 6:
-                  _context7.p = 6;
-                  _t9 = _context7.v;
-                  console.error('Erreur API SunuID:', _t9);
-                  throw _t9;
+                  _context8.p = 6;
+                  _t6 = _context8.v;
+                  console.error('Erreur API SunuID:', _t6);
+                  throw _t6;
                 case 7:
-                  return _context7.a(2);
+                  return _context8.a(2);
               }
-            }, _callee7, this, [[1, 6]]);
+            }, _callee8, this, [[1, 6]]);
           }));
           function makeRequest(_x8, _x9) {
             return _makeRequest.apply(this, arguments);

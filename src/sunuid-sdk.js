@@ -276,6 +276,11 @@
             const endpointPath = window.SunuIDConfig?.endpoints?.[endpoint.replace('/', '')] || endpoint;
             const url = `${this.config.apiUrl}${endpointPath}`;
             
+            // Log pour déboguer l'envoi du type
+            if (data.type !== undefined) {
+                console.log(`🌐 Envoi requête API - Type: ${data.type}, Endpoint: ${endpoint}`);
+            }
+            
             try {
                 const response = await fetch(url, {
                     method: 'POST',
