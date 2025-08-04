@@ -213,8 +213,7 @@
       refreshInterval: 30000,
       // 30 secondes
       onSuccess: null,
-      onError: null,
-      onExpired: null
+      onError: null
     };
 
     /**
@@ -444,11 +443,8 @@
           // Créer l'élément QR code
           var qrElement = document.createElement('div');
           qrElement.className = 'sunuid-qr-code';
-          qrElement.innerHTML = "\n                    <div class=\"sunuid-qr-header\">\n                    <h3>".concat(type === 'auth' ? 'Authentification' : 'Vérification KYC', "</h3>\n                    <div class=\"sunuid-timer\">\n                        <span>Expire dans: </span>\n                        <span id=\"sunuid-timer\">30</span>\n                        <span> secondes</span>\n                    </div>\n                        </div>\n                <div class=\"sunuid-qr-image\">\n                    <img src=\"").concat(qrUrl, "\" alt=\"QR Code SunuID\" style=\"max-width: 300px; height: auto;\">\n                    </div>\n                <div class=\"sunuid-qr-instructions\">\n                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>\n                    </div>\n                <div class=\"sunuid-qr-status\" id=\"sunuid-status\">\n                    <p>En attente de scan...</p>\n                </div>\n            ");
+          qrElement.innerHTML = "\n                    <div class=\"sunuid-qr-header\">\n                    <h3>".concat(type === 'auth' ? 'Authentification' : 'Vérification KYC', "</h3>\n                    </div>\n                <div class=\"sunuid-qr-image\">\n                    <img src=\"").concat(qrUrl, "\" alt=\"QR Code SunuID\" style=\"max-width: 300px; height: auto;\">\n                    </div>\n                <div class=\"sunuid-qr-instructions\">\n                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>\n                    </div>\n                <div class=\"sunuid-qr-status\" id=\"sunuid-status\">\n                    <p>En attente de scan...</p>\n                </div>\n            ");
           container.appendChild(qrElement);
-
-          // Démarrer le timer
-          this.startTimer();
 
           // Appliquer le thème
           this.applyTheme(options.theme || this.config.theme);
@@ -554,25 +550,6 @@
         /**
          * Démarrer le timer de compte à rebours
          */
-      }, {
-        key: "startTimer",
-        value: function startTimer() {
-          var _this2 = this;
-          var timeLeft = 30;
-          var timerElement = document.getElementById('sunuid-timer');
-          var timer = setInterval(function () {
-            timeLeft--;
-            if (timerElement) {
-              timerElement.textContent = timeLeft;
-            }
-            if (timeLeft <= 0) {
-              clearInterval(timer);
-              if (_this2.config.onExpired) {
-                _this2.config.onExpired();
-              }
-            }
-          }, 1000);
-        }
 
         /**
          * Effectuer une requête API

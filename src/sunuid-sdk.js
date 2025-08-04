@@ -57,7 +57,7 @@
 
             try {
                 const response = await this.makeRequest('/qr-generate', {
-                    type: 'auth',
+                    type: 1, // Type 1 pour authentification
                     ...options
                 });
 
@@ -93,7 +93,7 @@
 
             try {
                 const response = await this.makeRequest('/qr-generate', {
-                    type: 'kyc',
+                    type: 2, // Type 2 pour KYC
                     ...options
                 });
 
@@ -115,6 +115,42 @@
                 console.error('Erreur API détectée:', error.message);
                 console.log('Affichage du message "Service non disponible" pour kyc');
                 this.displayServiceUnavailable(containerId, 'kyc');
+                throw new Error('Service non disponible');
+            }
+        }
+
+        /**
+         * Générer un QR code avec un type personnalisé
+         */
+        async generateCustomQR(containerId, type, options = {}) {
+            if (!this.isInitialized) {
+                throw new Error('SunuID: SDK non initialisé');
+            }
+
+            try {
+                const response = await this.makeRequest('/qr-generate', {
+                    type: type, // Type personnalisé (1, 2, 3, etc.)
+                    ...options
+                });
+
+                if (response.success) {
+                    // Construire l'URL complète de l'image QR avec la base URL pour les images
+                    const imageBaseUrl = 'https://sunuid.fayma.sn';
+                    const qrImageUrl = `${imageBaseUrl}${response.data.qrcode}`;
+                    this.displayQRCode(containerId, qrImageUrl, type, options);
+                    this.startAutoRefresh(containerId, type, options);
+                    return {
+                        ...response.data,
+                        qrCodeUrl: qrImageUrl,
+                        sessionId: response.data.service_id
+                    };
+                } else {
+                    throw new Error(response.message || 'Erreur lors de la génération du QR code');
+                }
+            } catch (error) {
+                console.error('Erreur API détectée:', error.message);
+                console.log('Affichage du message "Service non disponible" pour type ' + type);
+                this.displayServiceUnavailable(containerId, type);
                 throw new Error('Service non disponible');
             }
         }
@@ -160,7 +196,7 @@
             qrElement.className = 'sunuid-qr-code';
             qrElement.innerHTML = `
                     <div class="sunuid-qr-header">
-                    <h3>${type === 'auth' ? 'Authentification' : 'Vérification KYC'}</h3>
+                    <h3>${type === 1 ? 'Authentification' : type === 2 ? 'Vérification KYC' : 'Service Type ' + type}</h3>
                     </div>
                 <div class="sunuid-qr-image">
                     <img src="${qrUrl}" alt="QR Code SunuID" style="max-width: 300px; height: auto;">
@@ -218,9 +254,11 @@
          */
         async refreshQR(containerId, type, options = {}) {
             try {
-                const result = type === 'auth' 
+                const result = type === 1 
                     ? await this.generateAuthQR(containerId, options)
-                    : await this.generateKYCQR(containerId, options);
+                    : type === 2 
+                    ? await this.generateKYCQR(containerId, options)
+                    : await this.generateCustomQR(containerId, type, options);
                 
                 return result;
             } catch (error) {
