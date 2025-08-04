@@ -6,8 +6,6 @@
  * @license MIT
  */
 
-import { io } from 'socket.io-client';
-
 (function(window) {
     'use strict';
 
