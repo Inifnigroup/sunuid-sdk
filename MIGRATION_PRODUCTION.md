@@ -38,7 +38,7 @@ const sunuid = new SunuID({
     clientId: 'votre_client_id',
     secretId: 'votre_secret_id',
     apiUrl: 'https://api.sunuid.fayma.sn',
-    secureInitUrl: 'https://sunuid.fayma.sn/secure-init.php',
+    secureInitUrl: 'https://api.sunuid.fayma.sn/secure-init.php',
     // ... autres options
 });
 ```
@@ -46,8 +46,8 @@ const sunuid = new SunuID({
 ### 3. URLs de production
 
 - **API URL** : `https://api.sunuid.fayma.sn`
-- **QR Generator** : `https://sunuid.fayma.sn/qr-generator.php`
-- **Secure Init** : `https://sunuid.fayma.sn/secure-init.php`
+- **QR Generator** : `https://api.sunuid.fayma.sn/qr-generator.php`
+- **Secure Init** : `https://api.sunuid.fayma.sn/secure-init.php`
 
 ### 4. Personnalisation du nom du partenaire
 

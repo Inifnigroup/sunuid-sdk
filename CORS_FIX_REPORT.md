@@ -4,7 +4,7 @@
 
 ### Erreur CORS observée
 ```
-Access to fetch at 'https://sunuid.fayma.sn/qr-generator.php' from origin 'https://test.fayma.sn' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: The 'Access-Control-Allow-Origin' header contains multiple values '*, *', but only one is allowed.
+Access to fetch at 'https://api.sunuid.fayma.sn/qr-generator.php' from origin 'https://test.fayma.sn' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: The 'Access-Control-Allow-Origin' header contains multiple values '*, *', but only one is allowed.
 ```
 
 ### Cause racine
@@ -106,7 +106,7 @@ generateQRCodeClientSide(content, label, qrContainer) {
 ### 1. Tentative serveur PHP
 ```
 🔄 Appel endpoint PHP...
-🔗 URL QR Generator: https://sunuid.fayma.sn/qr-generator.php
+🔗 URL QR Generator: https://api.sunuid.fayma.sn/qr-generator.php
 ❌ Erreur CORS détectée
 ```
 
@@ -179,7 +179,7 @@ typeof QRCode !== 'undefined'; // ✅ true
 
 ### Avant la correction
 ```
-❌ POST https://sunuid.fayma.sn/qr-generator.php net::ERR_FAILED
+❌ POST https://api.sunuid.fayma.sn/qr-generator.php net::ERR_FAILED
 ❌ Erreur CORS bloquant la génération
 ❌ Fallback vers image par défaut
 ```

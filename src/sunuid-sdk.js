@@ -33,9 +33,9 @@
         secureInit: false,
         secureInitUrl: (() => {
             if (window.SunuIDConfig?.apiUrl?.includes('api.sunuid.fayma.sn')) {
-                return 'https://sunuid.fayma.sn/secure-init.php';
+                return 'https://api.sunuid.fayma.sn/secure-init.php';
             }
-            return window.SunuIDConfig?.apiUrl?.replace('/api', '') + '/secure-init.php' || 'https://sunuid.fayma.sn/secure-init.php';
+            return window.SunuIDConfig?.apiUrl?.replace('/api', '') + '/secure-init.php' || 'https://api.sunuid.fayma.sn/secure-init.php';
         })(),
         token: null
     };
@@ -732,7 +732,7 @@
                 // Construire l'URL du QR generator de manière plus robuste
                 let qrGeneratorUrl;
                 if (this.config.apiUrl.includes('api.sunuid.fayma.sn')) {
-                    qrGeneratorUrl = 'https://sunuid.fayma.sn/qr-generator.php';
+                    qrGeneratorUrl = 'https://api.sunuid.fayma.sn/qr-generator.php';
                 } else {
                     qrGeneratorUrl = this.config.apiUrl.replace('/api', '') + '/qr-generator.php';
                 }

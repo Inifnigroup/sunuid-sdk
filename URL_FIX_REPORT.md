@@ -44,8 +44,8 @@ console.log('🔗 URL QR Generator:', qrGeneratorUrl);
 ## 📊 URLs corrigées
 
 ### URLs de production
-- ✅ **QR Generator** : `https://sunuid.fayma.sn/qr-generator.php`
-- ✅ **Secure Init** : `https://sunuid.fayma.sn/secure-init.php`
+- ✅ **QR Generator** : `https://api.sunuid.fayma.sn/qr-generator.php`
+- ✅ **Secure Init** : `https://api.sunuid.fayma.sn/secure-init.php`
 - ✅ **API** : `https://api.sunuid.fayma.sn`
 
 ### Configuration par défaut
@@ -70,7 +70,7 @@ const DEFAULT_CONFIG = {
 this.config.apiUrl = 'https://api.sunuid.fayma.sn';
 
 // Résultat attendu
-qrGeneratorUrl = 'https://sunuid.fayma.sn/qr-generator.php';
+qrGeneratorUrl = 'https://api.sunuid.fayma.sn/qr-generator.php';
 // ✅ Correct
 ```
 
@@ -129,7 +129,7 @@ qrGeneratorUrl = 'https://mon-api.com/qr-generator.php';
 
 ### Après la correction
 ```
-✅ POST https://sunuid.fayma.sn/qr-generator.php 200 OK
+✅ POST https://api.sunuid.fayma.sn/qr-generator.php 200 OK
 ```
 
 ## 🎯 Impact

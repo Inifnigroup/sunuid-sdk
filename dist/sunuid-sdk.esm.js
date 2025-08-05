@@ -301,9 +301,9 @@ function _unsupportedIterableToArray(r, a) {
     secureInit: false,
     secureInitUrl: function (_window$SunuIDConfig2, _window$SunuIDConfig3) {
       if ((_window$SunuIDConfig2 = window.SunuIDConfig) !== null && _window$SunuIDConfig2 !== void 0 && (_window$SunuIDConfig2 = _window$SunuIDConfig2.apiUrl) !== null && _window$SunuIDConfig2 !== void 0 && _window$SunuIDConfig2.includes('api.sunuid.fayma.sn')) {
-        return 'https://sunuid.fayma.sn/secure-init.php';
+        return 'https://api.sunuid.fayma.sn/secure-init.php';
       }
-      return ((_window$SunuIDConfig3 = window.SunuIDConfig) === null || _window$SunuIDConfig3 === void 0 || (_window$SunuIDConfig3 = _window$SunuIDConfig3.apiUrl) === null || _window$SunuIDConfig3 === void 0 ? void 0 : _window$SunuIDConfig3.replace('/api', '')) + '/secure-init.php' || 'https://sunuid.fayma.sn/secure-init.php';
+      return ((_window$SunuIDConfig3 = window.SunuIDConfig) === null || _window$SunuIDConfig3 === void 0 || (_window$SunuIDConfig3 = _window$SunuIDConfig3.apiUrl) === null || _window$SunuIDConfig3 === void 0 ? void 0 : _window$SunuIDConfig3.replace('/api', '')) + '/secure-init.php' || 'https://api.sunuid.fayma.sn/secure-init.php';
     }(),
     token: null
   };
@@ -1222,7 +1222,7 @@ function _unsupportedIterableToArray(r, a) {
                 // Construire l'URL du QR generator de manière plus robuste
 
                 if (this.config.apiUrl.includes('api.sunuid.fayma.sn')) {
-                  qrGeneratorUrl = 'https://sunuid.fayma.sn/qr-generator.php';
+                  qrGeneratorUrl = 'https://api.sunuid.fayma.sn/qr-generator.php';
                 } else {
                   qrGeneratorUrl = this.config.apiUrl.replace('/api', '') + '/qr-generator.php';
                 }
