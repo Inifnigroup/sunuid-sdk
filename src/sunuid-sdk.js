@@ -796,9 +796,12 @@
                 console.error('❌ Erreur génération QR PHP:', error);
                 console.error('Stack trace:', error.stack);
                 
-                // Détecter les erreurs CORS spécifiquement
-                if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-                    console.warn('🚫 Erreur CORS détectée, tentative de génération QR côté client...');
+                // Détecter les erreurs CORS ou 404 pour activer le fallback côté client
+                if (error.message.includes('Failed to fetch') || 
+                    error.message.includes('CORS') || 
+                    error.message.includes('404') ||
+                    error.message.includes('Not Found')) {
+                    console.warn('🚫 Erreur PHP détectée (CORS/404), tentative de génération QR côté client...');
                     this.generateQRCodeClientSide(content, label, qrContainer);
                 } else {
                     this.displayFallbackImage();
@@ -823,8 +826,12 @@
                 // Créer un canvas pour le QR code
                 const canvas = document.createElement('canvas');
                 canvas.width = 300;
-                canvas.height = 300;
+                canvas.height = 320; // Plus d'espace pour le label
                 const ctx = canvas.getContext('2d');
+                
+                // Remplir le fond en blanc
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, 300, 320);
                 
                 // Générer le QR code avec QRCode library
                 QRCode.toCanvas(canvas, content, {
@@ -841,11 +848,11 @@
                         return;
                     }
                     
-                    // Ajouter le label en bas du QR code
+                    // Ajouter le label en bas du QR code (sans afficher le contenu)
                     ctx.fillStyle = '#333333';
-                    ctx.font = '14px Arial';
+                    ctx.font = 'bold 14px Arial';
                     ctx.textAlign = 'center';
-                    ctx.fillText(label, 150, 295);
+                    ctx.fillText(label, 150, 305);
                     
                     // Convertir en data URL
                     const dataUrl = canvas.toDataURL('image/png');
@@ -853,11 +860,10 @@
                     // Stocker l'URL du QR code pour getQRCode()
                     this.currentQRUrl = dataUrl;
                     
-                    // Afficher le QR code
+                    // Afficher le QR code (sans le contenu)
                     qrContainer.innerHTML = `
                         <div class="sunuid-qr-ready" style="text-align: center; padding: 20px;">
                             <img src="${dataUrl}" alt="QR Code ${this.config.partnerName}" style="max-width: 300px; border: 2px solid #ddd; border-radius: 10px;">
-                            <p style="margin-top: 10px; font-size: 12px; color: #666;">Généré côté client (CORS)</p>
                         </div>
                     `;
                     

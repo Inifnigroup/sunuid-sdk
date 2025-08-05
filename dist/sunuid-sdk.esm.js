@@ -1290,9 +1290,9 @@ function _unsupportedIterableToArray(r, a) {
                 console.error('❌ Erreur génération QR PHP:', _t6);
                 console.error('Stack trace:', _t6.stack);
 
-                // Détecter les erreurs CORS spécifiquement
-                if (_t6.message.includes('Failed to fetch') || _t6.message.includes('CORS')) {
-                  console.warn('🚫 Erreur CORS détectée, tentative de génération QR côté client...');
+                // Détecter les erreurs CORS ou 404 pour activer le fallback côté client
+                if (_t6.message.includes('Failed to fetch') || _t6.message.includes('CORS') || _t6.message.includes('404') || _t6.message.includes('Not Found')) {
+                  console.warn('🚫 Erreur PHP détectée (CORS/404), tentative de génération QR côté client...');
                   this.generateQRCodeClientSide(content, label, qrContainer);
                 } else {
                   this.displayFallbackImage();
@@ -1328,8 +1328,12 @@ function _unsupportedIterableToArray(r, a) {
           // Créer un canvas pour le QR code
           var canvas = document.createElement('canvas');
           canvas.width = 300;
-          canvas.height = 300;
+          canvas.height = 320; // Plus d'espace pour le label
           var ctx = canvas.getContext('2d');
+
+          // Remplir le fond en blanc
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, 300, 320);
 
           // Générer le QR code avec QRCode library
           QRCode.toCanvas(canvas, content, {
@@ -1346,11 +1350,11 @@ function _unsupportedIterableToArray(r, a) {
               return;
             }
 
-            // Ajouter le label en bas du QR code
+            // Ajouter le label en bas du QR code (sans afficher le contenu)
             ctx.fillStyle = '#333333';
-            ctx.font = '14px Arial';
+            ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(label, 150, 295);
+            ctx.fillText(label, 150, 305);
 
             // Convertir en data URL
             var dataUrl = canvas.toDataURL('image/png');
@@ -1358,8 +1362,8 @@ function _unsupportedIterableToArray(r, a) {
             // Stocker l'URL du QR code pour getQRCode()
             _this4.currentQRUrl = dataUrl;
 
-            // Afficher le QR code
-            qrContainer.innerHTML = "\n                        <div class=\"sunuid-qr-ready\" style=\"text-align: center; padding: 20px;\">\n                            <img src=\"".concat(dataUrl, "\" alt=\"QR Code ").concat(_this4.config.partnerName, "\" style=\"max-width: 300px; border: 2px solid #ddd; border-radius: 10px;\">\n                            <p style=\"margin-top: 10px; font-size: 12px; color: #666;\">G\xE9n\xE9r\xE9 c\xF4t\xE9 client (CORS)</p>\n                        </div>\n                    ");
+            // Afficher le QR code (sans le contenu)
+            qrContainer.innerHTML = "\n                        <div class=\"sunuid-qr-ready\" style=\"text-align: center; padding: 20px;\">\n                            <img src=\"".concat(dataUrl, "\" alt=\"QR Code ").concat(_this4.config.partnerName, "\" style=\"max-width: 300px; border: 2px solid #ddd; border-radius: 10px;\">\n                        </div>\n                    ");
 
             // Afficher les instructions et le statut
             var instructionsElement = qrContainer.parentElement.querySelector('.sunuid-qr-instructions');
