@@ -274,7 +274,7 @@
    * @license MIT
    */
 
-  (function (window, _window$SunuIDConfig) {
+  (function (window, _window$SunuIDConfig, _window$SunuIDConfig2) {
 
     // Configuration par défaut
     var DEFAULT_CONFIG = {
@@ -302,7 +302,7 @@
       // 10 secondes
       // Options d'initialisation sécurisée
       secureInit: false,
-      secureInitUrl: 'http://localhost:8081/secure-init.php',
+      secureInitUrl: ((_window$SunuIDConfig2 = window.SunuIDConfig) === null || _window$SunuIDConfig2 === void 0 || (_window$SunuIDConfig2 = _window$SunuIDConfig2.apiUrl) === null || _window$SunuIDConfig2 === void 0 ? void 0 : _window$SunuIDConfig2.replace('/api', '')) + '/secure-init.php' || 'https://sunuid.fayma.sn/secure-init.php',
       token: null
     };
 
@@ -1166,7 +1166,7 @@
 
           // Afficher un loader en attendant la réponse API et la connexion socket
           this.getTypeName(type);
-          qrElement.innerHTML = "\n                <div class=\"sunuid-qr-header\">\n                    <h3>".concat(type === 1 ? 'Vérification KYC' : type === 2 ? 'Authentification' : type === 3 ? 'Signature' : 'Service Type ' + type, "</h3>\n                </div>\n                <div class=\"sunuid-qr-image\" id=\"sunuid-qr-container\">\n                    <div style=\"text-align: center; padding: 40px;\">\n                        <div class=\"sunuid-loader\">\n                            <div class=\"sunuid-spinner\"></div>\n                            <p style=\"margin-top: 20px; color: #666;\">Initialisation en cours...</p>\n                            <p style=\"font-size: 12px; color: #999; margin-top: 10px;\">Connexion API et WebSocket</p>\n                            <p style=\"font-size: 11px; color: #ccc; margin-top: 5px;\">Attente du Socket ID...</p>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"sunuid-qr-instructions\" style=\"display: none;\">\n                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>\n                </div>\n                <div class=\"sunuid-qr-status\" id=\"sunuid-status\" style=\"display: none;\">\n                    <p>En attente de scan...</p>\n                </div>\n            ");
+          qrElement.innerHTML = "\n                <div class=\"sunuid-qr-header\">\n                    <h3>".concat(type === 1 ? 'Vérification KYC' : type === 2 ? 'Authentification' : type === 3 ? 'Signature' : 'Service Type ' + type, "</h3>\n                </div>\n                <div class=\"sunuid-qr-image\" id=\"sunuid-qr-container\">\n                    <div style=\"text-align: center; padding: 40px;\">\n                        <div class=\"sunuid-loader\">\n                            <div class=\"sunuid-spinner\"></div>\n                            <p style=\"margin-top: 20px; color: #666;\">Initialisation en cours...</p>\n                            <p style=\"font-size: 12px; color: #999; margin-top: 10px;\">Connexion API et WebSocket</p>\n                            <p style=\"font-size: 11px; color: #ccc; margin-top: 5px;\">Attente du Socket ID...</p>\n                        </div>\n                    </div>\n                </div>\n                <div class=\"sunuid-qr-instructions\" style=\"display: none;\">\n                    <p>Scannez ce QR code avec l'application ").concat(this.config.partnerName, " pour vous connecter</p>\n                </div>\n                <div class=\"sunuid-qr-status\" id=\"sunuid-status\" style=\"display: none;\">\n                    <p>En attente de scan...</p>\n                </div>\n            ");
           container.appendChild(qrElement);
 
           // Stocker les informations pour la génération ultérieure
@@ -1188,6 +1188,7 @@
         value: (function () {
           var _generateCustomQRCode = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(content, label) {
             var qrContainer,
+              qrGeneratorUrl,
               _response3,
               responseData,
               instructionsElement,
@@ -1216,8 +1217,9 @@
 
                   // Appeler l'endpoint PHP
                   console.log('🔄 Appel endpoint PHP...');
+                  qrGeneratorUrl = this.config.apiUrl.replace('/api', '') + '/qr-generator.php';
                   _context9.n = 3;
-                  return fetch('http://localhost:8081/qr-generator.php', {
+                  return fetch(qrGeneratorUrl, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -1257,7 +1259,7 @@
                   this.currentQRUrl = responseData.data.dataUrl;
 
                   // Créer le conteneur avec le QR code PHP
-                  qrContainer.innerHTML = "\n                    <div class=\"sunuid-qr-ready\" style=\"text-align: center; padding: 20px;\">\n                        <img src=\"".concat(responseData.data.dataUrl, "\" alt=\"QR Code SunuID\" style=\"max-width: 300px; border: 2px solid #ddd; border-radius: 10px;\">\n                    </div>\n                ");
+                  qrContainer.innerHTML = "\n                    <div class=\"sunuid-qr-ready\" style=\"text-align: center; padding: 20px;\">\n                        <img src=\"".concat(responseData.data.dataUrl, "\" alt=\"QR Code ").concat(this.config.partnerName, "\" style=\"max-width: 300px; border: 2px solid #ddd; border-radius: 10px;\">\n                    </div>\n                ");
 
                   // Afficher les instructions et le statut maintenant que le QR est prêt
                   instructionsElement = qrContainer.parentElement.querySelector('.sunuid-qr-instructions');
@@ -1426,8 +1428,8 @@
         key: "makeRequest",
         value: (function () {
           var _makeRequest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(endpoint, data) {
-            var _window$SunuIDConfig2,
-              _window$SunuIDConfig3,
+            var _window$SunuIDConfig3,
+              _window$SunuIDConfig4,
               _this5 = this;
             var sanitizedData, endpointPath, url, retryCount, maxRetries, _loop, _ret;
             return _regenerator().w(function (_context11) {
@@ -1467,11 +1469,11 @@
                   console.log('🔍 Debug makeRequest - isInitialized:', this.isInitialized);
 
                   // Utiliser l'endpoint depuis la configuration si disponible
-                  endpointPath = ((_window$SunuIDConfig2 = window.SunuIDConfig) === null || _window$SunuIDConfig2 === void 0 || (_window$SunuIDConfig2 = _window$SunuIDConfig2.endpoints) === null || _window$SunuIDConfig2 === void 0 ? void 0 : _window$SunuIDConfig2[endpoint.replace('/', '')]) || endpoint;
+                  endpointPath = ((_window$SunuIDConfig3 = window.SunuIDConfig) === null || _window$SunuIDConfig3 === void 0 || (_window$SunuIDConfig3 = _window$SunuIDConfig3.endpoints) === null || _window$SunuIDConfig3 === void 0 ? void 0 : _window$SunuIDConfig3[endpoint.replace('/', '')]) || endpoint;
                   url = "".concat(this.config.apiUrl).concat(endpointPath); // Debug: Afficher l'URL finale
                   console.log('🔍 URL finale construite:', url);
                   console.log('🔍 EndpointPath:', endpointPath);
-                  console.log('🔍 SunuIDConfig endpoints:', JSON.stringify((_window$SunuIDConfig3 = window.SunuIDConfig) === null || _window$SunuIDConfig3 === void 0 ? void 0 : _window$SunuIDConfig3.endpoints));
+                  console.log('🔍 SunuIDConfig endpoints:', JSON.stringify((_window$SunuIDConfig4 = window.SunuIDConfig) === null || _window$SunuIDConfig4 === void 0 ? void 0 : _window$SunuIDConfig4.endpoints));
 
                   // Log de sécurité pour la requête
                   this.logSecurityEvent('API_REQUEST_START', {

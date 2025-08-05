@@ -31,7 +31,7 @@
         requestTimeout: 10000, // 10 secondes
         // Options d'initialisation sécurisée
         secureInit: false,
-        secureInitUrl: 'http://localhost:8081/secure-init.php',
+        secureInitUrl: window.SunuIDConfig?.apiUrl?.replace('/api', '') + '/secure-init.php' || 'https://sunuid.fayma.sn/secure-init.php',
         token: null
     };
 
@@ -681,7 +681,7 @@
                     </div>
                 </div>
                 <div class="sunuid-qr-instructions" style="display: none;">
-                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>
+                    <p>Scannez ce QR code avec l'application ${this.config.partnerName} pour vous connecter</p>
                 </div>
                 <div class="sunuid-qr-status" id="sunuid-status" style="display: none;">
                     <p>En attente de scan...</p>
@@ -724,7 +724,8 @@
 
                 // Appeler l'endpoint PHP
                 console.log('🔄 Appel endpoint PHP...');
-                const response = await fetch('http://localhost:8081/qr-generator.php', {
+                const qrGeneratorUrl = this.config.apiUrl.replace('/api', '') + '/qr-generator.php';
+                const response = await fetch(qrGeneratorUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -760,7 +761,7 @@
                 // Créer le conteneur avec le QR code PHP
                 qrContainer.innerHTML = `
                     <div class="sunuid-qr-ready" style="text-align: center; padding: 20px;">
-                        <img src="${responseData.data.dataUrl}" alt="QR Code SunuID" style="max-width: 300px; border: 2px solid #ddd; border-radius: 10px;">
+                        <img src="${responseData.data.dataUrl}" alt="QR Code ${this.config.partnerName}" style="max-width: 300px; border: 2px solid #ddd; border-radius: 10px;">
                     </div>
                 `;
                 

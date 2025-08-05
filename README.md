@@ -44,7 +44,7 @@ npm install sunuid-sdk
 
 ## 📖 Utilisation Rapide
 
-> **🚀 [Démarrage en 30 secondes](GET_STARTED.md)** | **🌍 [Intégration Universelle](INTEGRATION_UNIVERSAL.md)** | **⚡ [Démarrage en 2 minutes](QUICKSTART.md)** | **💡 [Intégration simplifiée](INTEGRATION_SIMPLE.md)** | **🔒 [Intégration PHP complète](PHP_INTEGRATION.md)**
+> **🚀 [Démarrage en 30 secondes](GET_STARTED.md)** | **🌍 [Intégration Universelle](INTEGRATION_UNIVERSAL.md)** | **⚡ [Démarrage en 2 minutes](QUICKSTART.md)** | **💡 [Intégration simplifiée](INTEGRATION_SIMPLE.md)** | **🔒 [Intégration PHP complète](PHP_INTEGRATION.md)** | **🏭 [Migration Production](MIGRATION_PRODUCTION.md)**
 
 ### 1. Mode Classique (Credentials visibles)
 
