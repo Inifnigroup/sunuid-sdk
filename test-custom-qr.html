@@ -169,8 +169,18 @@
     <!-- Inclure Socket.IO via CDN -->
     <script src="https://cdn.socket.io/4.7.0/socket.io.min.js"></script>
     
-    <!-- Inclure le SDK localement -->
-    <script src="src/sunuid-sdk.js"></script>
+    <!-- Inclure QRCode library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/lib/browser.min.js"></script>
+    
+    <!-- Inclure le SDK construit (compatible navigateur) -->
+    <script src="dist/sunuid-sdk.js"></script>
+    <script>
+        // Vérification immédiate du chargement du SDK
+        console.log('🔍 Vérification du chargement SDK...');
+        console.log('SunuID class disponible:', typeof window.SunuID);
+        console.log('initSunuID fonction disponible:', typeof window.initSunuID);
+        console.log('sunuidInstance disponible:', window.sunuidInstance);
+    </script>
     
     <script>
         let sunuid = null;
@@ -265,7 +275,28 @@
                     }
                 }
                 
+                log('🔍 SDK configuré - Type: ' + sunuid.config.type, 'info');
+                log('🔍 SDK configuré - API URL: ' + sunuid.config.apiUrl, 'info');
+                log('🔍 SDK configuré - Client ID: ' + sunuid.config.clientId, 'info');
+                
+                // Test de la requête API directement
+                log('🧪 Test de la requête API directement...', 'info');
+                try {
+                    const apiResult = await sunuid.makeRequest('/qr-generate', {
+                        type: sunuid.config.type,
+                        metadata: {
+                            test: true,
+                            timestamp: Date.now()
+                        }
+                    });
+                    log('✅ Requête API réussie: ' + JSON.stringify(apiResult, null, 2), 'success');
+                } catch (apiError) {
+                    log('❌ Erreur requête API: ' + apiError.message, 'error');
+                    log('🔍 Détails erreur: ' + JSON.stringify(apiError), 'error');
+                }
+                
                 // Générer le QR code personnalisé
+                log('🎨 Génération QR code...', 'info');
                 const result = await sunuid.generateQR('qr-container', {
                     metadata: {
                         test: true,
@@ -299,7 +330,16 @@
                 
             } catch (error) {
                 log('❌ Erreur génération QR: ' + error.message, 'error');
+                log('🔍 Stack trace: ' + error.stack, 'error');
                 updateStatus('Erreur génération QR', 'error');
+                
+                // Afficher plus de détails sur l'erreur
+                showAPIResponse({
+                    success: false,
+                    error: error.message,
+                    stack: error.stack,
+                    timestamp: Date.now()
+                });
             }
         }
         
@@ -404,7 +444,15 @@
             log('URL actuelle: ' + window.location.href, 'info');
             log('SDK chargé: ' + (typeof SunuID !== 'undefined'), 'info');
             log('initSunuID disponible: ' + (typeof window.initSunuID !== 'undefined'), 'info');
+            log('SunuID class disponible: ' + (typeof window.SunuID !== 'undefined'), 'info');
             log('⚠️ IMPORTANT: Vérifiez que logoqr.png est présent dans le répertoire', 'warning');
+            
+            // Vérification supplémentaire après un délai
+            setTimeout(() => {
+                log('🔍 Vérification différée du SDK:', 'info');
+                log('initSunuID après délai: ' + (typeof window.initSunuID !== 'undefined'), 'info');
+                log('SunuID class après délai: ' + (typeof window.SunuID !== 'undefined'), 'info');
+            }, 1000);
         };
     </script>
 </body>

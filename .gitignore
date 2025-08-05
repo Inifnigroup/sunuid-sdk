@@ -1,0 +1,87 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+
+# Test files (to prevent accidental commits)
+test*.html
+simple-test.html
+test-sdk.js
+TEST_REPORT.md
+cors-test.html
+test-sdk-load.html
+test-api-debug.html
+test-qr-generation.html
+test-qrcode-simple.html
+test-qr-step-by-step.html
+test-php-qr.html
+test-php-integration.html
+test-types.html
+test-api-code.html
+test-socket-id.html
+test-final-format.html
+test-partner-name.html
+test-api-partner-name.html
+test-loader-progressive.html
+test-socket-wait-type-names.html
+test-security-features.html
+test-secure-init.html
+test-fix-api.html
+test-debug-api.html
+test-simple-api.html
+test-cors.html
+test-final-fix.html
+test-minimal.html
+test-debug-console.html
+test-compare.html
+test-simple-debug.html
+test-final-success.html
+test-secure-fix.html
+test-secure-debug.html
+test-secure-simple.html
+test-secure-compare.html
+
+# PHP files
+qr-generator.php
+composer.json
+composer.lock
+vendor/
+
+# Development files
+.serve/
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

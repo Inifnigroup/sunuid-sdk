@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion SunuID - Universel</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+        .qr-code { 
+            margin: 20px 0; 
+        }
+        .qr-code img { 
+            max-width: 100%; 
+            height: auto; 
+        }
+        .status { 
+            margin-top: 20px; 
+            padding: 10px; 
+            border-radius: 5px; 
+        }
+        .status.loading { 
+            background: #e3f2fd; 
+            color: #1976d2; 
+        }
+        .status.success { 
+            background: #e8f5e8; 
+            color: #2e7d32; 
+        }
+        .status.error { 
+            background: #ffebee; 
+            color: #c62828; 
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+        .download-link {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+        .download-link:hover {
+            background: #5a6fd8;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">🔐</div>
+        <h1>Connexion Sécurisée</h1>
+        <p>Scannez le QR code avec l'application SunuID</p>
+        
+        <div id="qr-container" class="qr-code">
+            <div class="status loading">⏳ Génération du QR code...</div>
+        </div>
+        
+        <div id="status" class="status loading">
+            ⏳ En attente du scan...
+        </div>
+        
+        <a href="https://sunuid.sn/download" target="_blank" class="download-link">
+            📱 Télécharger SunuID
+        </a>
+    </div>
+
+    <!-- SunuID SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@sunuid/sdk@latest/dist/sunuid-sdk.min.js"></script>
+    
+    <script>
+        // Configuration simple - REMPLACEZ PAR VOS VALEURS
+        const config = {
+            client_id: 'VOTRE_CLIENT_ID',      // ← Remplacez par votre CLIENT_ID
+            secret_id: 'VOTRE_SECRET_ID',      // ← Remplacez par votre SECRET_ID
+            type: 2,                           // ← 1=KYC, 2=AUTH, 3=Signature
+            partner_name: 'Votre Entreprise'   // ← Remplacez par votre nom
+        };
+
+        // Initialiser SunuID
+        const sunuid = new SunuID(config);
+        
+        // Démarrer automatiquement
+        sunuid.init().then(() => {
+            console.log('✅ SunuID initialisé !');
+            document.getElementById('qr-container').innerHTML = 
+                '<img src="' + sunuid.getQRCode() + '" alt="QR Code SunuID">';
+        }).catch(error => {
+            console.error('❌ Erreur:', error);
+            document.getElementById('status').className = 'status error';
+            document.getElementById('status').innerHTML = '❌ Erreur de connexion: ' + error.message;
+        });
+
+        // Écouter les événements
+        sunuid.on('connected', (user) => {
+            console.log('👤 Utilisateur connecté:', user);
+            document.getElementById('status').className = 'status success';
+            document.getElementById('status').innerHTML = '✅ Connexion réussie ! Redirection...';
+            
+            // Redirection après 2 secondes
+            setTimeout(() => {
+                window.location.href = '/dashboard'; // ← Remplacez par votre URL
+            }, 2000);
+        });
+
+        sunuid.on('error', (error) => {
+            console.error('❌ Erreur:', error);
+            document.getElementById('status').className = 'status error';
+            document.getElementById('status').innerHTML = '❌ Erreur: ' + error.message;
+        });
+
+        sunuid.on('expired', () => {
+            document.getElementById('status').className = 'status error';
+            document.getElementById('status').innerHTML = '⏰ QR expiré. Actualisez la page.';
+        });
+    </script>
+</body>
+</html> 

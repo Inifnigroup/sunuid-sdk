@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Simple - SunuID</title>
+    
+    <!-- SunuID SDK -->
+    <script src="https://cdn.socket.io/4.7.0/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/sunuid-sdk@1.0.25/dist/sunuid-sdk.css">
+    <script src="https://unpkg.com/sunuid-sdk@1.0.25/dist/sunuid-sdk.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .kyc-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 { color: #333; margin-bottom: 10px; }
+        p { color: #666; margin-bottom: 30px; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="kyc-card">
+        <h1>📋 Vérification KYC</h1>
+        <p>Scannez le QR code pour vérifier votre identité</p>
+        
+        <div id="sunuid-qr"></div>
+        
+        <div id="status"></div>
+        
+        <p style="margin-top: 20px; font-size: 14px;">
+            Vérification sécurisée par SunuID
+        </p>
+    </div>
+
+    <script>
+        // Configuration KYC
+        const sunuid = initSunuID({
+            clientId: '1754174441_36C4685215935D1F',
+            secretId: 'e29c66f185c389eedf7a1e8a242aba741cd659deaa6a9f8d50aa2dec98cce49d',
+            type: 1, // KYC
+            theme: 'light',
+            
+            // Callbacks
+            onSuccess: (data) => {
+                document.getElementById('status').innerHTML = 
+                    '<p class="success">✅ Vérification KYC réussie !</p>';
+                console.log('✅ KYC réussi:', data);
+                
+                // Simuler une redirection
+                setTimeout(() => {
+                    alert('Vérification KYC terminée avec succès !');
+                }, 1000);
+            },
+            
+            onError: (error) => {
+                document.getElementById('status').innerHTML = 
+                    '<p class="error">❌ Erreur KYC: ' + error.message + '</p>';
+                console.error('❌ Erreur KYC:', error);
+            },
+            
+            onStatusUpdate: (data) => {
+                document.getElementById('status').innerHTML = 
+                    '<p>📱 Statut KYC: ' + JSON.stringify(data) + '</p>';
+                console.log('📱 Statut KYC:', data);
+            },
+            
+            onExpired: (data) => {
+                document.getElementById('status').innerHTML = 
+                    '<p>⏰ QR expiré, actualisation...</p>';
+                console.log('⏰ Expiré:', data);
+            }
+        });
+
+        // Générer le QR code KYC
+        sunuid.generateQR('sunuid-qr');
+    </script>
+</body>
+</html> 

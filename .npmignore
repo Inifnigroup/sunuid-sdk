@@ -10,10 +10,51 @@ rollup.config.js
 package-lock.json
 
 # Test files
-test.html
+test*.html
 simple-test.html
 test-sdk.js
 TEST_REPORT.md
+cors-test.html
+test-sdk-load.html
+test-api-debug.html
+test-qr-generation.html
+test-qrcode-simple.html
+test-qr-step-by-step.html
+test-php-qr.html
+test-php-integration.html
+test-types.html
+test-api-code.html
+test-socket-id.html
+test-final-format.html
+test-partner-name.html
+test-api-partner-name.html
+test-loader-progressive.html
+test-socket-wait-type-names.html
+test-security-features.html
+test-secure-init.html
+test-fix-api.html
+test-debug-api.html
+test-simple-api.html
+test-cors.html
+test-final-fix.html
+test-minimal.html
+test-debug-console.html
+test-compare.html
+test-simple-debug.html
+test-final-success.html
+test-secure-fix.html
+test-secure-debug.html
+test-secure-simple.html
+test-secure-compare.html
+
+# PHP files
+qr-generator.php
+composer.json
+composer.lock
+vendor/
+
+# Documentation
+PUBLISH_GUIDE.md
 
 # Development server
 .serve/
