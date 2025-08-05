@@ -795,6 +795,90 @@
             } catch (error) {
                 console.error('❌ Erreur génération QR PHP:', error);
                 console.error('Stack trace:', error.stack);
+                
+                // Détecter les erreurs CORS spécifiquement
+                if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                    console.warn('🚫 Erreur CORS détectée, tentative de génération QR côté client...');
+                    this.generateQRCodeClientSide(content, label, qrContainer);
+                } else {
+                    this.displayFallbackImage();
+                }
+            }
+        }
+
+        /**
+         * Générer un QR code côté client en cas d'erreur CORS
+         */
+        generateQRCodeClientSide(content, label, qrContainer) {
+            try {
+                console.log('🎨 Génération QR côté client...');
+                
+                // Vérifier si QRCode est disponible
+                if (typeof QRCode === 'undefined') {
+                    console.error('❌ QRCode library non disponible');
+                    this.displayFallbackImage();
+                    return;
+                }
+                
+                // Créer un canvas pour le QR code
+                const canvas = document.createElement('canvas');
+                canvas.width = 300;
+                canvas.height = 300;
+                const ctx = canvas.getContext('2d');
+                
+                // Générer le QR code avec QRCode library
+                QRCode.toCanvas(canvas, content, {
+                    width: 280,
+                    margin: 10,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                }, (error) => {
+                    if (error) {
+                        console.error('❌ Erreur génération QR côté client:', error);
+                        this.displayFallbackImage();
+                        return;
+                    }
+                    
+                    // Ajouter le label en bas du QR code
+                    ctx.fillStyle = '#333333';
+                    ctx.font = '14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(label, 150, 295);
+                    
+                    // Convertir en data URL
+                    const dataUrl = canvas.toDataURL('image/png');
+                    
+                    // Stocker l'URL du QR code pour getQRCode()
+                    this.currentQRUrl = dataUrl;
+                    
+                    // Afficher le QR code
+                    qrContainer.innerHTML = `
+                        <div class="sunuid-qr-ready" style="text-align: center; padding: 20px;">
+                            <img src="${dataUrl}" alt="QR Code ${this.config.partnerName}" style="max-width: 300px; border: 2px solid #ddd; border-radius: 10px;">
+                            <p style="margin-top: 10px; font-size: 12px; color: #666;">Généré côté client (CORS)</p>
+                        </div>
+                    `;
+                    
+                    // Afficher les instructions et le statut
+                    const instructionsElement = qrContainer.parentElement.querySelector('.sunuid-qr-instructions');
+                    const statusElement = qrContainer.parentElement.querySelector('.sunuid-qr-status');
+                    
+                    if (instructionsElement) {
+                        instructionsElement.style.display = 'block';
+                        instructionsElement.classList.add('sunuid-qr-ready');
+                    }
+                    if (statusElement) {
+                        statusElement.style.display = 'block';
+                        statusElement.classList.add('sunuid-qr-ready');
+                    }
+                    
+                    console.log('✅ QR code côté client généré avec succès');
+                });
+                
+            } catch (error) {
+                console.error('❌ Erreur génération QR côté client:', error);
                 this.displayFallbackImage();
             }
         }

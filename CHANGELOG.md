@@ -5,6 +5,18 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.30] - 2024-12-19
+
+### 🔧 Corrigé
+- **Erreur CORS** : Ajout d'une solution de contournement pour les erreurs CORS sur le QR Generator
+  - Détection automatique des erreurs CORS (`Failed to fetch`, `CORS`)
+  - Génération automatique du QR code côté client en cas d'erreur CORS
+  - Fallback robuste avec la bibliothèque QRCode.js
+
+### 🚀 Amélioré
+- **Gestion d'erreur** : Amélioration de la gestion des erreurs réseau
+- **Fallback intelligent** : Le SDK tente d'abord le serveur PHP, puis génère côté client si CORS échoue
+
 ## [1.0.29] - 2024-12-19
 
 ### 🔧 Corrigé
