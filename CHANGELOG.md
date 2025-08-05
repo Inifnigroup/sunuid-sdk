@@ -5,6 +5,13 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.29] - 2024-12-19
+
+### 🔧 Corrigé
+- **URL QR Generator** : Correction de l'URL malformée qui générait `https://test.fayma.sn/.sunuid.fayma.sn/qr-generator.php`
+  - URL corrigée pour utiliser directement `https://sunuid.fayma.sn/qr-generator.php`
+  - Amélioration de la logique de construction des URLs pour éviter les malformations
+
 ## [1.0.28] - 2024-12-19
 
 ### 🔧 Corrigé

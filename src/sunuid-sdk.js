@@ -31,7 +31,12 @@
         requestTimeout: 10000, // 10 secondes
         // Options d'initialisation sécurisée
         secureInit: false,
-        secureInitUrl: window.SunuIDConfig?.apiUrl?.replace('/api', '') + '/secure-init.php' || 'https://sunuid.fayma.sn/secure-init.php',
+        secureInitUrl: (() => {
+            if (window.SunuIDConfig?.apiUrl?.includes('api.sunuid.fayma.sn')) {
+                return 'https://sunuid.fayma.sn/secure-init.php';
+            }
+            return window.SunuIDConfig?.apiUrl?.replace('/api', '') + '/secure-init.php' || 'https://sunuid.fayma.sn/secure-init.php';
+        })(),
         token: null
     };
 
@@ -724,7 +729,14 @@
 
                 // Appeler l'endpoint PHP
                 console.log('🔄 Appel endpoint PHP...');
-                const qrGeneratorUrl = this.config.apiUrl.replace('/api', '') + '/qr-generator.php';
+                // Construire l'URL du QR generator de manière plus robuste
+                let qrGeneratorUrl;
+                if (this.config.apiUrl.includes('api.sunuid.fayma.sn')) {
+                    qrGeneratorUrl = 'https://sunuid.fayma.sn/qr-generator.php';
+                } else {
+                    qrGeneratorUrl = this.config.apiUrl.replace('/api', '') + '/qr-generator.php';
+                }
+                console.log('🔗 URL QR Generator:', qrGeneratorUrl);
                 const response = await fetch(qrGeneratorUrl, {
                     method: 'POST',
                     headers: {

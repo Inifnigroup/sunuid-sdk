@@ -271,7 +271,7 @@ function _unsupportedIterableToArray(r, a) {
  * @license MIT
  */
 
-(function (window, _window$SunuIDConfig, _window$SunuIDConfig2) {
+(function (window, _window$SunuIDConfig) {
 
   // Configuration par défaut
   var DEFAULT_CONFIG = {
@@ -299,7 +299,12 @@ function _unsupportedIterableToArray(r, a) {
     // 10 secondes
     // Options d'initialisation sécurisée
     secureInit: false,
-    secureInitUrl: ((_window$SunuIDConfig2 = window.SunuIDConfig) === null || _window$SunuIDConfig2 === void 0 || (_window$SunuIDConfig2 = _window$SunuIDConfig2.apiUrl) === null || _window$SunuIDConfig2 === void 0 ? void 0 : _window$SunuIDConfig2.replace('/api', '')) + '/secure-init.php' || 'https://sunuid.fayma.sn/secure-init.php',
+    secureInitUrl: function (_window$SunuIDConfig2, _window$SunuIDConfig3) {
+      if ((_window$SunuIDConfig2 = window.SunuIDConfig) !== null && _window$SunuIDConfig2 !== void 0 && (_window$SunuIDConfig2 = _window$SunuIDConfig2.apiUrl) !== null && _window$SunuIDConfig2 !== void 0 && _window$SunuIDConfig2.includes('api.sunuid.fayma.sn')) {
+        return 'https://sunuid.fayma.sn/secure-init.php';
+      }
+      return ((_window$SunuIDConfig3 = window.SunuIDConfig) === null || _window$SunuIDConfig3 === void 0 || (_window$SunuIDConfig3 = _window$SunuIDConfig3.apiUrl) === null || _window$SunuIDConfig3 === void 0 ? void 0 : _window$SunuIDConfig3.replace('/api', '')) + '/secure-init.php' || 'https://sunuid.fayma.sn/secure-init.php';
+    }(),
     token: null
   };
 
@@ -1214,7 +1219,14 @@ function _unsupportedIterableToArray(r, a) {
 
                 // Appeler l'endpoint PHP
                 console.log('🔄 Appel endpoint PHP...');
-                qrGeneratorUrl = this.config.apiUrl.replace('/api', '') + '/qr-generator.php';
+                // Construire l'URL du QR generator de manière plus robuste
+
+                if (this.config.apiUrl.includes('api.sunuid.fayma.sn')) {
+                  qrGeneratorUrl = 'https://sunuid.fayma.sn/qr-generator.php';
+                } else {
+                  qrGeneratorUrl = this.config.apiUrl.replace('/api', '') + '/qr-generator.php';
+                }
+                console.log('🔗 URL QR Generator:', qrGeneratorUrl);
                 _context9.n = 3;
                 return fetch(qrGeneratorUrl, {
                   method: 'POST',
@@ -1425,8 +1437,8 @@ function _unsupportedIterableToArray(r, a) {
       key: "makeRequest",
       value: (function () {
         var _makeRequest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(endpoint, data) {
-          var _window$SunuIDConfig3,
-            _window$SunuIDConfig4,
+          var _window$SunuIDConfig4,
+            _window$SunuIDConfig5,
             _this5 = this;
           var sanitizedData, endpointPath, url, retryCount, maxRetries, _loop, _ret;
           return _regenerator().w(function (_context11) {
@@ -1466,11 +1478,11 @@ function _unsupportedIterableToArray(r, a) {
                 console.log('🔍 Debug makeRequest - isInitialized:', this.isInitialized);
 
                 // Utiliser l'endpoint depuis la configuration si disponible
-                endpointPath = ((_window$SunuIDConfig3 = window.SunuIDConfig) === null || _window$SunuIDConfig3 === void 0 || (_window$SunuIDConfig3 = _window$SunuIDConfig3.endpoints) === null || _window$SunuIDConfig3 === void 0 ? void 0 : _window$SunuIDConfig3[endpoint.replace('/', '')]) || endpoint;
+                endpointPath = ((_window$SunuIDConfig4 = window.SunuIDConfig) === null || _window$SunuIDConfig4 === void 0 || (_window$SunuIDConfig4 = _window$SunuIDConfig4.endpoints) === null || _window$SunuIDConfig4 === void 0 ? void 0 : _window$SunuIDConfig4[endpoint.replace('/', '')]) || endpoint;
                 url = "".concat(this.config.apiUrl).concat(endpointPath); // Debug: Afficher l'URL finale
                 console.log('🔍 URL finale construite:', url);
                 console.log('🔍 EndpointPath:', endpointPath);
-                console.log('🔍 SunuIDConfig endpoints:', JSON.stringify((_window$SunuIDConfig4 = window.SunuIDConfig) === null || _window$SunuIDConfig4 === void 0 ? void 0 : _window$SunuIDConfig4.endpoints));
+                console.log('🔍 SunuIDConfig endpoints:', JSON.stringify((_window$SunuIDConfig5 = window.SunuIDConfig) === null || _window$SunuIDConfig5 === void 0 ? void 0 : _window$SunuIDConfig5.endpoints));
 
                 // Log de sécurité pour la requête
                 this.logSecurityEvent('API_REQUEST_START', {
