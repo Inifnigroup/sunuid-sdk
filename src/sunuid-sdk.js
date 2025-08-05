@@ -454,6 +454,7 @@
                     // Construire l'URL complète de l'image QR avec la base URL pour les images
                     const imageBaseUrl = 'https://sunuid.fayma.sn';
                     const qrImageUrl = `${imageBaseUrl}${response.data.qrcode}`;
+                    this.currentQRUrl = qrImageUrl; // Stocker l'URL pour getQRCode()
                     this.displayQRCode(containerId, qrImageUrl, this.config.type, options);
                     
                     // Générer le QR code personnalisé avec le type + code de l'API + socket ID
@@ -753,14 +754,13 @@
                 console.log('📊 Taille:', responseData.data.size + 'px');
                 console.log('📊 Longueur base64:', responseData.data.length + ' caractères');
 
+                // Stocker l'URL du QR code pour getQRCode()
+                this.currentQRUrl = responseData.data.dataUrl;
+                
                 // Créer le conteneur avec le QR code PHP
                 qrContainer.innerHTML = `
                     <div class="sunuid-qr-ready" style="text-align: center; padding: 20px;">
                         <img src="${responseData.data.dataUrl}" alt="QR Code SunuID" style="max-width: 300px; border: 2px solid #ddd; border-radius: 10px;">
-                        <div style="margin-top: 15px;">
-                            <p style="font-weight: bold; color: #333; margin: 5px 0;">${label}</p>
-                            <p style="color: #666; font-size: 12px; margin: 5px 0;">${content}</p>
-                        </div>
                     </div>
                 `;
                 
@@ -1093,6 +1093,19 @@
             if (this.config.onError) {
                 this.config.onError(error);
             }
+        }
+
+        /**
+         * Obtenir l'URL du QR code généré
+         */
+        getQRCode() {
+            // Retourner l'URL du QR code si disponible
+            if (this.currentQRUrl) {
+                return this.currentQRUrl;
+            }
+            
+            // Sinon, retourner une URL par défaut ou null
+            return null;
         }
 
         /**
