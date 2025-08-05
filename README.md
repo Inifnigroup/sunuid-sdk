@@ -295,7 +295,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 | `autoRefresh` | boolean | `true` | Actualisation automatique |
 | `refreshInterval` | number | `30000` | Intervalle en millisecondes |
 | `secureInit` | boolean | `false` | Active le mode sécurisé |
-| `secureInitUrl` | string | `'http://localhost:8081/secure-init.php'` | URL de l'endpoint sécurisé |
+| `secureInitUrl` | string | `'https://api.sunuid.fayma.sn/secure-init.php'` | URL de l'endpoint sécurisé |
 | `partnerName` | string | `'SunuID'` | Nom du partenaire |
 | `enableSecurityLogs` | boolean | `true` | Active les logs de sécurité |
 | `validateInputs` | boolean | `true` | Validation des entrées |

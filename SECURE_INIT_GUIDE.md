@@ -23,7 +23,7 @@ const sunuid = initSunuID({
     type: 2,
     partnerName: 'SunuID',
     secureInit: true, // Activation du mode sécurisé
-    secureInitUrl: 'http://localhost:8081/secure-init.php'
+    secureInitUrl: 'https://api.sunuid.fayma.sn/secure-init.php'
     // clientId et secretId masqués côté serveur
 });
 ```

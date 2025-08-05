@@ -7,7 +7,7 @@ Publication de la version **1.0.28** du SunuID SDK avec des corrections critique
 ## 🚨 Problèmes résolus
 
 ### 1. Erreur de connexion en production
-- **Problème** : `POST http://localhost:8081/qr-generator.php net::ERR_CONNECTION_REFUSED`
+- **Problème** : `POST https://api.sunuid.fayma.sn/qr-generator.php net::ERR_CONNECTION_REFUSED`
 - **Cause** : URLs locales codées en dur dans le SDK
 - **Solution** : Utilisation de la configuration `this.config.apiUrl` pour les URLs de production
 
@@ -21,7 +21,7 @@ Publication de la version **1.0.28** du SunuID SDK avec des corrections critique
 ### URLs de production
 ```javascript
 // AVANT (codé en dur)
-const response = await fetch('http://localhost:8081/qr-generator.php', {
+const response = await fetch('https://api.sunuid.fayma.sn/qr-generator.php', {
 
 // APRÈS (configuration dynamique)
 const qrGeneratorUrl = this.config.apiUrl.replace('/api', '') + '/qr-generator.php';
