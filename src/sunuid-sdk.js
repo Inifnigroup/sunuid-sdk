@@ -6,6 +6,9 @@
  * @license MIT
  */
 
+// Import QRCode pour génération de QR codes
+import QRCode from 'qrcode';
+
 (function(window) {
     'use strict';
 
@@ -211,7 +214,7 @@
                     // Construire l'URL complète de l'image QR avec la base URL pour les images
                     const imageBaseUrl = 'https://sunuid.fayma.sn';
                     const qrImageUrl = `${imageBaseUrl}${response.data.qrcode}`;
-                    this.displayQRCode(containerId, qrImageUrl, this.config.type, options);
+                    await this.displayQRCode(containerId, qrImageUrl, this.config.type, options);
                     this.startAutoRefresh(containerId, this.config.type, options);
                     
                     // Émettre un événement WebSocket pour la génération du QR
@@ -258,7 +261,7 @@
                     // Construire l'URL complète de l'image QR avec la base URL pour les images
                     const imageBaseUrl = 'https://sunuid.fayma.sn';
                     const qrImageUrl = `${imageBaseUrl}${response.data.qrcode}`;
-                    this.displayQRCode(containerId, qrImageUrl, type, options);
+                    await this.displayQRCode(containerId, qrImageUrl, type, options);
                     this.startAutoRefresh(containerId, type, options);
                     return {
                         ...response.data,
@@ -319,9 +322,9 @@
         }
 
         /**
-         * Afficher un QR code dans un conteneur
+         * Afficher un QR code personnalisé dans un conteneur
          */
-        displayQRCode(containerId, qrUrl, type, options = {}) {
+        async displayQRCode(containerId, qrUrl, type, options = {}) {
             const container = document.getElementById(containerId);
             if (!container) {
                 throw new Error(`Conteneur avec l'ID "${containerId}" non trouvé`);
@@ -330,28 +333,92 @@
             // Nettoyer le conteneur
             container.innerHTML = '';
 
-            // Créer l'élément QR code
-            const qrElement = document.createElement('div');
-            qrElement.className = 'sunuid-qr-code';
-            qrElement.innerHTML = `
+            try {
+                // Générer le contenu du QR code
+                const socketId = this.socket ? this.socket.id : 'no-socket';
+                const qrContent = `code-${socketId}`;
+                
+                // Nom du partenaire (peut être configuré)
+                const partnerName = options.partnerName || 'SunuID';
+                const labelText = `type-${partnerName}`;
+
+                // Générer le QR code avec QRCode.js
+                const qrDataUrl = await QRCode.toDataURL(qrContent, {
+                    width: 200,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                });
+
+                // Créer l'élément QR code personnalisé
+                const qrElement = document.createElement('div');
+                qrElement.className = 'sunuid-qr-code';
+                qrElement.innerHTML = `
                     <div class="sunuid-qr-header">
-                    <h3>${type === 1 ? 'Authentification' : type === 2 ? 'Vérification KYC' : type === 3 ? 'Service Type 3' : 'Service Type ' + type}</h3>
+                        <h3>${type === 1 ? 'Authentification' : type === 2 ? 'Vérification KYC' : type === 3 ? 'Service Type 3' : 'Service Type ' + type}</h3>
                     </div>
-                <div class="sunuid-qr-image">
-                    <img src="${qrUrl}" alt="QR Code SunuID" style="max-width: 300px; height: auto;">
+                    <div class="sunuid-qr-image">
+                        <div class="sunuid-qr-wrapper" style="position: relative; display: inline-block;">
+                            <img src="${qrDataUrl}" alt="QR Code SunuID" style="max-width: 300px; height: auto;">
+                            <div class="sunuid-qr-center-logo" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 50%; padding: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="20" cy="20" r="18" fill="#007bff" stroke="#0056b3" stroke-width="2"/>
+                                    <path d="M12 16 L16 16 L16 20 L20 20 L20 24 L16 24 L16 28 L12 28 Z" fill="white"/>
+                                    <path d="M24 12 L28 12 L28 16 L24 16 Z" fill="white"/>
+                                    <path d="M24 24 L28 24 L28 28 L24 28 Z" fill="white"/>
+                                    <path d="M28 16 L32 16 L32 20 L28 20 Z" fill="white"/>
+                                </svg>
+                            </div>
+                            <div class="sunuid-qr-label" style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); background: #007bff; color: white; padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: bold;">
+                                <span class="sunuid-label-text">${labelText}</span>
+                            </div>
+                        </div>
                     </div>
-                <div class="sunuid-qr-instructions">
-                    <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>
+                    <div class="sunuid-qr-instructions">
+                        <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>
                     </div>
-                <div class="sunuid-qr-status" id="sunuid-status">
-                    <p>En attente de scan...</p>
-                </div>
-            `;
+                    <div class="sunuid-qr-status" id="sunuid-status">
+                        <p>En attente de scan...</p>
+                    </div>
+                `;
 
-            container.appendChild(qrElement);
+                container.appendChild(qrElement);
 
-            // Appliquer le thème
-            this.applyTheme(options.theme || this.config.theme);
+                // Appliquer le thème
+                this.applyTheme(options.theme || this.config.theme);
+
+                console.log('🎨 QR code personnalisé généré:', {
+                    content: qrContent,
+                    label: labelText,
+                    socketId: socketId
+                });
+
+            } catch (error) {
+                console.error('❌ Erreur génération QR code:', error);
+                
+                // Fallback vers l'image originale
+                const qrElement = document.createElement('div');
+                qrElement.className = 'sunuid-qr-code';
+                qrElement.innerHTML = `
+                    <div class="sunuid-qr-header">
+                        <h3>${type === 1 ? 'Authentification' : type === 2 ? 'Vérification KYC' : type === 3 ? 'Service Type 3' : 'Service Type ' + type}</h3>
+                    </div>
+                    <div class="sunuid-qr-image">
+                        <img src="${qrUrl}" alt="QR Code SunuID" style="max-width: 300px; height: auto;">
+                    </div>
+                    <div class="sunuid-qr-instructions">
+                        <p>Scannez ce QR code avec l'application SunuID pour vous connecter</p>
+                    </div>
+                    <div class="sunuid-qr-status" id="sunuid-status">
+                        <p>En attente de scan...</p>
+                    </div>
+                `;
+
+                container.appendChild(qrElement);
+                this.applyTheme(options.theme || this.config.theme);
+            }
         }
 
         /**

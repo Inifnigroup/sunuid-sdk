@@ -229,6 +229,8 @@ function _toPropertyKey(t) {
       this.refreshTimer = null;
       this.isInitialized = false;
       this.socket = null;
+      this.websocketRetryCount = 0;
+      this.maxWebSocketRetries = 5;
       this.init();
     }
 
@@ -258,11 +260,16 @@ function _toPropertyKey(t) {
         try {
           // Vérifier si Socket.IO est disponible
           if (typeof io === 'undefined') {
-            console.warn('⚠️ Socket.IO non disponible, WebSocket sera initialisé plus tard');
-            // Réessayer après un délai
-            setTimeout(function () {
-              return _this.initWebSocket();
-            }, 1000);
+            this.websocketRetryCount++;
+            if (this.websocketRetryCount <= this.maxWebSocketRetries) {
+              console.warn("\u26A0\uFE0F Socket.IO non disponible (tentative ".concat(this.websocketRetryCount, "/").concat(this.maxWebSocketRetries, "), WebSocket sera initialis\xE9 plus tard"));
+              // Réessayer après un délai
+              setTimeout(function () {
+                return _this.initWebSocket();
+              }, 1000);
+            } else {
+              console.warn('⚠️ Socket.IO non disponible après plusieurs tentatives, WebSocket désactivé');
+            }
             return;
           }
 
