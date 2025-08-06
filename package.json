@@ -19,7 +19,8 @@
     "lint": "eslint src/**/*.js",
     "format": "prettier --write src/**/*.js",
     "serve": "python3 -m http.server 8080",
-    "demo": "open https://sunuid.fayma.sn/examples/demo.html"
+    "demo": "open https://sunuid.fayma.sn/examples/demo.html",
+    "verify-no-auto-publish": "./verify-no-auto-publish.sh"
   },
   "keywords": [
     "sunuid",

@@ -85,3 +85,28 @@ Thumbs.db
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Publication automatique - FICHIERS INTERDITS
+# Ces fichiers ne doivent JAMAIS être commités
+.npmrc
+.npmignore
+.npm-debug.log
+.npm-debug.log.*
+.npm-error.log
+.npm-error.log.*
+
+# CI/CD files that could cause auto-publish
+.github/workflows/publish.yml
+.github/workflows/release.yml
+.github/workflows/auto-publish.yml
+.github/workflows/deploy.yml
+
+# NPM credentials and tokens
+.npmrc.local
+.npmrc.production
+.npmrc.staging
+
+# Auto-publish scripts
+scripts/publish.sh
+scripts/auto-publish.sh
+scripts/deploy.sh
