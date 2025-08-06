@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intégration Auto SunuID SDK</title>
+    
+    <!-- Socket.IO (requis) -->
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    
+    <!-- SunuID SDK -->
+    <script src="https://unpkg.com/sunuid-sdk@1.0.34/dist/sunuid-sdk.min.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .qr-container {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .qr-container img {
+            max-width: 250px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .status.loading {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .status.success {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+        
+        .status.error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .info {
+            margin-top: 20px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .retry-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .retry-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Authentification SunuID</h1>
+        <p>Initialisation et génération automatique du QR code</p>
+        
+        <div id="status" class="status loading">
+            <span class="loading-spinner"></span>
+            Initialisation automatique en cours...
+        </div>
+        
+        <div id="qr-container" class="qr-container">
+            <p>Chargement...</p>
+        </div>
+        
+        <div class="info">
+            <p>📱 Scannez le QR code avec l'application SunuID</p>
+            <p>🔄 Le QR code se génère automatiquement</p>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration automatique
+        const config = {
+            clientId: '1754166754_221A57B46843D755',
+            secretId: '56d40fe70507228b27f2640ae65894177c2fedbf246e2b30978fde1fc43953c5',
+            type: 2, // 2 = Authentification
+            autoRefresh: false, // Désactivé pour éviter les appels répétitifs
+            // Désactiver l'initialisation automatique dans le constructeur
+            autoInit: false,
+            // Callbacks automatiques
+            onSuccess: (data) => {
+                console.log('🎉 Authentification réussie:', data);
+                updateStatus('✅ Authentification réussie !', 'success');
+            },
+            onError: (error) => {
+                console.error('💥 Erreur:', error);
+                updateStatus(`❌ Erreur: ${error.message}`, 'error');
+                showRetryButton();
+            },
+            onStatusUpdate: (status) => {
+                console.log('📊 Statut mis à jour:', status);
+            }
+        };
+        
+        let sunuid = null;
+        
+        function updateStatus(message, type = 'loading') {
+            const statusDiv = document.getElementById('status');
+            if (!statusDiv) {
+                console.warn('⚠️ Élément status non trouvé, création d\'un élément temporaire');
+                const tempStatus = document.createElement('div');
+                tempStatus.id = 'status';
+                tempStatus.className = `status ${type}`;
+                document.body.appendChild(tempStatus);
+                return;
+            }
+            
+            const spinner = type === 'loading' ? '<span class="loading-spinner"></span>' : '';
+            statusDiv.innerHTML = spinner + message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        function showRetryButton() {
+            const container = document.querySelector('.container');
+            if (!container) {
+                console.warn('⚠️ Container non trouvé, ajout du bouton au body');
+                const retryBtn = document.createElement('button');
+                retryBtn.className = 'retry-btn';
+                retryBtn.textContent = '🔄 Réessayer';
+                retryBtn.onclick = initAutoSunuID;
+                document.body.appendChild(retryBtn);
+                return;
+            }
+            
+            // Vérifier si le bouton existe déjà
+            const existingBtn = container.querySelector('.retry-btn');
+            if (existingBtn) {
+                return; // Le bouton existe déjà
+            }
+            
+            const retryBtn = document.createElement('button');
+            retryBtn.className = 'retry-btn';
+            retryBtn.textContent = '🔄 Réessayer';
+            retryBtn.onclick = initAutoSunuID;
+            container.appendChild(retryBtn);
+        }
+        
+        async function initAutoSunuID() {
+            try {
+                // Vérifier que les éléments nécessaires sont présents
+                const qrContainer = document.getElementById('qr-container');
+                if (!qrContainer) {
+                    console.error('❌ Élément qr-container non trouvé');
+                    throw new Error('Conteneur QR non trouvé dans le DOM');
+                }
+                
+                updateStatus('🔄 Initialisation du SDK...', 'loading');
+                
+                // Vérifier que SunuID est disponible
+                if (typeof SunuID === 'undefined') {
+                    throw new Error('SDK SunuID non chargé. Vérifiez que les scripts sont inclus.');
+                }
+                
+                // Créer l'instance SDK
+                sunuid = new SunuID(config);
+                
+                // Initialiser automatiquement
+                await sunuid.init();
+                
+                // Attendre que le WebSocket soit connecté
+                updateStatus('🔄 Connexion WebSocket...', 'loading');
+                
+                // Attendre jusqu'à 10 secondes que le socket soit connecté
+                let attempts = 0;
+                const maxAttempts = 20; // 20 tentatives * 500ms = 10 secondes
+                
+                while (attempts < maxAttempts) {
+                    if (sunuid.socket && sunuid.socket.connected && sunuid.socket.id) {
+                        console.log('✅ WebSocket connecté avec ID:', sunuid.socket.id);
+                        break;
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    attempts++;
+                    console.log(`🔄 Tentative ${attempts}/${maxAttempts} - Attente WebSocket...`);
+                }
+                
+                if (!sunuid.socket || !sunuid.socket.connected || !sunuid.socket.id) {
+                    throw new Error('WebSocket non connecté après 10 secondes');
+                }
+                
+                updateStatus('🔄 Génération du QR code...', 'loading');
+                
+                // Générer le QR code automatiquement
+                const result = await sunuid.generateQR('qr-container');
+                
+                updateStatus('✅ QR code généré avec succès !', 'success');
+                
+                console.log('✅ QR Code généré automatiquement:', result);
+                
+                // Écouter les événements WebSocket
+                if (sunuid.socket) {
+                    sunuid.socket.on('qr_scanned', (data) => {
+                        console.log('📱 QR code scanné:', data);
+                        updateStatus('📱 QR code scanné - Authentification en cours...', 'loading');
+                    });
+                    
+                    sunuid.socket.on('auth_success', (data) => {
+                        console.log('🎉 Authentification réussie:', data);
+                        updateStatus('🎉 Authentification réussie !', 'success');
+                    });
+                    
+                    sunuid.socket.on('auth_error', (data) => {
+                        console.error('❌ Erreur d\'authentification:', data);
+                        updateStatus('❌ Erreur d\'authentification', 'error');
+                    });
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'initialisation automatique:', error);
+                updateStatus(`❌ Erreur: ${error.message}`, 'error');
+                showRetryButton();
+            }
+        }
+        
+        // Initialisation automatique au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Démarrage de l\'initialisation automatique...');
+            
+            // Vérifier que tous les éléments nécessaires sont présents
+            const requiredElements = ['status', 'qr-container'];
+            const missingElements = requiredElements.filter(id => !document.getElementById(id));
+            
+            if (missingElements.length > 0) {
+                console.error('❌ Éléments manquants:', missingElements);
+                console.log('🔧 Création des éléments manquants...');
+                
+                // Créer les éléments manquants
+                missingElements.forEach(id => {
+                    const element = document.createElement('div');
+                    element.id = id;
+                    if (id === 'status') {
+                        element.className = 'status loading';
+                        element.innerHTML = '<span class="loading-spinner"></span>Initialisation...';
+                    } else if (id === 'qr-container') {
+                        element.className = 'qr-container';
+                        element.innerHTML = '<p>Chargement...</p>';
+                    }
+                    document.body.appendChild(element);
+                });
+            }
+            
+            // Attendre un peu que tout soit chargé
+            setTimeout(() => {
+                initAutoSunuID();
+            }, 500);
+        });
+        
+        // Gestion des erreurs globales
+        window.addEventListener('error', function(event) {
+            console.error('❌ Erreur globale:', event.error);
+            try {
+                updateStatus('❌ Erreur inattendue', 'error');
+            } catch (updateError) {
+                console.error('❌ Impossible de mettre à jour le statut:', updateError);
+            }
+        });
+        
+        // Gestion des promesses rejetées
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('❌ Promesse rejetée:', event.reason);
+            try {
+                updateStatus('❌ Erreur de promesse', 'error');
+            } catch (updateError) {
+                console.error('❌ Impossible de mettre à jour le statut:', updateError);
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SunuID - Intégration Minimale</title>
+    
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    
+    <!-- SunuID SDK -->
+    <script src="https://unpkg.com/sunuid-sdk@1.0.35/dist/sunuid-sdk.min.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        #qr-area {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .info { background: #e3f2fd; color: #1976d2; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .error { background: #ffebee; color: #c62828; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 SunuID</h1>
+        <div id="status" class="info">Initialisation...</div>
+        <div id="qr-area">Chargement...</div>
+    </div>
+    
+    <script>
+        // Configuration minimale
+        const config = {
+            clientId: '1754166754_221A57B46843D755',
+            secretId: '56d40fe70507228b27f2640ae65894177c2fedbf246e2b30978fde1fc43953c5',
+            type: 2,
+            autoRefresh: false
+        };
+        
+        // Initialisation automatique
+        async function init() {
+            try {
+                document.getElementById('status').textContent = 'Initialisation...';
+                document.getElementById('status').className = 'info';
+                
+                // Créer l'instance SDK
+                const sunuid = new SunuID(config);
+                
+                // Configurer les callbacks pour logger les événements socket
+                sunuid.config.onStatusUpdate = (data) => {
+                    console.log('🔔 Socket Status Update:', data);
+                };
+                
+                sunuid.config.onSuccess = (data) => {
+                    console.log('✅ Socket Success:', data);
+                };
+                
+                sunuid.config.onError = (data) => {
+                    console.log('❌ Socket Error:', data);
+                };
+                
+                sunuid.config.onExpired = (data) => {
+                    console.log('⏰ Socket Expired:', data);
+                };
+                
+                // Attendre un peu avant d'initialiser
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Initialiser
+                await sunuid.init();
+                
+                // Logger le statut WebSocket après initialisation
+                console.log('🔌 WebSocket Status:', sunuid.getWebSocketStatus());
+                
+                document.getElementById('status').textContent = 'Génération QR...';
+                
+                // Attendre un peu avant de générer le QR
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Générer le QR code
+                await sunuid.generateQR('qr-area');
+                
+                document.getElementById('status').textContent = 'QR Code généré !';
+                document.getElementById('status').className = 'success';
+                
+                // Logger les logs de sécurité
+                console.log('🔒 Security Logs:', sunuid.getSecurityLogs());
+                
+            } catch (error) {
+                document.getElementById('status').textContent = 'Erreur: ' + error.message;
+                document.getElementById('status').className = 'error';
+                console.error('Erreur détaillée:', error);
+            }
+        }
+        
+        // Démarrer au chargement
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Logger tous les événements socket globaux
+        window.addEventListener('sunuid-socket-event', (event) => {
+            console.log('🌐 Global Socket Event:', event.detail);
+        });
+        
+        // Logger les connexions socket
+        window.addEventListener('sunuid-socket-connect', (event) => {
+            console.log('🔗 Socket Connected:', event.detail);
+        });
+        
+        window.addEventListener('sunuid-socket-disconnect', (event) => {
+            console.log('🔌 Socket Disconnected:', event.detail);
+        });
+    </script>
+</body>
+</html> 

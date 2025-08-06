@@ -1,182 +1,192 @@
-# 🎨 Exemples SunuID - Prêts à l'Emploi !
+# 🚀 Intégration Minimale SunuID SDK
 
-**Copiez, modifiez, testez ! C'est aussi simple que ça !**
+Exemples de code minimal pour intégrer le SDK SunuID dans votre application.
 
-## 🚀 Démarrage Ultra-Rapide
+## 📁 Fichiers disponibles
 
-### 1. **Choisissez votre exemple** ci-dessous
-### 2. **Copiez le fichier** dans votre projet
-### 3. **Remplacez** `VOTRE_CLIENT_ID` et `VOTRE_SECRET_ID`
-### 4. **Ouvrez** dans votre navigateur
-### 5. **Testez** avec l'app SunuID !
+- **`minimal-integration.html`** - Exemple complet avec interface utilisateur
+- **`minimal-code.js`** - Code JavaScript minimal avec différents exemples
+- **`auto-integration.html`** - **🚀 Initialisation et génération automatique** (Recommandé)
+- **`auto-code.js`** - Code JavaScript pour l'initialisation automatique
 
----
+## 🎯 Code minimal (3 lignes)
 
-## 📁 Exemples Disponibles
-
-### 🌍 **Exemples Universels** (Recommandés)
-
-#### [universal-login.html](universal-login.html)
-**Connexion ultra-simple - Copier-coller en 30 secondes**
-- ✅ Interface moderne et responsive
-- ✅ Gestion automatique des événements
-- ✅ Redirection automatique
-- ✅ Gestion d'erreurs intégrée
-
-#### [universal-kyc.html](universal-kyc.html)
-**Vérification KYC complète - Prêt à l'emploi**
-- ✅ Étapes guidées pour l'utilisateur
-- ✅ Progression en temps réel
-- ✅ Validation automatique
-- ✅ Interface professionnelle
-
-### 🔧 **Exemples Simples** (Pour développeurs)
-
-#### [simple-login.html](simple-login.html)
-**Connexion basique - Code minimal**
-- ✅ Code le plus simple possible
-- ✅ Fonctionnalités essentielles
-- ✅ Facile à personnaliser
-- ✅ Parfait pour apprendre
-
-#### [simple-kyc.html](simple-kyc.html)
-**KYC basique - Vérification d'identité**
-- ✅ KYC complet en quelques lignes
-- ✅ Gestion des données utilisateur
-- ✅ Validation automatique
-- ✅ Interface épurée
-
-### ⚙️ **Configuration**
-
-#### [config-example.js](config-example.js)
-**Fichier de configuration - Tout en un**
-- ✅ Toutes les options documentées
-- ✅ Exemples d'utilisation
-- ✅ Commentaires explicatifs
-- ✅ Prêt à copier-coller
-
----
-
-## 🎯 Comment Utiliser
-
-### Étape 1 : Choisir un Exemple
-```bash
-# Copier l'exemple qui vous intéresse
-cp examples/universal-login.html mon-projet/
-```
-
-### Étape 2 : Modifier la Configuration
 ```javascript
-// Dans le fichier HTML, remplacer :
-client_id: 'VOTRE_CLIENT_ID',      // ← Votre vrai CLIENT_ID
-secret_id: 'VOTRE_SECRET_ID',      // ← Votre vrai SECRET_ID
-partner_name: 'Votre Entreprise'   // ← Votre nom d'entreprise
+const sunuid = new SunuID({
+    clientId: 'your-client-id',
+    secretId: 'your-secret-id',
+    type: 2
+});
+
+await sunuid.init();
+const result = await sunuid.generateQR('qr-container');
 ```
 
-### Étape 3 : Tester
-```bash
-# Ouvrir dans le navigateur
-open universal-login.html
-# ou
-firefox universal-login.html
-# ou
-chrome universal-login.html
+## 🚀 Code automatique (0 ligne de code manuel)
+
+```javascript
+// Initialisation automatique au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    const sunuid = new SunuID(config);
+    sunuid.init().then(() => sunuid.generateQR('qr-container'));
+});
 ```
 
-### Étape 4 : Personnaliser
-- Modifier les couleurs dans le CSS
-- Changer les textes
-- Ajouter votre logo
-- Adapter à votre design
+## 📋 Prérequis
 
----
-
-## 🔧 Personnalisation Rapide
-
-### Changer les Couleurs
-```css
-/* Dans le fichier HTML, modifier : */
-body {
-    background: linear-gradient(135deg, #VOTRE_COULEUR1 0%, #VOTRE_COULEUR2 100%);
-}
-```
-
-### Changer le Logo
+### 1. Inclure les scripts
 ```html
-<!-- Remplacer l'emoji par votre logo -->
-<div class="logo">
-    <img src="votre-logo.png" alt="Logo">
+<!-- Socket.IO (requis) -->
+<script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+
+<!-- SunuID SDK -->
+<script src="https://unpkg.com/sunuid-sdk@1.0.34/dist/sunuid-sdk.min.js"></script>
+```
+
+### 2. Conteneur HTML
+```html
+<div id="qr-container">
+    <!-- Le QR code sera affiché ici -->
 </div>
 ```
 
-### Changer les Textes
-```html
-<!-- Modifier les textes -->
-<h1>Votre Titre Personnalisé</h1>
-<p>Votre description personnalisée</p>
+## 🔧 Configuration minimale
+
+```javascript
+const config = {
+    clientId: '1754166754_221A57B46843D755',
+    secretId: '56d40fe70507228b27f2640ae65894177c2fedbf246e2b30978fde1fc43953c5',
+    type: 2, // 1=KYC, 2=AUTH, 3=SIGNATURE
+    autoRefresh: false // Désactivé pour éviter les appels répétitifs
+};
 ```
 
+## 📱 Types de services
+
+| Type | Description | Utilisation |
+|------|-------------|-------------|
+| `1` | **KYC** | Vérification d'identité |
+| `2` | **AUTH** | Authentification (défaut) |
+| `3` | **SIGNATURE** | Signature électronique |
+
+## 🚀 Exemples d'utilisation
+
+### Exemple 1 : Intégration automatique (Recommandé)
+```javascript
+// Initialisation automatique au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    const sunuid = new SunuID(config);
+    sunuid.init().then(() => sunuid.generateQR('qr-container'));
+});
+```
+
+### Exemple 2 : Intégration basique
+```javascript
+async function initSunuID() {
+    const sunuid = new SunuID(config);
+    await sunuid.init();
+    return await sunuid.generateQR('qr-container');
+}
+
+// Utilisation
+initSunuID().then(result => console.log('QR généré:', result));
+```
+
+### Exemple 3 : Avec gestion d'événements
+```javascript
+const sunuid = new SunuID({
+    ...config,
+    onSuccess: (data) => console.log('🎉 Succès:', data),
+    onError: (error) => console.error('💥 Erreur:', error),
+    onStatusUpdate: (status) => console.log('📊 Statut:', status)
+});
+```
+
+### Exemple 4 : Avec rafraîchissement automatique
+```javascript
+const sunuid = new SunuID({
+    ...config,
+    autoRefresh: true,
+    refreshInterval: 30000 // 30 secondes
+});
+```
+
+### Exemple 5 : Avec gestion d'erreurs avancée
+```javascript
+async function initWithRetry() {
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+        try {
+            const sunuid = new SunuID(config);
+            await sunuid.init();
+            return await sunuid.generateQR('qr-container');
+        } catch (error) {
+            retryCount++;
+            if (retryCount >= maxRetries) throw error;
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+    }
+}
+```
+
+## 🧪 Test rapide
+
+### Test manuel
+1. Ouvrir `minimal-integration.html` dans votre navigateur
+2. Cliquer sur "Initialiser SDK"
+3. Cliquer sur "Générer QR Code"
+4. Vérifier la console pour les logs
+
+### Test automatique (Recommandé)
+1. Ouvrir `auto-integration.html` dans votre navigateur
+2. Le QR code se génère automatiquement
+3. Aucune action manuelle requise
+4. Interface moderne avec animations
+
+## 🔍 Dépannage
+
+### Erreur : "SDK non initialisé"
+```javascript
+// Assurez-vous d'attendre l'initialisation
+await sunuid.init();
+```
+
+### Erreur : "Socket.IO non chargé"
+```html
+<!-- Vérifiez que Socket.IO est inclus avant le SDK -->
+<script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+<script src="https://unpkg.com/sunuid-sdk@1.0.34/dist/sunuid-sdk.min.js"></script>
+```
+
+### Appels répétitifs à l'API
+```javascript
+// Désactivez le rafraîchissement automatique
+const config = {
+    autoRefresh: false,
+    // ... autres options
+};
+```
+
+## 📊 Résultat attendu
+
+Après une intégration réussie, vous devriez voir :
+- ✅ Un QR code affiché dans le conteneur
+- ✅ Des logs dans la console confirmant la génération
+- ✅ Un objet `result` avec l'URL du QR code
+
+## 🔗 Liens utiles
+
+- **Documentation complète** : [README.md](../README.md)
+- **Changelog** : [CHANGELOG.md](../CHANGELOG.md)
+- **Page de test avancée** : [test-sdk-simple.html](../test-sdk-simple.html)
+
 ---
 
-## 📱 Test Mobile
+**Intégration en 3 étapes :**
+1. Inclure les scripts
+2. Créer le conteneur HTML
+3. Initialiser et générer le QR code
 
-### Tester sur Mobile
-1. **Ouvrez** l'exemple sur votre ordinateur
-2. **Scannez** le QR code avec l'app SunuID
-3. **Testez** la connexion
-4. **Vérifiez** la redirection
-
-### Tester sur Différents Navigateurs
-- ✅ Chrome
-- ✅ Firefox
-- ✅ Safari
-- ✅ Edge
-- ✅ Mobile Safari
-- ✅ Chrome Mobile
-
----
-
-## 🚨 Dépannage
-
-### QR Code ne s'affiche pas ?
-- ✅ Vérifiez vos `client_id` et `secret_id`
-- ✅ Vérifiez votre connexion internet
-- ✅ Ouvrez la console (F12) pour voir les erreurs
-
-### Connexion ne fonctionne pas ?
-- ✅ Vérifiez que l'app SunuID est à jour
-- ✅ Vérifiez que vous scannez le bon QR code
-- ✅ Vérifiez la console pour les erreurs
-
-### Redirection ne marche pas ?
-- ✅ Modifiez l'URL de redirection dans le code
-- ✅ Vérifiez que l'URL est accessible
-- ✅ Testez avec une URL simple d'abord
-
----
-
-## 📞 Support
-
-### 🆘 **Aide Immédiate**
-- **Documentation complète** : [../README.md](../README.md)
-- **Guide de démarrage** : [../GET_STARTED.md](../GET_STARTED.md)
-- **Support technique** : support@sunuid.sn
-
-### 🎓 **Ressources**
-- **Intégration universelle** : [../INTEGRATION_UNIVERSAL.md](../INTEGRATION_UNIVERSAL.md)
-- **Guide rapide** : [../QUICKSTART.md](../QUICKSTART.md)
-- **Intégration simple** : [../INTEGRATION_SIMPLE.md](../INTEGRATION_SIMPLE.md)
-- **Intégration PHP** : [../PHP_INTEGRATION.md](../PHP_INTEGRATION.md)
-
----
-
-## 🎉 Résultat
-
-**Avec ces exemples, vous pouvez :**
-
-- 🧠 **Tester** SunuID en 30 secondes
-- 👨‍💻 **Intégrer** dans votre projet en 2 minutes
-- 🎨 **Personnaliser** selon vos besoins
-- 🚀 **Déployer** en production
-
-**Choisissez votre exemple et commencez maintenant !** 🚀 
+C'est tout ! 🎉 

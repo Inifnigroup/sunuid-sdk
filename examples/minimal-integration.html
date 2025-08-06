@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intégration Minimale SunuID SDK</title>
+    
+    <!-- Socket.IO (requis) -->
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    
+    <!-- SunuID SDK -->
+    <script src="https://unpkg.com/sunuid-sdk@1.0.34/dist/sunuid-sdk.min.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .qr-container {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-container img {
+            max-width: 250px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Intégration Minimale SunuID</h1>
+    <p>Exemple d'intégration simple du SDK SunuID</p>
+    
+    <div id="status" class="status info">
+        Prêt à initialiser le SDK
+    </div>
+    
+    <button onclick="initSDK()" id="initBtn">🚀 Initialiser SDK</button>
+    <button onclick="generateQR()" id="qrBtn" disabled>📱 Générer QR Code</button>
+    
+    <div id="qr-container" class="qr-container">
+        <p>Cliquez sur "Initialiser SDK" pour commencer</p>
+    </div>
+    
+    <script>
+        let sunuid = null;
+        
+        // Configuration minimale
+        const config = {
+            clientId: '1754166754_221A57B46843D755',
+            secretId: '56d40fe70507228b27f2640ae65894177c2fedbf246e2b30978fde1fc43953c5',
+            type: 2, // 2 = Authentification
+            autoRefresh: false // Désactivé pour éviter les appels répétitifs
+        };
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        async function initSDK() {
+            try {
+                updateStatus('🔄 Initialisation du SDK...', 'info');
+                
+                // Créer l'instance SDK
+                sunuid = new SunuID(config);
+                
+                // Initialiser
+                await sunuid.init();
+                
+                updateStatus('✅ SDK initialisé avec succès !', 'success');
+                
+                // Activer le bouton de génération QR
+                document.getElementById('qrBtn').disabled = false;
+                document.getElementById('initBtn').disabled = true;
+                
+            } catch (error) {
+                updateStatus(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+                console.error('Erreur:', error);
+            }
+        }
+        
+        async function generateQR() {
+            try {
+                updateStatus('🔄 Génération du QR code...', 'info');
+                
+                // Générer le QR code
+                const result = await sunuid.generateQR('qr-container');
+                
+                updateStatus('✅ QR code généré avec succès !', 'success');
+                console.log('QR Code généré:', result);
+                
+            } catch (error) {
+                updateStatus(`❌ Erreur de génération: ${error.message}`, 'error');
+                console.error('Erreur:', error);
+            }
+        }
+    </script>
+</body>
+</html> 

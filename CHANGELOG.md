@@ -5,6 +5,93 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.35] - 2025-01-06
+
+### 🔧 Corrigé
+- **Logging des événements socket** : Ajout du logging complet de tous les événements socket reçus
+  - Méthode `onAny()` pour capturer tous les événements socket
+  - Format de log : `🌐 Socket Event [eventName]: args`
+  - Logs détaillés pour tous les événements socket
+
+### 🎨 Amélioré
+- **Détection du scan QR** : Détection automatique de l'événement `qr_scan_initiated`
+  - Remplacement automatique du QR code par un loader animé
+  - Méthode `showQRLoader()` pour afficher un loader pendant le scan
+  - Design moderne avec spinner CSS et messages informatifs
+
+### 📚 Ajouté
+- **Méthode `showQRLoader()`** : Nouvelle méthode pour afficher un loader pendant le scan
+  - Recherche intelligente du conteneur QR dans plusieurs IDs possibles
+  - Loader animé avec spinner CSS et animation de rotation
+  - Messages contextuels : "Scan en cours..." et "Traitement en cours..."
+  - Design responsive et moderne
+
+### 🔄 Logs améliorés
+- **QR Status Update** : `📱 QR Status Update: data`
+- **QR Scan Success** : `✅ QR Scan Success: data`
+- **QR Expired** : `⏰ QR Expired: data`
+- **Tous les événements socket** : `🌐 Socket Event [eventName]: args`
+
+### 📋 Configuration recommandée
+```javascript
+const config = {
+    // ... autres options
+    // Les logs socket sont automatiquement activés
+    // Le loader s'affiche automatiquement lors du scan
+};
+```
+
+### 🧪 Test
+- Ouvrir la console du navigateur pour voir tous les événements socket
+- Scanner un QR code pour voir le loader s'afficher automatiquement
+- Vérifier les logs détaillés dans la console
+
+## [1.0.34] - 2025-01-06
+
+### 🔧 Corrigé
+- **Appels répétitifs à l'API** : Correction du problème des appels multiples à `/qr-generate`
+  - Rafraîchissement automatique désactivé par défaut (`autoRefresh: false`)
+  - Gestion des timers multiples avec arrêt automatique des timers précédents
+  - Méthode `stopAutoRefresh()` pour arrêter manuellement le rafraîchissement
+  - Protection contre les boucles infinies dans `refreshQR()`
+
+### 🎨 Amélioré
+- **Interface épurée** : Suppression des textes d'instructions superflus
+  - Suppression de "Scannez ce QR code avec l'application mobile pour vous connecter"
+  - Suppression de "En attente de scan..."
+  - Suppression du div de succès redondant dans la page de test
+  - Interface plus minimaliste et professionnelle
+
+### 📚 Ajouté
+- **Contrôle du rafraîchissement** : Nouvelles méthodes pour contrôler le rafraîchissement automatique
+  - `startAutoRefresh(containerId, type, options)` : Démarrer le rafraîchissement
+  - `stopAutoRefresh()` : Arrêter le rafraîchissement
+  - Logs détaillés pour le suivi des timers
+- **Page de test améliorée** : Contrôles pour le rafraîchissement automatique
+  - Sélecteur pour activer/désactiver le rafraîchissement automatique
+  - Boutons pour démarrer/arrêter manuellement le rafraîchissement
+  - Messages d'information sur les appels répétitifs
+
+### 🔄 Rafraîchissement automatique
+- **Désactivé par défaut** : `autoRefresh: false` pour éviter les appels répétitifs
+- **Contrôle manuel** : Possibilité d'activer/désactiver via la configuration
+- **Gestion des timers** : Arrêt automatique des timers précédents avant d'en démarrer un nouveau
+- **Logs améliorés** : Messages clairs pour identifier les appels et leur source
+
+### 📋 Configuration recommandée
+```javascript
+const config = {
+    autoRefresh: false, // Désactivé par défaut
+    refreshInterval: 30000, // 30 secondes si activé
+    // ... autres options
+};
+```
+
+### 🧪 Test
+- Ouvrir `test-sdk-simple.html` avec le rafraîchissement automatique désactivé
+- Vérifier qu'il n'y a qu'un seul appel à `generateQR`
+- Utiliser les boutons de contrôle pour tester le rafraîchissement manuel
+
 ## [1.0.31] - 2024-12-19
 
 ### 🔧 Corrigé
