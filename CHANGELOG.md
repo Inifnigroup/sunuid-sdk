@@ -5,6 +5,46 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.36] - 2025-01-06
+
+### 🔧 Corrigé
+- **Réception des événements socket** : Correction de la réception de l'événement `qr_scan_initiated`
+  - Ajout d'un listener spécifique pour `qr_scan_initiated`
+  - Ajout d'un listener fallback pour l'événement `message`
+  - Correction de la méthode `onAny()` qui n'est pas standard dans Socket.IO
+  - Meilleure gestion des événements socket pour le debugging
+
+### 🎨 Amélioré
+- **Debugging socket** : Amélioration du logging des événements socket
+  - Logs détaillés pour tous les événements socket reçus
+  - Détection automatique de `qr_scan_initiated` dans les messages génériques
+  - Meilleure traçabilité des événements socket
+
+### 📚 Ajouté
+- **Listener fallback** : Nouveau listener pour l'événement `message` générique
+  - Détection de `qr_scan_initiated` dans les messages socket
+  - Fallback robuste pour différentes versions de Socket.IO
+  - Logs détaillés pour le debugging
+
+### 🔄 Logs améliorés
+- **QR Scan Initiated** : `🔍 QR Scan Initiated reçu: data`
+- **Message socket** : `📨 Message socket reçu: data`
+- **Debug socket** : `🌐 Socket Event [eventName]: args`
+
+### 📋 Configuration recommandée
+```javascript
+const config = {
+    // ... autres options
+    // Les événements socket sont maintenant correctement reçus
+    // Le loader s'affiche automatiquement lors du scan
+};
+```
+
+### 🧪 Test
+- Scanner un QR code pour vérifier que l'événement `qr_scan_initiated` est reçu
+- Vérifier les logs dans la console pour voir tous les événements socket
+- Confirmer que le loader s'affiche automatiquement
+
 ## [1.0.35] - 2025-01-06
 
 ### 🔧 Corrigé

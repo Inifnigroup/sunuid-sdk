@@ -271,14 +271,30 @@
                         this.handleQRExpired(data);
                     });
 
-                    // Écouter tous les événements socket pour les logger
-                    this.socket.onAny((eventName, ...args) => {
-                        console.log(`🌐 Socket Event [${eventName}]:`, args);
-                        
-                        // Si c'est un événement qr_scan_initiated, afficher le loader
-                        if (eventName === 'qr_scan_initiated') {
+                    // Écouter l'événement qr_scan_initiated spécifiquement
+                    this.socket.on('qr_scan_initiated', (data) => {
+                        console.log('🔍 QR Scan Initiated reçu:', data);
+                        this.showQRLoader();
+                    });
+
+                    // Écouter l'événement message générique (fallback)
+                    this.socket.on('message', (data) => {
+                        console.log('📨 Message socket reçu:', data);
+                        if (data && data.type === 'qr_scan_initiated') {
+                            console.log('🔍 QR Scan Initiated détecté dans message:', data);
                             this.showQRLoader();
                         }
+                    });
+
+                    // Écouter tous les événements socket pour le debugging
+                    this.socket.onAny = this.socket.onAny || function(eventName, callback) {
+                        // Fallback pour les versions de Socket.IO qui n'ont pas onAny
+                        console.log(`🌐 Socket Event [${eventName}]:`, callback);
+                    };
+                    
+                    // Logger tous les événements reçus
+                    this.socket.onAny((eventName, ...args) => {
+                        console.log(`🌐 Socket Event [${eventName}]:`, args);
                     });
                 } else {
                     console.log('🌐 WebSocket déjà connecté');
