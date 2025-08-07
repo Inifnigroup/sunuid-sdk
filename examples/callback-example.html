@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SunuID Callback Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .qr-container {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+        }
+        .callback-data {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 SunuID Callback Example</h1>
+        
+        <div id="status" class="status info">
+            Initialisation en cours...
+        </div>
+
+        <div id="qr-section" class="hidden">
+            <h2>📱 Scannez le QR Code</h2>
+            <div id="qr-area" class="qr-container">
+                <!-- Le QR code sera affiché ici -->
+            </div>
+        </div>
+
+        <div id="callback-section" class="hidden">
+            <h2>✅ Authentification Réussie</h2>
+            <div id="callback-data" class="callback-data">
+                <!-- Les données du callback seront affichées ici -->
+            </div>
+            <button onclick="window.location.href='/dashboard'">Aller au Dashboard</button>
+        </div>
+
+        <div id="error-section" class="hidden">
+            <h2>❌ Erreur d'Authentification</h2>
+            <div id="error-data" class="callback-data">
+                <!-- Les erreurs seront affichées ici -->
+            </div>
+            <button onclick="location.reload()">Réessayer</button>
+        </div>
+    </div>
+
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+    <!-- SunuID SDK -->
+    <script src="../../dist/sunuid-sdk.min.js"></script>
+
+    <script>
+        // Configuration du SDK avec gestion des callbacks
+        const config = {
+            apiUrl: 'https://api.sunuid.fayma.sn',
+            clientId: '1754166754_221A57B46843D755',
+            secretId: '56d40fe70507228b27f2640ae65894177c2fedbf246e2b30978fde1fc43953c5',
+            type: 2, // AUTH
+            theme: 'light',
+            language: 'fr',
+            
+            // Configuration des callbacks
+            redirectAfterSuccess: '/dashboard?user={user_id}&session={session_id}',
+            verifySignature: false, // Désactivé pour l'exemple
+            tokenMaxAge: 300, // 5 minutes
+            
+            // Callbacks d'authentification
+            onAuthenticationSuccess: function(userData, callbackData) {
+                console.log('🎉 Authentification réussie:', userData);
+                showSuccess(userData, callbackData);
+            },
+            
+            onAuthenticationError: function(error, callbackData) {
+                console.error('❌ Erreur d\'authentification:', error);
+                showError(error, callbackData);
+            },
+            
+            // Callbacks WebSocket
+            onStatusUpdate: function(status) {
+                updateStatus('Statut: ' + status, 'info');
+            },
+            
+            onSuccess: function(data) {
+                updateStatus('Succès: ' + JSON.stringify(data), 'success');
+            },
+            
+            onError: function(error) {
+                updateStatus('Erreur: ' + error.message, 'error');
+            }
+        };
+
+        // Initialiser le SDK
+        let sunuid;
+        
+        async function initSDK() {
+            try {
+                sunuid = new SunuID(config);
+                await sunuid.init();
+                
+                // Vérifier si on est sur une page de callback
+                if (window.location.search.includes('token=')) {
+                    updateStatus('Callback détecté, traitement en cours...', 'info');
+                    return; // Le callback sera traité automatiquement
+                }
+                
+                // Sinon, afficher le QR code
+                showQRCode();
+                
+            } catch (error) {
+                updateStatus('Erreur d\'initialisation: ' + error.message, 'error');
+            }
+        }
+
+        function showQRCode() {
+            document.getElementById('qr-section').classList.remove('hidden');
+            updateStatus('QR Code généré, scannez-le avec l\'app SunuID', 'info');
+            
+            // Générer le QR code
+            sunuid.generateQR('qr-area').then(result => {
+                console.log('QR Code généré:', result);
+            }).catch(error => {
+                updateStatus('Erreur génération QR: ' + error.message, 'error');
+            });
+        }
+
+        function showSuccess(userData, callbackData) {
+            document.getElementById('qr-section').classList.add('hidden');
+            document.getElementById('callback-section').classList.remove('hidden');
+            
+            const dataDisplay = `
+🔐 Authentification Réussie
+
+👤 Utilisateur: ${userData.user_id}
+🆔 Session: ${userData.session_id}
+🏢 Partenaire: ${userData.partner_id}
+📋 Type: ${getTypeName(userData.type)}
+⏰ Créé: ${new Date(userData.iat * 1000).toLocaleString()}
+⏰ Expire: ${new Date(userData.exp * 1000).toLocaleString()}
+
+📋 Données Callback:
+${JSON.stringify(callbackData, null, 2)}
+            `;
+            
+            document.getElementById('callback-data').textContent = dataDisplay;
+            updateStatus('✅ Authentification réussie !', 'success');
+        }
+
+        function showError(error, callbackData) {
+            document.getElementById('qr-section').classList.add('hidden');
+            document.getElementById('error-section').classList.remove('hidden');
+            
+            const errorDisplay = `
+❌ Erreur d'Authentification
+
+🚨 Erreur: ${error.message}
+📋 Type: ${error.name}
+⏰ Timestamp: ${new Date().toLocaleString()}
+
+📋 Données Callback:
+${JSON.stringify(callbackData, null, 2)}
+            `;
+            
+            document.getElementById('error-data').textContent = errorDisplay;
+            updateStatus('❌ Erreur d\'authentification', 'error');
+        }
+
+        function updateStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        function getTypeName(type) {
+            const types = {
+                1: 'KYC',
+                2: 'AUTH',
+                3: 'SIGNATURE'
+            };
+            return types[type] || 'INCONNU';
+        }
+
+        // Initialiser au chargement de la page
+        document.addEventListener('DOMContentLoaded', initSDK);
+
+        // Exposer globalement pour debug
+        window.sunuid = sunuid;
+    </script>
+</body>
+</html> 

@@ -311,7 +311,15 @@ function _unsupportedIterableToArray(r, a) {
     token: null,
     // Configuration pour forcer l'utilisation du serveur distant
     forceRemoteServer: true,
-    useLocalFallback: false
+    useLocalFallback: false,
+    // Nouvelles options pour les callbacks
+    redirectAfterSuccess: null,
+    verifySignature: false,
+    tokenMaxAge: 300,
+    // 5 minutes par défaut
+    onAuthenticationSuccess: null,
+    onAuthenticationError: null,
+    state: null
   };
 
   /**
@@ -345,21 +353,28 @@ function _unsupportedIterableToArray(r, a) {
             while (1) switch (_context.p = _context.n) {
               case 0:
                 _context.p = 0;
-                if (!this.config.secureInit) {
-                  _context.n = 2;
+                if (!this.handleCallback()) {
+                  _context.n = 1;
                   break;
                 }
-                _context.n = 1;
-                return this.secureInit();
+                console.log('✅ Callback traité, initialisation terminée');
+                return _context.a(2);
               case 1:
-                _context.n = 3;
-                break;
+                if (!this.config.secureInit) {
+                  _context.n = 3;
+                  break;
+                }
+                _context.n = 2;
+                return this.secureInit();
               case 2:
+                _context.n = 4;
+                break;
+              case 3:
                 // Validation sécurisée des paramètres
                 if (this.config.validateInputs) {
                   this.validateSecurityParams();
                 }
-              case 3:
+              case 4:
                 // Log de sécurité pour l'initialisation
                 this.logSecurityEvent('SDK_INIT_START', {
                   apiUrl: this.config.apiUrl,
@@ -368,9 +383,9 @@ function _unsupportedIterableToArray(r, a) {
                 });
 
                 // Récupérer les informations du partenaire depuis l'API
-                _context.n = 4;
+                _context.n = 5;
                 return this.fetchPartnerInfo();
-              case 4:
+              case 5:
                 // Obscurcir les credentials dans les logs
                 this.obfuscateCredentials();
                 this.isInitialized = true;
@@ -388,19 +403,19 @@ function _unsupportedIterableToArray(r, a) {
 
                 // Initialiser la connexion WebSocket
                 this.initWebSocket();
-                _context.n = 6;
+                _context.n = 7;
                 break;
-              case 5:
-                _context.p = 5;
+              case 6:
+                _context.p = 6;
                 _t = _context.v;
                 this.logSecurityEvent('SDK_INIT_ERROR', {
                   error: _t.message
                 });
                 throw _t;
-              case 6:
+              case 7:
                 return _context.a(2);
             }
-          }, _callee, this, [[0, 5]]);
+          }, _callee, this, [[0, 6]]);
         }));
         function init() {
           return _init.apply(this, arguments);
@@ -2508,6 +2523,206 @@ function _unsupportedIterableToArray(r, a) {
         // Remplacer le contenu par un loader animé
         container.innerHTML = "\n                <div style=\"\n                    text-align: center;\n                    padding: 40px 20px;\n                    background: #f8f9fa;\n                    border: 2px solid #007bff;\n                    border-radius: 10px;\n                    color: #007bff;\n                    font-family: Arial, sans-serif;\n                \">\n                    <div style=\"\n                        width: 60px;\n                        height: 60px;\n                        border: 4px solid #e3f2fd;\n                        border-top: 4px solid #007bff;\n                        border-radius: 50%;\n                        animation: spin 1s linear infinite;\n                        margin: 0 auto 20px auto;\n                    \"></div>\n                    <h3 style=\"margin: 0 0 10px 0; color: #007bff;\">\uD83D\uDD0D Scan en cours...</h3>\n                    <p style=\"margin: 0; font-size: 14px;\">\n                        Veuillez patienter pendant la v\xE9rification de votre identit\xE9.\n                    </p>\n                    <div style=\"margin-top: 15px; font-size: 12px; color: #6c757d;\">\n                        \u23F1\uFE0F Traitement en cours...\n                    </div>\n                </div>\n                <style>\n                    @keyframes spin {\n                        0% { transform: rotate(0deg); }\n                        100% { transform: rotate(360deg); }\n                    }\n                </style>\n            ";
         console.log('✅ Loader affiché avec succès');
+      }
+
+      /**
+       * Gérer le callback SunuID
+       */
+    }, {
+      key: "handleCallback",
+      value: function handleCallback() {
+        var urlParams = new URLSearchParams(window.location.search);
+
+        // Vérifier si c'est un callback SunuID
+        if (urlParams.has('token') && urlParams.has('session_id')) {
+          console.log('🔗 Callback SunuID détecté');
+
+          // Récupérer les paramètres
+          var callbackData = {
+            token: urlParams.get('token'),
+            state: urlParams.get('state'),
+            session_id: urlParams.get('session_id'),
+            user_id: urlParams.get('user_id'),
+            partner_id: urlParams.get('partner_id'),
+            type: urlParams.get('type'),
+            timestamp: urlParams.get('timestamp'),
+            signature: urlParams.get('signature')
+          };
+          console.log('📋 Données callback:', callbackData);
+
+          // Valider le callback
+          this.validateCallback(callbackData);
+
+          // Traiter l'authentification
+          this.processAuthentication(callbackData);
+          return true;
+        }
+        return false;
+      }
+
+      /**
+       * Valider le callback
+       */
+    }, {
+      key: "validateCallback",
+      value: function validateCallback(data) {
+        console.log('🔒 Validation du callback...');
+
+        // Vérifier l'état de sécurité
+        if (data.state && data.state !== this.config.state) {
+          console.error('❌ État de sécurité invalide');
+          throw new Error('État de sécurité invalide');
+        }
+
+        // Vérifier la signature (si configurée)
+        if (data.signature && this.config.verifySignature) {
+          if (!this.verifySignature(data)) {
+            console.error('❌ Signature invalide');
+            throw new Error('Signature invalide');
+          }
+        }
+
+        // Vérifier l'expiration
+        if (data.timestamp && this.isExpired(data.timestamp)) {
+          console.error('❌ Token expiré');
+          throw new Error('Token expiré');
+        }
+        console.log('✅ Callback validé avec succès');
+      }
+
+      /**
+       * Traiter l'authentification
+       */
+    }, {
+      key: "processAuthentication",
+      value: function processAuthentication(data) {
+        console.log('🔐 Traitement de l\'authentification...');
+        try {
+          // Décoder le JWT token
+          var decodedToken = this.decodeJWT(data.token);
+
+          // Vérifier les données utilisateur
+          var userData = {
+            user_id: decodedToken.user_id || data.user_id,
+            session_id: decodedToken.session_id || data.session_id,
+            partner_id: decodedToken.partner_id || data.partner_id,
+            type: decodedToken.type || data.type,
+            iat: decodedToken.iat,
+            exp: decodedToken.exp
+          };
+          console.log('👤 Données utilisateur:', userData);
+
+          // Émettre l'événement de succès
+          this.emitWebSocketEvent('authentication_success', {
+            userData: userData,
+            callbackData: data,
+            timestamp: Date.now()
+          });
+
+          // Appeler le callback de succès
+          if (this.config.onAuthenticationSuccess) {
+            this.config.onAuthenticationSuccess(userData, data);
+          }
+
+          // Rediriger si configuré
+          if (this.config.redirectAfterSuccess) {
+            this.redirectAfterSuccess(userData);
+          }
+          console.log('✅ Authentification traitée avec succès');
+        } catch (error) {
+          console.error('❌ Erreur lors du traitement:', error);
+
+          // Appeler le callback d'erreur
+          if (this.config.onAuthenticationError) {
+            this.config.onAuthenticationError(error, data);
+          }
+          throw error;
+        }
+      }
+
+      /**
+       * Décoder un JWT token
+       */
+    }, {
+      key: "decodeJWT",
+      value: function decodeJWT(token) {
+        try {
+          // Décodage simple du JWT (sans vérification de signature)
+          var parts = token.split('.');
+          if (parts.length !== 3) {
+            throw new Error('Format JWT invalide');
+          }
+          var payload = parts[1];
+          var decoded = JSON.parse(atob(payload));
+          return decoded;
+        } catch (error) {
+          console.error('❌ Erreur décodage JWT:', error);
+          throw new Error('Token JWT invalide');
+        }
+      }
+
+      /**
+       * Vérifier la signature
+       */
+    }, {
+      key: "verifySignature",
+      value: function verifySignature(data) {
+        // Implémentation basique - à adapter selon vos besoins
+        var expectedSignature = this.generateSignature(data);
+        return data.signature === expectedSignature;
+      }
+
+      /**
+       * Générer une signature
+       */
+    }, {
+      key: "generateSignature",
+      value: function generateSignature(data) {
+        // Implémentation basique - à adapter selon vos besoins
+        var payload = "".concat(data.token, ".").concat(data.state, ".").concat(data.session_id, ".").concat(data.timestamp);
+        return btoa(payload).slice(0, 12); // Signature simplifiée
+      }
+
+      /**
+       * Vérifier l'expiration
+       */
+    }, {
+      key: "isExpired",
+      value: function isExpired(timestamp) {
+        var currentTime = Math.floor(Date.now() / 1000);
+        var tokenTime = parseInt(timestamp);
+        var maxAge = this.config.tokenMaxAge || 300; // 5 minutes par défaut
+
+        return currentTime - tokenTime > maxAge;
+      }
+
+      /**
+       * Rediriger après succès
+       */
+    }, {
+      key: "redirectAfterSuccess",
+      value: function redirectAfterSuccess(userData) {
+        var redirectUrl = this.config.redirectAfterSuccess;
+
+        // Remplacer les variables dans l'URL
+        redirectUrl = redirectUrl.replace('{user_id}', userData.user_id).replace('{session_id}', userData.session_id).replace('{partner_id}', userData.partner_id).replace('{type}', userData.type);
+        console.log('🔄 Redirection vers:', redirectUrl);
+
+        // Redirection avec délai pour permettre les callbacks
+        setTimeout(function () {
+          window.location.href = redirectUrl;
+        }, 100);
+      }
+
+      /**
+       * Générer un état de sécurité
+       */
+    }, {
+      key: "generateState",
+      value: function generateState() {
+        var state = 'sunuid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        this.config.state = state;
+        return state;
       }
     }]);
   }(); // Exposer la classe globalement

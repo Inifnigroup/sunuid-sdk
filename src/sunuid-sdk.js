@@ -41,7 +41,14 @@
         token: null,
         // Configuration pour forcer l'utilisation du serveur distant
         forceRemoteServer: true,
-        useLocalFallback: false
+        useLocalFallback: false,
+        // Nouvelles options pour les callbacks
+        redirectAfterSuccess: null,
+        verifySignature: false,
+        tokenMaxAge: 300, // 5 minutes par défaut
+        onAuthenticationSuccess: null,
+        onAuthenticationError: null,
+        state: null
     };
 
     /**
@@ -66,6 +73,12 @@
          */
         async init() {
             try {
+                // Vérifier s'il y a un callback à traiter en premier
+                if (this.handleCallback()) {
+                    console.log('✅ Callback traité, initialisation terminée');
+                    return;
+                }
+
                 // Initialisation sécurisée si activée
                 if (this.config.secureInit) {
                     await this.secureInit();
@@ -1740,6 +1753,204 @@
             `;
             
             console.log('✅ Loader affiché avec succès');
+        }
+
+        /**
+         * Gérer le callback SunuID
+         */
+        handleCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Vérifier si c'est un callback SunuID
+            if (urlParams.has('token') && urlParams.has('session_id')) {
+                console.log('🔗 Callback SunuID détecté');
+                
+                // Récupérer les paramètres
+                const callbackData = {
+                    token: urlParams.get('token'),
+                    state: urlParams.get('state'),
+                    session_id: urlParams.get('session_id'),
+                    user_id: urlParams.get('user_id'),
+                    partner_id: urlParams.get('partner_id'),
+                    type: urlParams.get('type'),
+                    timestamp: urlParams.get('timestamp'),
+                    signature: urlParams.get('signature')
+                };
+                
+                console.log('📋 Données callback:', callbackData);
+                
+                // Valider le callback
+                this.validateCallback(callbackData);
+                
+                // Traiter l'authentification
+                this.processAuthentication(callbackData);
+                
+                return true;
+            }
+            
+            return false;
+        }
+
+        /**
+         * Valider le callback
+         */
+        validateCallback(data) {
+            console.log('🔒 Validation du callback...');
+            
+            // Vérifier l'état de sécurité
+            if (data.state && data.state !== this.config.state) {
+                console.error('❌ État de sécurité invalide');
+                throw new Error('État de sécurité invalide');
+            }
+            
+            // Vérifier la signature (si configurée)
+            if (data.signature && this.config.verifySignature) {
+                if (!this.verifySignature(data)) {
+                    console.error('❌ Signature invalide');
+                    throw new Error('Signature invalide');
+                }
+            }
+            
+            // Vérifier l'expiration
+            if (data.timestamp && this.isExpired(data.timestamp)) {
+                console.error('❌ Token expiré');
+                throw new Error('Token expiré');
+            }
+            
+            console.log('✅ Callback validé avec succès');
+        }
+
+        /**
+         * Traiter l'authentification
+         */
+        processAuthentication(data) {
+            console.log('🔐 Traitement de l\'authentification...');
+            
+            try {
+                // Décoder le JWT token
+                const decodedToken = this.decodeJWT(data.token);
+                
+                // Vérifier les données utilisateur
+                const userData = {
+                    user_id: decodedToken.user_id || data.user_id,
+                    session_id: decodedToken.session_id || data.session_id,
+                    partner_id: decodedToken.partner_id || data.partner_id,
+                    type: decodedToken.type || data.type,
+                    iat: decodedToken.iat,
+                    exp: decodedToken.exp
+                };
+                
+                console.log('👤 Données utilisateur:', userData);
+                
+                // Émettre l'événement de succès
+                this.emitWebSocketEvent('authentication_success', {
+                    userData: userData,
+                    callbackData: data,
+                    timestamp: Date.now()
+                });
+                
+                // Appeler le callback de succès
+                if (this.config.onAuthenticationSuccess) {
+                    this.config.onAuthenticationSuccess(userData, data);
+                }
+                
+                // Rediriger si configuré
+                if (this.config.redirectAfterSuccess) {
+                    this.redirectAfterSuccess(userData);
+                }
+                
+                console.log('✅ Authentification traitée avec succès');
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du traitement:', error);
+                
+                // Appeler le callback d'erreur
+                if (this.config.onAuthenticationError) {
+                    this.config.onAuthenticationError(error, data);
+                }
+                
+                throw error;
+            }
+        }
+
+        /**
+         * Décoder un JWT token
+         */
+        decodeJWT(token) {
+            try {
+                // Décodage simple du JWT (sans vérification de signature)
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    throw new Error('Format JWT invalide');
+                }
+                
+                const payload = parts[1];
+                const decoded = JSON.parse(atob(payload));
+                
+                return decoded;
+            } catch (error) {
+                console.error('❌ Erreur décodage JWT:', error);
+                throw new Error('Token JWT invalide');
+            }
+        }
+
+        /**
+         * Vérifier la signature
+         */
+        verifySignature(data) {
+            // Implémentation basique - à adapter selon vos besoins
+            const expectedSignature = this.generateSignature(data);
+            return data.signature === expectedSignature;
+        }
+
+        /**
+         * Générer une signature
+         */
+        generateSignature(data) {
+            // Implémentation basique - à adapter selon vos besoins
+            const payload = `${data.token}.${data.state}.${data.session_id}.${data.timestamp}`;
+            return btoa(payload).slice(0, 12); // Signature simplifiée
+        }
+
+        /**
+         * Vérifier l'expiration
+         */
+        isExpired(timestamp) {
+            const currentTime = Math.floor(Date.now() / 1000);
+            const tokenTime = parseInt(timestamp);
+            const maxAge = this.config.tokenMaxAge || 300; // 5 minutes par défaut
+            
+            return (currentTime - tokenTime) > maxAge;
+        }
+
+        /**
+         * Rediriger après succès
+         */
+        redirectAfterSuccess(userData) {
+            let redirectUrl = this.config.redirectAfterSuccess;
+            
+            // Remplacer les variables dans l'URL
+            redirectUrl = redirectUrl
+                .replace('{user_id}', userData.user_id)
+                .replace('{session_id}', userData.session_id)
+                .replace('{partner_id}', userData.partner_id)
+                .replace('{type}', userData.type);
+            
+            console.log('🔄 Redirection vers:', redirectUrl);
+            
+            // Redirection avec délai pour permettre les callbacks
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 100);
+        }
+
+        /**
+         * Générer un état de sécurité
+         */
+        generateState() {
+            const state = 'sunuid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            this.config.state = state;
+            return state;
         }
     }
 

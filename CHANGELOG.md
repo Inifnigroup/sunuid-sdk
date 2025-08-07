@@ -5,6 +5,61 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.41] - 2025-01-06
+
+### 🎉 Ajouté
+- **Système de callback complet** : Implémentation du schéma de callback SunuID
+  - Gestion automatique des callbacks d'authentification
+  - Validation des paramètres de sécurité (state, signature, timestamp)
+  - Décodage JWT et traitement des données utilisateur
+  - Redirection automatique après succès
+  - Support des variables dans les URLs de redirection
+
+### 🔧 Fonctionnalités
+- **handleCallback()** : Détection et traitement automatique des callbacks
+- **validateCallback()** : Validation de sécurité des paramètres
+- **processAuthentication()** : Traitement de l'authentification
+- **decodeJWT()** : Décodage des tokens JWT
+- **redirectAfterSuccess()** : Redirection avec variables
+- **generateState()** : Génération d'états de sécurité
+
+### 📋 Configuration
+```javascript
+const config = {
+    // Callbacks d'authentification
+    redirectAfterSuccess: '/dashboard?user={user_id}&session={session_id}',
+    verifySignature: false,
+    tokenMaxAge: 300,
+    onAuthenticationSuccess: function(userData, callbackData) { ... },
+    onAuthenticationError: function(error, callbackData) { ... },
+    state: null // Généré automatiquement
+};
+```
+
+### 🔐 Sécurité
+- **État de sécurité** : Protection CSRF avec paramètre `state`
+- **Signature** : Vérification d'intégrité (optionnelle)
+- **Timestamp** : Protection contre la réutilisation
+- **JWT Token** : Décodage sécurisé des données
+- **Expiration** : Vérification de l'âge du token
+
+### 📚 Exemple
+- **callback-example.html** : Exemple complet d'utilisation
+- Gestion des succès et erreurs
+- Affichage des données utilisateur
+- Interface utilisateur complète
+
+### 🔄 Flux de callback
+```
+1. Utilisateur scanne QR → Validation côté serveur
+2. API redirige vers callback URL avec paramètres
+3. SDK détecte automatiquement le callback
+4. Validation des paramètres de sécurité
+5. Décodage JWT et extraction des données
+6. Appel des callbacks de succès/erreur
+7. Redirection automatique si configurée
+```
+
 ## [1.0.40] - 2025-01-06
 
 ### 🔧 Corrigé
