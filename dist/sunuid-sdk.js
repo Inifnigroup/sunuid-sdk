@@ -330,7 +330,6 @@
      */
     var SunuID = /*#__PURE__*/function () {
       function SunuID() {
-        var _this = this;
         var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         _classCallCheck(this, SunuID);
         this.config = _objectSpread2(_objectSpread2({}, DEFAULT_CONFIG), config);
@@ -340,13 +339,9 @@
         this.socket = null;
         this.initPromise = null;
 
-        // Initialisation asynchrone seulement si autoInit est explicitement activé
-        if (this.config.autoInit === true) {
-          // Délai pour éviter les conflits avec d'autres scripts
-          setTimeout(function () {
-            _this.init();
-          }, 100);
-        }
+        // DÉSACTIVÉ : Initialisation automatique pour éviter les boucles
+        // L'utilisateur doit appeler init() manuellement
+        console.log('🔧 SDK SunuID créé - Appelez init() manuellement');
       }
 
       /**
@@ -357,7 +352,7 @@
         value: (function () {
           var _init = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
             return _regenerator().w(function (_context) {
-              while (1) switch (_context.n) {
+              while (1) switch (_context.p = _context.n) {
                 case 0:
                   if (!this.isInitialized) {
                     _context.n = 1;
@@ -373,10 +368,26 @@
                   console.log('⚠️ Initialisation déjà en cours, attente...');
                   return _context.a(2, this.initPromise);
                 case 2:
+                  if (!this._initInProgress) {
+                    _context.n = 3;
+                    break;
+                  }
+                  console.log('⚠️ Initialisation en cours, ignoré');
+                  return _context.a(2);
+                case 3:
+                  this._initInProgress = true;
                   this.initPromise = this._doInit();
+                  _context.p = 4;
+                  _context.n = 5;
+                  return this.initPromise;
+                case 5:
+                  _context.p = 5;
+                  this._initInProgress = false;
+                  return _context.f(5);
+                case 6:
                   return _context.a(2, this.initPromise);
               }
-            }, _callee, this);
+            }, _callee, this, [[4,, 5, 6]]);
           }));
           function init() {
             return _init.apply(this, arguments);
@@ -596,14 +607,14 @@
       }, {
         key: "initWebSocket",
         value: function initWebSocket() {
-          var _this2 = this;
+          var _this = this;
           try {
             // Vérifier si Socket.IO est disponible
             if (typeof io === 'undefined') {
               console.warn('⚠️ Socket.IO non disponible, WebSocket sera initialisé plus tard');
               // Réessayer après un délai
               setTimeout(function () {
-                return _this2.initWebSocket();
+                return _this.initWebSocket();
               }, 1000);
               return;
             }
@@ -627,36 +638,36 @@
               // Gestion des événements WebSocket
               this.socket.on('connect', function () {
                 console.log('🌐 WebSocket connecté avec succès');
-                console.log('📊 Socket ID:', _this2.socket.id);
-                _this2.socket.connected = true;
+                console.log('📊 Socket ID:', _this.socket.id);
+                _this.socket.connected = true;
               });
               this.socket.on('disconnect', function (reason) {
                 console.log('❌ WebSocket déconnecté:', reason);
-                _this2.socket.connected = false;
+                _this.socket.connected = false;
               });
               this.socket.on('connect_error', function (error) {
                 console.error('❌ Erreur connexion WebSocket:', error);
-                _this2.socket.connected = false;
+                _this.socket.connected = false;
               });
 
               // Écouter les événements spécifiques
               this.socket.on('qr_status_update', function (data) {
                 console.log('📱 Mise à jour statut QR reçue:', data);
-                _this2.handleQRStatusUpdate(data);
+                _this.handleQRStatusUpdate(data);
               });
               this.socket.on('qr_scan_success', function (data) {
                 console.log('✅ Scan QR réussi reçu:', data);
-                _this2.handleQRScanSuccess(data);
+                _this.handleQRScanSuccess(data);
               });
               this.socket.on('qr_expired', function (data) {
                 console.log('⏰ QR expiré reçu:', data);
-                _this2.handleQRExpired(data);
+                _this.handleQRExpired(data);
               });
 
               // Écouter l'événement qr_scan_initiated spécifiquement
               this.socket.on('qr_scan_initiated', function (data) {
                 console.log('🔍 QR Scan Initiated reçu:', data);
-                _this2.showQRLoader();
+                _this.showQRLoader();
               });
 
               // Écouter l'événement message générique (fallback)
@@ -664,7 +675,7 @@
                 console.log('📨 Message socket reçu:', data);
                 if (data && data.type === 'qr_scan_initiated') {
                   console.log('🔍 QR Scan Initiated détecté dans message:', data);
-                  _this2.showQRLoader();
+                  _this.showQRLoader();
                 }
               });
 
@@ -1597,7 +1608,7 @@
         key: "generateQRClientSide",
         value: (function () {
           var _generateQRClientSide = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(content, label, qrContainer) {
-            var _this3 = this;
+            var _this2 = this;
             var canvas, ctx;
             return _regenerator().w(function (_context12) {
               while (1) switch (_context12.n) {
@@ -1644,13 +1655,13 @@
                       var dataUrl = canvas.toDataURL('image/png');
 
                       // Stocker l'URL
-                      _this3.currentQRUrl = dataUrl;
+                      _this2.currentQRUrl = dataUrl;
 
                       // Afficher le QR code
                       qrContainer.innerHTML = "\n                        <div style=\"text-align: center; padding: 20px;\">\n                            <img src=\"".concat(dataUrl, "\" alt=\"QR Code\" style=\"max-width: 300px; border: 2px solid #ddd; border-radius: 10px;\">\n                        </div>\n                    ");
 
                       // Afficher les instructions
-                      _this3.showQRInstructions(qrContainer);
+                      _this2.showQRInstructions(qrContainer);
                       resolve();
                     });
                   }));
@@ -1960,7 +1971,7 @@
       }, {
         key: "startAutoRefresh",
         value: function startAutoRefresh(containerId, type, options) {
-          var _this4 = this;
+          var _this3 = this;
           if (!this.config.autoRefresh) return;
 
           // Arrêter le timer existant s'il y en a un
@@ -1976,7 +1987,7 @@
                   _context16.p = 0;
                   console.log('🔄 Rafraîchissement automatique du QR code...');
                   _context16.n = 1;
-                  return _this4.refreshQR(containerId, type, options);
+                  return _this3.refreshQR(containerId, type, options);
                 case 1:
                   _context16.n = 3;
                   break;
@@ -2005,7 +2016,7 @@
           var _makeRequest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17(endpoint, data) {
             var _window$SunuIDConfig4,
               _window$SunuIDConfig5,
-              _this5 = this;
+              _this4 = this;
             var sanitizedData, endpointPath, url, retryCount, maxRetries, _loop, _ret;
             return _regenerator().w(function (_context18) {
               while (1) switch (_context18.n) {
@@ -2068,7 +2079,7 @@
                           controller = new AbortController();
                           timeoutId = setTimeout(function () {
                             return controller.abort();
-                          }, _this5.config.requestTimeout); // Headers minimaux (API SunuID n'accepte que les headers essentiels)
+                          }, _this4.config.requestTimeout); // Headers minimaux (API SunuID n'accepte que les headers essentiels)
                           headers = {
                             'Content-Type': 'application/json'
                           }; // Note: En mode sécurisé, les credentials sont dans le body
@@ -2101,7 +2112,7 @@
                               message: errorText
                             };
                           }
-                          _this5.logSecurityEvent('API_REQUEST_ERROR', {
+                          _this4.logSecurityEvent('API_REQUEST_ERROR', {
                             status: response.status,
                             statusText: response.statusText,
                             error: errorData.message
@@ -2112,7 +2123,7 @@
                           return response.json();
                         case 4:
                           result = _context17.v;
-                          _this5.logSecurityEvent('API_REQUEST_SUCCESS', {
+                          _this4.logSecurityEvent('API_REQUEST_SUCCESS', {
                             endpoint: endpointPath,
                             responseKeys: Object.keys(result)
                           });
@@ -2127,7 +2138,7 @@
                             _context17.n = 7;
                             break;
                           }
-                          _this5.logSecurityEvent('API_REQUEST_TIMEOUT', {
+                          _this4.logSecurityEvent('API_REQUEST_TIMEOUT', {
                             retryCount: retryCount
                           });
                           if (!(retryCount > maxRetries)) {
@@ -2142,7 +2153,7 @@
                             _context17.n = 8;
                             break;
                           }
-                          _this5.logSecurityEvent('API_REQUEST_MAX_RETRIES', {
+                          _this4.logSecurityEvent('API_REQUEST_MAX_RETRIES', {
                             retryCount: retryCount,
                             error: _t11.message
                           });

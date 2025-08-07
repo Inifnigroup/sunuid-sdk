@@ -63,20 +63,16 @@
             this.socket = null;
             this.initPromise = null;
             
-            // Initialisation asynchrone seulement si autoInit est explicitement activé
-            if (this.config.autoInit === true) {
-                // Délai pour éviter les conflits avec d'autres scripts
-                setTimeout(() => {
-                    this.init();
-                }, 100);
-            }
+            // DÉSACTIVÉ : Initialisation automatique pour éviter les boucles
+            // L'utilisateur doit appeler init() manuellement
+            console.log('🔧 SDK SunuID créé - Appelez init() manuellement');
         }
 
         /**
          * Initialisation du SDK
          */
         async init() {
-            // Protection contre les initialisations multiples
+            // Protection stricte contre les boucles
             if (this.isInitialized) {
                 console.log('⚠️ SDK déjà initialisé, ignoré');
                 return;
@@ -88,7 +84,21 @@
                 return this.initPromise;
             }
             
+            // Protection contre les appels multiples rapides
+            if (this._initInProgress) {
+                console.log('⚠️ Initialisation en cours, ignoré');
+                return;
+            }
+            
+            this._initInProgress = true;
             this.initPromise = this._doInit();
+            
+            try {
+                await this.initPromise;
+            } finally {
+                this._initInProgress = false;
+            }
+            
             return this.initPromise;
         }
 

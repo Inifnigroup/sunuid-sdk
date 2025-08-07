@@ -5,6 +5,38 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.43] - 2025-01-06
+
+### 🚨 CRITIQUE - Correction boucle infinie
+- **Suppression complète de l'auto-init** : L'initialisation automatique est désactivée par défaut
+- **Protection renforcée** : Ajout de `_initInProgress` pour éviter les appels multiples
+- **Initialisation manuelle obligatoire** : L'utilisateur doit appeler `init()` explicitement
+- **Exemple sans boucle** : `no-loop-example.html` montre l'utilisation correcte
+
+### 🔧 Changements majeurs
+- **Constructeur** : Plus d'initialisation automatique, message d'information
+- **init()** : Protection triple contre les boucles
+- **autoInit** : Désactivé par défaut et ignoré dans le constructeur
+
+### 📋 Utilisation corrigée
+```javascript
+// ✅ CORRECT - Initialisation manuelle
+const config = {
+    autoInit: false, // Désactivé
+    // ... autres options
+};
+const sunuid = new SunuID(config);
+await sunuid.init(); // Appel manuel obligatoire
+
+// ❌ INCORRECT - Ne pas faire
+const sunuid = new SunuID(config); // Pas d'auto-init
+```
+
+### 🛡️ Protections ajoutées
+- `isInitialized` : Vérification d'état
+- `initPromise` : Gestion des promesses
+- `_initInProgress` : Protection contre les appels simultanés
+
 ## [1.0.42] - 2025-01-06
 
 ### 🐛 Corrigé
