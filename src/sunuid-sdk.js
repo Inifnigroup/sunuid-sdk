@@ -20,7 +20,7 @@
         language: 'fr',
         autoRefresh: false, // Désactivé par défaut pour éviter les appels répétitifs
         refreshInterval: 30000, // 30 secondes
-        autoInit: true, // Initialisation automatique par défaut
+        autoInit: false, // Désactivé par défaut pour éviter les boucles
         onSuccess: null,
         onError: null,
         onStatusUpdate: null,
@@ -61,10 +61,14 @@
             this.refreshTimer = null;
             this.isInitialized = false;
             this.socket = null;
+            this.initPromise = null;
             
-            // Initialisation asynchrone seulement si autoInit est activé
-            if (this.config.autoInit !== false) {
-                this.initPromise = this.init();
+            // Initialisation asynchrone seulement si autoInit est explicitement activé
+            if (this.config.autoInit === true) {
+                // Délai pour éviter les conflits avec d'autres scripts
+                setTimeout(() => {
+                    this.init();
+                }, 100);
             }
         }
 
@@ -72,6 +76,26 @@
          * Initialisation du SDK
          */
         async init() {
+            // Protection contre les initialisations multiples
+            if (this.isInitialized) {
+                console.log('⚠️ SDK déjà initialisé, ignoré');
+                return;
+            }
+            
+            // Protection contre les initialisations simultanées
+            if (this.initPromise) {
+                console.log('⚠️ Initialisation déjà en cours, attente...');
+                return this.initPromise;
+            }
+            
+            this.initPromise = this._doInit();
+            return this.initPromise;
+        }
+
+        /**
+         * Initialisation interne du SDK
+         */
+        async _doInit() {
             try {
                 // Vérifier s'il y a un callback à traiter en premier
                 if (this.handleCallback()) {

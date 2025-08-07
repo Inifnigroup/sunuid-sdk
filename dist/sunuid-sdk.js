@@ -291,8 +291,8 @@
       // Désactivé par défaut pour éviter les appels répétitifs
       refreshInterval: 30000,
       // 30 secondes
-      autoInit: true,
-      // Initialisation automatique par défaut
+      autoInit: false,
+      // Désactivé par défaut pour éviter les boucles
       onSuccess: null,
       onError: null,
       onStatusUpdate: null,
@@ -330,6 +330,7 @@
      */
     var SunuID = /*#__PURE__*/function () {
       function SunuID() {
+        var _this = this;
         var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         _classCallCheck(this, SunuID);
         this.config = _objectSpread2(_objectSpread2({}, DEFAULT_CONFIG), config);
@@ -337,10 +338,14 @@
         this.refreshTimer = null;
         this.isInitialized = false;
         this.socket = null;
+        this.initPromise = null;
 
-        // Initialisation asynchrone seulement si autoInit est activé
-        if (this.config.autoInit !== false) {
-          this.initPromise = this.init();
+        // Initialisation asynchrone seulement si autoInit est explicitement activé
+        if (this.config.autoInit === true) {
+          // Délai pour éviter les conflits avec d'autres scripts
+          setTimeout(function () {
+            _this.init();
+          }, 100);
         }
       }
 
@@ -351,26 +356,61 @@
         key: "init",
         value: (function () {
           var _init = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-            var _t;
             return _regenerator().w(function (_context) {
-              while (1) switch (_context.p = _context.n) {
+              while (1) switch (_context.n) {
                 case 0:
-                  _context.p = 0;
-                  if (!this.handleCallback()) {
+                  if (!this.isInitialized) {
                     _context.n = 1;
                     break;
                   }
-                  console.log('✅ Callback traité, initialisation terminée');
+                  console.log('⚠️ SDK déjà initialisé, ignoré');
                   return _context.a(2);
                 case 1:
-                  if (!this.config.secureInit) {
-                    _context.n = 3;
+                  if (!this.initPromise) {
+                    _context.n = 2;
                     break;
                   }
-                  _context.n = 2;
+                  console.log('⚠️ Initialisation déjà en cours, attente...');
+                  return _context.a(2, this.initPromise);
+                case 2:
+                  this.initPromise = this._doInit();
+                  return _context.a(2, this.initPromise);
+              }
+            }, _callee, this);
+          }));
+          function init() {
+            return _init.apply(this, arguments);
+          }
+          return init;
+        }()
+        /**
+         * Initialisation interne du SDK
+         */
+        )
+      }, {
+        key: "_doInit",
+        value: (function () {
+          var _doInit2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+            var _t;
+            return _regenerator().w(function (_context2) {
+              while (1) switch (_context2.p = _context2.n) {
+                case 0:
+                  _context2.p = 0;
+                  if (!this.handleCallback()) {
+                    _context2.n = 1;
+                    break;
+                  }
+                  console.log('✅ Callback traité, initialisation terminée');
+                  return _context2.a(2);
+                case 1:
+                  if (!this.config.secureInit) {
+                    _context2.n = 3;
+                    break;
+                  }
+                  _context2.n = 2;
                   return this.secureInit();
                 case 2:
-                  _context.n = 4;
+                  _context2.n = 4;
                   break;
                 case 3:
                   // Validation sécurisée des paramètres
@@ -386,7 +426,7 @@
                   });
 
                   // Récupérer les informations du partenaire depuis l'API
-                  _context.n = 5;
+                  _context2.n = 5;
                   return this.fetchPartnerInfo();
                 case 5:
                   // Obscurcir les credentials dans les logs
@@ -406,24 +446,24 @@
 
                   // Initialiser la connexion WebSocket
                   this.initWebSocket();
-                  _context.n = 7;
+                  _context2.n = 7;
                   break;
                 case 6:
-                  _context.p = 6;
-                  _t = _context.v;
+                  _context2.p = 6;
+                  _t = _context2.v;
                   this.logSecurityEvent('SDK_INIT_ERROR', {
                     error: _t.message
                   });
                   throw _t;
                 case 7:
-                  return _context.a(2);
+                  return _context2.a(2);
               }
-            }, _callee, this, [[0, 6]]);
+            }, _callee2, this, [[0, 6]]);
           }));
-          function init() {
-            return _init.apply(this, arguments);
+          function _doInit() {
+            return _doInit2.apply(this, arguments);
           }
-          return init;
+          return _doInit;
         }()
         /**
          * Initialisation sécurisée via PHP
@@ -432,19 +472,19 @@
       }, {
         key: "secureInit",
         value: (function () {
-          var _secureInit = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
+          var _secureInit = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
             var initData, response, result, decodedToken, _t2;
-            return _regenerator().w(function (_context2) {
-              while (1) switch (_context2.p = _context2.n) {
+            return _regenerator().w(function (_context3) {
+              while (1) switch (_context3.p = _context3.n) {
                 case 0:
-                  _context2.p = 0;
+                  _context3.p = 0;
                   this.logSecurityEvent('SECURE_INIT_START');
                   initData = {
                     type: this.config.type,
                     partnerName: this.config.partnerName,
                     theme: this.config.theme
                   };
-                  _context2.n = 1;
+                  _context3.n = 1;
                   return fetch(this.config.secureInitUrl, {
                     method: 'POST',
                     headers: {
@@ -454,20 +494,20 @@
                     body: JSON.stringify(initData)
                   });
                 case 1:
-                  response = _context2.v;
+                  response = _context3.v;
                   if (response.ok) {
-                    _context2.n = 2;
+                    _context3.n = 2;
                     break;
                   }
                   throw new Error("Erreur HTTP: ".concat(response.status));
                 case 2:
-                  _context2.n = 3;
+                  _context3.n = 3;
                   return response.json();
                 case 3:
-                  result = _context2.v;
+                  result = _context3.v;
                   console.log('📋 Réponse initialisation sécurisée:', result);
                   if (result.success) {
-                    _context2.n = 4;
+                    _context3.n = 4;
                     break;
                   }
                   throw new Error(result.error || 'Erreur lors de l\'initialisation sécurisée');
@@ -479,12 +519,12 @@
                   // Décoder le token pour récupérer les credentials
                   decodedToken = this.decodeSecureToken(result.data.token);
                   if (!decodedToken) {
-                    _context2.n = 5;
+                    _context3.n = 5;
                     break;
                   }
                   this.config.clientId = decodedToken.client_id;
                   this.config.secretId = decodedToken.secret_id;
-                  _context2.n = 6;
+                  _context3.n = 6;
                   break;
                 case 5:
                   throw new Error('Impossible de décoder le token sécurisé');
@@ -497,19 +537,19 @@
                     maxRequests: result.data.max_requests
                   });
                   console.log('✅ Initialisation sécurisée réussie');
-                  _context2.n = 8;
+                  _context3.n = 8;
                   break;
                 case 7:
-                  _context2.p = 7;
-                  _t2 = _context2.v;
+                  _context3.p = 7;
+                  _t2 = _context3.v;
                   this.logSecurityEvent('SECURE_INIT_ERROR', {
                     error: _t2.message
                   });
                   throw new Error("\xC9chec de l'initialisation s\xE9curis\xE9e: ".concat(_t2.message));
                 case 8:
-                  return _context2.a(2);
+                  return _context3.a(2);
               }
-            }, _callee2, this, [[0, 7]]);
+            }, _callee3, this, [[0, 7]]);
           }));
           function secureInit() {
             return _secureInit.apply(this, arguments);
@@ -556,14 +596,14 @@
       }, {
         key: "initWebSocket",
         value: function initWebSocket() {
-          var _this = this;
+          var _this2 = this;
           try {
             // Vérifier si Socket.IO est disponible
             if (typeof io === 'undefined') {
               console.warn('⚠️ Socket.IO non disponible, WebSocket sera initialisé plus tard');
               // Réessayer après un délai
               setTimeout(function () {
-                return _this.initWebSocket();
+                return _this2.initWebSocket();
               }, 1000);
               return;
             }
@@ -587,36 +627,36 @@
               // Gestion des événements WebSocket
               this.socket.on('connect', function () {
                 console.log('🌐 WebSocket connecté avec succès');
-                console.log('📊 Socket ID:', _this.socket.id);
-                _this.socket.connected = true;
+                console.log('📊 Socket ID:', _this2.socket.id);
+                _this2.socket.connected = true;
               });
               this.socket.on('disconnect', function (reason) {
                 console.log('❌ WebSocket déconnecté:', reason);
-                _this.socket.connected = false;
+                _this2.socket.connected = false;
               });
               this.socket.on('connect_error', function (error) {
                 console.error('❌ Erreur connexion WebSocket:', error);
-                _this.socket.connected = false;
+                _this2.socket.connected = false;
               });
 
               // Écouter les événements spécifiques
               this.socket.on('qr_status_update', function (data) {
                 console.log('📱 Mise à jour statut QR reçue:', data);
-                _this.handleQRStatusUpdate(data);
+                _this2.handleQRStatusUpdate(data);
               });
               this.socket.on('qr_scan_success', function (data) {
                 console.log('✅ Scan QR réussi reçu:', data);
-                _this.handleQRScanSuccess(data);
+                _this2.handleQRScanSuccess(data);
               });
               this.socket.on('qr_expired', function (data) {
                 console.log('⏰ QR expiré reçu:', data);
-                _this.handleQRExpired(data);
+                _this2.handleQRExpired(data);
               });
 
               // Écouter l'événement qr_scan_initiated spécifiquement
               this.socket.on('qr_scan_initiated', function (data) {
                 console.log('🔍 QR Scan Initiated reçu:', data);
-                _this.showQRLoader();
+                _this2.showQRLoader();
               });
 
               // Écouter l'événement message générique (fallback)
@@ -624,7 +664,7 @@
                 console.log('📨 Message socket reçu:', data);
                 if (data && data.type === 'qr_scan_initiated') {
                   console.log('🔍 QR Scan Initiated détecté dans message:', data);
-                  _this.showQRLoader();
+                  _this2.showQRLoader();
                 }
               });
 
@@ -868,7 +908,7 @@
       }, {
         key: "generateQR",
         value: (function () {
-          var _generateQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3() {
+          var _generateQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
             var containerId,
               options,
               connectionStatus,
@@ -878,25 +918,25 @@
               response,
               qrImageUrl,
               isLocal,
-              _args3 = arguments,
+              _args4 = arguments,
               _t3,
               _t4;
-            return _regenerator().w(function (_context3) {
-              while (1) switch (_context3.p = _context3.n) {
+            return _regenerator().w(function (_context4) {
+              while (1) switch (_context4.p = _context4.n) {
                 case 0:
-                  containerId = _args3.length > 0 && _args3[0] !== undefined ? _args3[0] : 'sunuid-qr-container';
-                  options = _args3.length > 1 && _args3[1] !== undefined ? _args3[1] : {};
+                  containerId = _args4.length > 0 && _args4[0] !== undefined ? _args4[0] : 'sunuid-qr-container';
+                  options = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : {};
                   if (!this.initPromise) {
-                    _context3.n = 2;
+                    _context4.n = 2;
                     break;
                   }
-                  _context3.n = 1;
+                  _context4.n = 1;
                   return this.initPromise;
                 case 1:
                   this.initPromise = null;
                 case 2:
                   if (this.isInitialized) {
-                    _context3.n = 3;
+                    _context4.n = 3;
                     break;
                   }
                   throw new Error('SunuID: SDK non initialisé');
@@ -905,22 +945,22 @@
 
                   // Attendre que les connexions soient prêtes
                   console.log('🔍 Attente connexions API et WebSocket...');
-                  _context3.p = 4;
-                  _context3.n = 5;
+                  _context4.p = 4;
+                  _context4.n = 5;
                   return this.waitForConnections(5000);
                 case 5:
-                  connectionStatus = _context3.v;
+                  connectionStatus = _context4.v;
                   // 5 secondes max
                   console.log('✅ Connexions prêtes:', connectionStatus);
-                  _context3.n = 7;
+                  _context4.n = 7;
                   break;
                 case 6:
-                  _context3.p = 6;
-                  _t3 = _context3.v;
+                  _context4.p = 6;
+                  _t3 = _context4.v;
                   console.error('❌ Erreur connexions:', _t3.message);
                   throw new Error('Connexions non disponibles - Impossible de générer le QR code');
                 case 7:
-                  _context3.p = 7;
+                  _context4.p = 7;
                   // Utiliser uniquement le socketID comme contenu du QR
                   socketId = this.socket ? this.socket.id : 'timeout-socket-id';
                   qrContent = socketId;
@@ -929,7 +969,7 @@
 
                   // Générer le QR avec le contenu complet
                   partnerName = this.config.partnerName || 'Partner_unknown';
-                  _context3.n = 8;
+                  _context4.n = 8;
                   return this.makeRequest('/qr-generate', _objectSpread2({
                     type: this.config.type,
                     data: qrContent,
@@ -937,9 +977,9 @@
                     label: "".concat(this.getTypeName(this.config.type), " ").concat(partnerName)
                   }, options));
                 case 8:
-                  response = _context3.v;
+                  response = _context4.v;
                   if (!response.success) {
-                    _context3.n = 11;
+                    _context4.n = 11;
                     break;
                   }
                   // Debug: Afficher la structure complète de la réponse
@@ -954,7 +994,7 @@
 
                   // Vérifier si l'URL du QR code existe
                   if (qrImageUrl) {
-                    _context3.n = 10;
+                    _context4.n = 10;
                     break;
                   }
                   console.warn('⚠️ qrCodeUrl non trouvé dans la réponse, recherche d\'alternatives...');
@@ -962,11 +1002,11 @@
                   // Essayer d'autres champs possibles
                   qrImageUrl = response.data.qr_url || response.data.qrUrl || response.data.url || response.data.image_url || response.data.imageUrl;
                   if (!qrImageUrl) {
-                    _context3.n = 9;
+                    _context4.n = 9;
                     break;
                   }
                   console.log('✅ URL QR trouvée dans un champ alternatif:', qrImageUrl);
-                  _context3.n = 10;
+                  _context4.n = 10;
                   break;
                 case 9:
                   console.error('❌ Aucune URL QR trouvée dans la réponse');
@@ -992,7 +1032,7 @@
                     sessionId: response.data.sessionId,
                     timestamp: Date.now()
                   });
-                  return _context3.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
+                  return _context4.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
                     qrCodeUrl: qrImageUrl,
                     qrContent: qrContent,
                     label: response.data.label,
@@ -1001,11 +1041,11 @@
                 case 11:
                   throw new Error(response.message || 'Erreur lors de la génération du QR code');
                 case 12:
-                  _context3.n = 14;
+                  _context4.n = 14;
                   break;
                 case 13:
-                  _context3.p = 13;
-                  _t4 = _context3.v;
+                  _context4.p = 13;
+                  _t4 = _context4.v;
                   console.error('Erreur API détectée:', _t4.message);
                   console.error('Stack trace complet:', _t4.stack);
                   console.error('Configuration SDK:', {
@@ -1037,9 +1077,9 @@
                   this.displayServiceUnavailable(containerId, this.config.type);
                   throw new Error('Service non disponible');
                 case 14:
-                  return _context3.a(2);
+                  return _context4.a(2);
               }
-            }, _callee3, this, [[7, 13], [4, 6]]);
+            }, _callee4, this, [[7, 13], [4, 6]]);
           }));
           function generateQR() {
             return _generateQR.apply(this, arguments);
@@ -1053,41 +1093,41 @@
       }, {
         key: "generateCustomQR",
         value: (function () {
-          var _generateCustomQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(containerId, type) {
+          var _generateCustomQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(containerId, type) {
             var options,
               response,
               imageBaseUrl,
               qrImageUrl,
-              _args4 = arguments,
+              _args5 = arguments,
               _t5;
-            return _regenerator().w(function (_context4) {
-              while (1) switch (_context4.p = _context4.n) {
+            return _regenerator().w(function (_context5) {
+              while (1) switch (_context5.p = _context5.n) {
                 case 0:
-                  options = _args4.length > 2 && _args4[2] !== undefined ? _args4[2] : {};
+                  options = _args5.length > 2 && _args5[2] !== undefined ? _args5[2] : {};
                   if (!this.initPromise) {
-                    _context4.n = 2;
+                    _context5.n = 2;
                     break;
                   }
-                  _context4.n = 1;
+                  _context5.n = 1;
                   return this.initPromise;
                 case 1:
                   this.initPromise = null;
                 case 2:
                   if (this.isInitialized) {
-                    _context4.n = 3;
+                    _context5.n = 3;
                     break;
                   }
                   throw new Error('SunuID: SDK non initialisé');
                 case 3:
-                  _context4.p = 3;
-                  _context4.n = 4;
+                  _context5.p = 3;
+                  _context5.n = 4;
                   return this.makeRequest('/qr-generate', _objectSpread2({
                     type: type
                   }, options));
                 case 4:
-                  response = _context4.v;
+                  response = _context5.v;
                   if (!response.success) {
-                    _context4.n = 5;
+                    _context5.n = 5;
                     break;
                   }
                   // Construire l'URL complète de l'image QR avec la base URL pour les images
@@ -1100,18 +1140,18 @@
                   console.log('📄 Code de session:', response.data.code);
                   console.log('🆔 Service ID:', response.data.service_id);
                   this.startAutoRefresh(containerId, type, options);
-                  return _context4.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
+                  return _context5.a(2, _objectSpread2(_objectSpread2({}, response.data), {}, {
                     qrCodeUrl: qrImageUrl,
                     sessionId: response.data.service_id
                   }));
                 case 5:
                   throw new Error(response.message || 'Erreur lors de la génération du QR code');
                 case 6:
-                  _context4.n = 8;
+                  _context5.n = 8;
                   break;
                 case 7:
-                  _context4.p = 7;
-                  _t5 = _context4.v;
+                  _context5.p = 7;
+                  _t5 = _context5.v;
                   console.error('Erreur API détectée:', _t5.message);
                   console.error('Stack trace complet:', _t5.stack);
                   console.error('Configuration SDK (Custom):', {
@@ -1125,9 +1165,9 @@
                   this.displayServiceUnavailable(containerId, type);
                   throw new Error('Service non disponible');
                 case 8:
-                  return _context4.a(2);
+                  return _context5.a(2);
               }
-            }, _callee4, this, [[3, 7]]);
+            }, _callee5, this, [[3, 7]]);
           }));
           function generateCustomQR(_x, _x2) {
             return _generateCustomQR.apply(this, arguments);
@@ -1138,16 +1178,16 @@
       }, {
         key: "generateAuthQR",
         value: function () {
-          var _generateAuthQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(containerId) {
+          var _generateAuthQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(containerId) {
             var options,
-              _args5 = arguments;
-            return _regenerator().w(function (_context5) {
-              while (1) switch (_context5.n) {
+              _args6 = arguments;
+            return _regenerator().w(function (_context6) {
+              while (1) switch (_context6.n) {
                 case 0:
-                  options = _args5.length > 1 && _args5[1] !== undefined ? _args5[1] : {};
-                  return _context5.a(2, this.generateQR(containerId, options));
+                  options = _args6.length > 1 && _args6[1] !== undefined ? _args6[1] : {};
+                  return _context6.a(2, this.generateQR(containerId, options));
               }
-            }, _callee5, this);
+            }, _callee6, this);
           }));
           function generateAuthQR(_x3) {
             return _generateAuthQR.apply(this, arguments);
@@ -1157,41 +1197,7 @@
       }, {
         key: "generateKYCQR",
         value: function () {
-          var _generateKYCQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(containerId) {
-            var options,
-              originalType,
-              _args6 = arguments;
-            return _regenerator().w(function (_context6) {
-              while (1) switch (_context6.p = _context6.n) {
-                case 0:
-                  options = _args6.length > 1 && _args6[1] !== undefined ? _args6[1] : {};
-                  // Sauvegarder le type actuel
-                  originalType = this.config.type; // Changer temporairement le type pour KYC
-                  this.config.type = 1;
-                  _context6.p = 1;
-                  _context6.n = 2;
-                  return this.generateQR(containerId, options);
-                case 2:
-                  return _context6.a(2, _context6.v);
-                case 3:
-                  _context6.p = 3;
-                  // Restaurer le type original
-                  this.config.type = originalType;
-                  return _context6.f(3);
-                case 4:
-                  return _context6.a(2);
-              }
-            }, _callee6, this, [[1,, 3, 4]]);
-          }));
-          function generateKYCQR(_x4) {
-            return _generateKYCQR.apply(this, arguments);
-          }
-          return generateKYCQR;
-        }()
-      }, {
-        key: "generateSignatureQR",
-        value: function () {
-          var _generateSignatureQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(containerId) {
+          var _generateKYCQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(containerId) {
             var options,
               originalType,
               _args7 = arguments;
@@ -1200,8 +1206,8 @@
                 case 0:
                   options = _args7.length > 1 && _args7[1] !== undefined ? _args7[1] : {};
                   // Sauvegarder le type actuel
-                  originalType = this.config.type; // Changer temporairement le type pour Signature
-                  this.config.type = 3;
+                  originalType = this.config.type; // Changer temporairement le type pour KYC
+                  this.config.type = 1;
                   _context7.p = 1;
                   _context7.n = 2;
                   return this.generateQR(containerId, options);
@@ -1217,6 +1223,40 @@
               }
             }, _callee7, this, [[1,, 3, 4]]);
           }));
+          function generateKYCQR(_x4) {
+            return _generateKYCQR.apply(this, arguments);
+          }
+          return generateKYCQR;
+        }()
+      }, {
+        key: "generateSignatureQR",
+        value: function () {
+          var _generateSignatureQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(containerId) {
+            var options,
+              originalType,
+              _args8 = arguments;
+            return _regenerator().w(function (_context8) {
+              while (1) switch (_context8.p = _context8.n) {
+                case 0:
+                  options = _args8.length > 1 && _args8[1] !== undefined ? _args8[1] : {};
+                  // Sauvegarder le type actuel
+                  originalType = this.config.type; // Changer temporairement le type pour Signature
+                  this.config.type = 3;
+                  _context8.p = 1;
+                  _context8.n = 2;
+                  return this.generateQR(containerId, options);
+                case 2:
+                  return _context8.a(2, _context8.v);
+                case 3:
+                  _context8.p = 3;
+                  // Restaurer le type original
+                  this.config.type = originalType;
+                  return _context8.f(3);
+                case 4:
+                  return _context8.a(2);
+              }
+            }, _callee8, this, [[1,, 3, 4]]);
+          }));
           function generateSignatureQR(_x5) {
             return _generateSignatureQR.apply(this, arguments);
           }
@@ -1228,43 +1268,43 @@
       }, {
         key: "checkQRStatus",
         value: (function () {
-          var _checkQRStatus = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(sessionId) {
+          var _checkQRStatus = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(sessionId) {
             var response, _t6;
-            return _regenerator().w(function (_context8) {
-              while (1) switch (_context8.p = _context8.n) {
+            return _regenerator().w(function (_context9) {
+              while (1) switch (_context9.p = _context9.n) {
                 case 0:
                   if (this.isInitialized) {
-                    _context8.n = 1;
+                    _context9.n = 1;
                     break;
                   }
                   throw new Error('SunuID: SDK non initialisé');
                 case 1:
-                  _context8.p = 1;
-                  _context8.n = 2;
+                  _context9.p = 1;
+                  _context9.n = 2;
                   return this.makeRequest('/qr-status', {
                     serviceId: sessionId
                   });
                 case 2:
-                  response = _context8.v;
+                  response = _context9.v;
                   if (!response.success) {
-                    _context8.n = 3;
+                    _context9.n = 3;
                     break;
                   }
-                  return _context8.a(2, response.data);
+                  return _context9.a(2, response.data);
                 case 3:
                   throw new Error(response.message || 'Erreur lors de la vérification du statut');
                 case 4:
-                  _context8.n = 6;
+                  _context9.n = 6;
                   break;
                 case 5:
-                  _context8.p = 5;
-                  _t6 = _context8.v;
+                  _context9.p = 5;
+                  _t6 = _context9.v;
                   this.handleError(_t6);
                   throw _t6;
                 case 6:
-                  return _context8.a(2);
+                  return _context9.a(2);
               }
-            }, _callee8, this, [[1, 5]]);
+            }, _callee9, this, [[1, 5]]);
           }));
           function checkQRStatus(_x6) {
             return _checkQRStatus.apply(this, arguments);
@@ -1278,47 +1318,47 @@
       }, {
         key: "generateQRWithContent",
         value: (function () {
-          var _generateQRWithContent = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(content, containerId, type) {
+          var _generateQRWithContent = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(content, containerId, type) {
             var options,
               localQRUrl,
-              _args9 = arguments,
+              _args0 = arguments,
               _t7;
-            return _regenerator().w(function (_context9) {
-              while (1) switch (_context9.p = _context9.n) {
+            return _regenerator().w(function (_context0) {
+              while (1) switch (_context0.p = _context0.n) {
                 case 0:
-                  options = _args9.length > 3 && _args9[3] !== undefined ? _args9[3] : {};
+                  options = _args0.length > 3 && _args0[3] !== undefined ? _args0[3] : {};
                   console.log('🎨 Génération QR avec contenu:', content);
-                  _context9.p = 1;
+                  _context0.p = 1;
                   if (!(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')) {
-                    _context9.n = 3;
+                    _context0.n = 3;
                     break;
                   }
                   console.log('🏠 Utilisation service QR local...');
-                  _context9.n = 2;
+                  _context0.n = 2;
                   return this.generateQRLocal(content, containerId, type, options);
                 case 2:
-                  localQRUrl = _context9.v;
+                  localQRUrl = _context0.v;
                   if (!localQRUrl) {
-                    _context9.n = 3;
+                    _context0.n = 3;
                     break;
                   }
-                  return _context9.a(2, localQRUrl);
+                  return _context0.a(2, localQRUrl);
                 case 3:
                   // Fallback vers le service QR distant
                   console.log('🌐 Utilisation service QR distant...');
-                  _context9.n = 4;
+                  _context0.n = 4;
                   return this.generateQRRemote(content, containerId, type, options);
                 case 4:
-                  return _context9.a(2, _context9.v);
+                  return _context0.a(2, _context0.v);
                 case 5:
-                  _context9.p = 5;
-                  _t7 = _context9.v;
+                  _context0.p = 5;
+                  _t7 = _context0.v;
                   console.error('❌ Erreur génération QR:', _t7);
                   // Fallback vers affichage simple du contenu
                   this.displayQRContent(containerId, content, type, options);
-                  return _context9.a(2, null);
+                  return _context0.a(2, null);
               }
-            }, _callee9, this, [[1, 5]]);
+            }, _callee0, this, [[1, 5]]);
           }));
           function generateQRWithContent(_x7, _x8, _x9) {
             return _generateQRWithContent.apply(this, arguments);
@@ -1332,86 +1372,25 @@
       }, {
         key: "generateQRLocal",
         value: (function () {
-          var _generateQRLocal = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(content, containerId, type) {
-            var options,
-              response,
-              data,
-              qrUrl,
-              _args0 = arguments,
-              _t8;
-            return _regenerator().w(function (_context0) {
-              while (1) switch (_context0.p = _context0.n) {
-                case 0:
-                  options = _args0.length > 3 && _args0[3] !== undefined ? _args0[3] : {};
-                  _context0.p = 1;
-                  _context0.n = 2;
-                  return fetch('http://localhost:8000/api/generate/text', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: "text=".concat(encodeURIComponent(content), "&size=300")
-                  });
-                case 2:
-                  response = _context0.v;
-                  if (!response.ok) {
-                    _context0.n = 4;
-                    break;
-                  }
-                  _context0.n = 3;
-                  return response.json();
-                case 3:
-                  data = _context0.v;
-                  qrUrl = "data:image/png;base64,".concat(data.qrcode);
-                  this.displayQRCode(containerId, qrUrl, type, options);
-                  return _context0.a(2, qrUrl);
-                case 4:
-                  _context0.n = 6;
-                  break;
-                case 5:
-                  _context0.p = 5;
-                  _t8 = _context0.v;
-                  console.log('❌ Service QR local non disponible:', _t8.message);
-                case 6:
-                  return _context0.a(2, null);
-              }
-            }, _callee0, this, [[1, 5]]);
-          }));
-          function generateQRLocal(_x0, _x1, _x10) {
-            return _generateQRLocal.apply(this, arguments);
-          }
-          return generateQRLocal;
-        }()
-        /**
-         * Générer QR code avec service distant
-         */
-        )
-      }, {
-        key: "generateQRRemote",
-        value: (function () {
-          var _generateQRRemote = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(content, containerId, type) {
+          var _generateQRLocal = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee1(content, containerId, type) {
             var options,
               response,
               data,
               qrUrl,
               _args1 = arguments,
-              _t9;
+              _t8;
             return _regenerator().w(function (_context1) {
               while (1) switch (_context1.p = _context1.n) {
                 case 0:
                   options = _args1.length > 3 && _args1[3] !== undefined ? _args1[3] : {};
                   _context1.p = 1;
                   _context1.n = 2;
-                  return fetch('https://api.sunuid.fayma.sn/qr-generate', {
+                  return fetch('http://localhost:8000/api/generate/text', {
                     method: 'POST',
                     headers: {
-                      'Content-Type': 'application/json'
+                      'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: JSON.stringify({
-                      text: content,
-                      size: 300,
-                      type: type
-                    })
+                    body: "text=".concat(encodeURIComponent(content), "&size=300")
                   });
                 case 2:
                   response = _context1.v;
@@ -1431,14 +1410,75 @@
                   break;
                 case 5:
                   _context1.p = 5;
-                  _t9 = _context1.v;
+                  _t8 = _context1.v;
+                  console.log('❌ Service QR local non disponible:', _t8.message);
+                case 6:
+                  return _context1.a(2, null);
+              }
+            }, _callee1, this, [[1, 5]]);
+          }));
+          function generateQRLocal(_x0, _x1, _x10) {
+            return _generateQRLocal.apply(this, arguments);
+          }
+          return generateQRLocal;
+        }()
+        /**
+         * Générer QR code avec service distant
+         */
+        )
+      }, {
+        key: "generateQRRemote",
+        value: (function () {
+          var _generateQRRemote = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(content, containerId, type) {
+            var options,
+              response,
+              data,
+              qrUrl,
+              _args10 = arguments,
+              _t9;
+            return _regenerator().w(function (_context10) {
+              while (1) switch (_context10.p = _context10.n) {
+                case 0:
+                  options = _args10.length > 3 && _args10[3] !== undefined ? _args10[3] : {};
+                  _context10.p = 1;
+                  _context10.n = 2;
+                  return fetch('https://api.sunuid.fayma.sn/qr-generate', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      text: content,
+                      size: 300,
+                      type: type
+                    })
+                  });
+                case 2:
+                  response = _context10.v;
+                  if (!response.ok) {
+                    _context10.n = 4;
+                    break;
+                  }
+                  _context10.n = 3;
+                  return response.json();
+                case 3:
+                  data = _context10.v;
+                  qrUrl = "data:image/png;base64,".concat(data.qrcode);
+                  this.displayQRCode(containerId, qrUrl, type, options);
+                  return _context10.a(2, qrUrl);
+                case 4:
+                  _context10.n = 6;
+                  break;
+                case 5:
+                  _context10.p = 5;
+                  _t9 = _context10.v;
                   console.error('❌ Erreur service QR distant:', _t9);
                 case 6:
                   // Fallback vers affichage du contenu
                   this.displayQRContent(containerId, content, type, options);
-                  return _context1.a(2, null);
+                  return _context10.a(2, null);
               }
-            }, _callee1, this, [[1, 5]]);
+            }, _callee10, this, [[1, 5]]);
           }));
           function generateQRRemote(_x11, _x12, _x13) {
             return _generateQRRemote.apply(this, arguments);
@@ -1496,11 +1536,11 @@
       }, {
         key: "generateCustomQRCode",
         value: (function () {
-          var _generateCustomQRCode = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(content, label) {
+          var _generateCustomQRCode = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(content, label) {
             var qrContainer,
               _t0;
-            return _regenerator().w(function (_context10) {
-              while (1) switch (_context10.p = _context10.n) {
+            return _regenerator().w(function (_context11) {
+              while (1) switch (_context11.p = _context11.n) {
                 case 0:
                   console.log('🎨 Début génération QR personnalisé...');
                   console.log('📄 Contenu:', content);
@@ -1512,37 +1552,37 @@
                     qrContainer = document.getElementById('qr-container');
                   }
                   if (qrContainer) {
-                    _context10.n = 1;
+                    _context11.n = 1;
                     break;
                   }
                   console.error('❌ QR container not found');
-                  return _context10.a(2);
+                  return _context11.a(2);
                 case 1:
                   console.log('✅ QR container trouvé');
 
                   // Nettoyer le conteneur
                   qrContainer.innerHTML = '<div style="text-align: center; padding: 20px;"><p>Génération QR code...</p></div>';
-                  _context10.p = 2;
+                  _context11.p = 2;
                   // Utiliser directement l'API principale (plus fiable)
                   console.log('🎨 Tentative génération via API principale...');
-                  _context10.n = 3;
+                  _context11.n = 3;
                   return this.generateQRPHP(content, label, qrContainer);
                 case 3:
                   console.log('✅ QR code généré avec succès');
-                  _context10.n = 5;
+                  _context11.n = 5;
                   break;
                 case 4:
-                  _context10.p = 4;
-                  _t0 = _context10.v;
+                  _context11.p = 4;
+                  _t0 = _context11.v;
                   console.error('❌ Erreur génération API:', _t0);
 
                   // Fallback final : image par défaut
                   console.log('⚠️ Affichage image par défaut');
                   this.displayDefaultQR(qrContainer, content, label);
                 case 5:
-                  return _context10.a(2);
+                  return _context11.a(2);
               }
-            }, _callee10, this, [[2, 4]]);
+            }, _callee11, this, [[2, 4]]);
           }));
           function generateCustomQRCode(_x14, _x15) {
             return _generateCustomQRCode.apply(this, arguments);
@@ -1556,17 +1596,17 @@
       }, {
         key: "generateQRClientSide",
         value: (function () {
-          var _generateQRClientSide = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(content, label, qrContainer) {
-            var _this2 = this;
+          var _generateQRClientSide = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(content, label, qrContainer) {
+            var _this3 = this;
             var canvas, ctx;
-            return _regenerator().w(function (_context11) {
-              while (1) switch (_context11.n) {
+            return _regenerator().w(function (_context12) {
+              while (1) switch (_context12.n) {
                 case 0:
-                  _context11.n = 1;
+                  _context12.n = 1;
                   return this.ensureQRCodeLibrary();
                 case 1:
                   if (!(typeof QRCode === 'undefined')) {
-                    _context11.n = 2;
+                    _context12.n = 2;
                     break;
                   }
                   throw new Error('QRCode library non disponible');
@@ -1580,7 +1620,7 @@
                   ctx.fillRect(0, 0, 300, 320);
 
                   // Générer le QR code
-                  return _context11.a(2, new Promise(function (resolve, reject) {
+                  return _context12.a(2, new Promise(function (resolve, reject) {
                     QRCode.toCanvas(canvas, content, {
                       width: 280,
                       margin: 10,
@@ -1604,18 +1644,18 @@
                       var dataUrl = canvas.toDataURL('image/png');
 
                       // Stocker l'URL
-                      _this2.currentQRUrl = dataUrl;
+                      _this3.currentQRUrl = dataUrl;
 
                       // Afficher le QR code
                       qrContainer.innerHTML = "\n                        <div style=\"text-align: center; padding: 20px;\">\n                            <img src=\"".concat(dataUrl, "\" alt=\"QR Code\" style=\"max-width: 300px; border: 2px solid #ddd; border-radius: 10px;\">\n                        </div>\n                    ");
 
                       // Afficher les instructions
-                      _this2.showQRInstructions(qrContainer);
+                      _this3.showQRInstructions(qrContainer);
                       resolve();
                     });
                   }));
               }
-            }, _callee11, this);
+            }, _callee12, this);
           }));
           function generateQRClientSide(_x16, _x17, _x18) {
             return _generateQRClientSide.apply(this, arguments);
@@ -1629,10 +1669,10 @@
       }, {
         key: "generateQRPHP",
         value: (function () {
-          var _generateQRPHP = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee12(content, label, qrContainer) {
+          var _generateQRPHP = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13(content, label, qrContainer) {
             var qrGeneratorUrl, requestBody, contentType, response, responseData, qrImageUrl, imageBaseUrl;
-            return _regenerator().w(function (_context12) {
-              while (1) switch (_context12.n) {
+            return _regenerator().w(function (_context13) {
+              while (1) switch (_context13.n) {
                 case 0:
                   // Construire l'URL - Utiliser l'API principale qui fonctionne
 
@@ -1670,7 +1710,7 @@
                       label: label
                     });
                   }
-                  _context12.n = 1;
+                  _context13.n = 1;
                   return fetch(qrGeneratorUrl, {
                     method: 'POST',
                     headers: {
@@ -1680,19 +1720,19 @@
                     body: requestBody
                   });
                 case 1:
-                  response = _context12.v;
+                  response = _context13.v;
                   if (response.ok) {
-                    _context12.n = 2;
+                    _context13.n = 2;
                     break;
                   }
                   throw new Error("Erreur HTTP: ".concat(response.status));
                 case 2:
-                  _context12.n = 3;
+                  _context13.n = 3;
                   return response.json();
                 case 3:
-                  responseData = _context12.v;
+                  responseData = _context13.v;
                   if (responseData.success) {
-                    _context12.n = 4;
+                    _context13.n = 4;
                     break;
                   }
                   throw new Error("Erreur QR: ".concat(responseData.error));
@@ -1715,9 +1755,9 @@
                   // Afficher les instructions
                   this.showQRInstructions(qrContainer);
                 case 5:
-                  return _context12.a(2);
+                  return _context13.a(2);
               }
-            }, _callee12, this);
+            }, _callee13, this);
           }));
           function generateQRPHP(_x19, _x20, _x21) {
             return _generateQRPHP.apply(this, arguments);
@@ -1740,19 +1780,19 @@
       }, {
         key: "ensureQRCodeLibrary",
         value: (function () {
-          var _ensureQRCodeLibrary = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee13() {
-            return _regenerator().w(function (_context13) {
-              while (1) switch (_context13.n) {
+          var _ensureQRCodeLibrary = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14() {
+            return _regenerator().w(function (_context14) {
+              while (1) switch (_context14.n) {
                 case 0:
                   if (!(typeof QRCode !== 'undefined')) {
-                    _context13.n = 1;
+                    _context14.n = 1;
                     break;
                   }
                   console.log('✅ QRCode library déjà disponible');
-                  return _context13.a(2, true);
+                  return _context14.a(2, true);
                 case 1:
                   console.log('📦 Chargement QRCode library...');
-                  return _context13.a(2, new Promise(function (resolve, reject) {
+                  return _context14.a(2, new Promise(function (resolve, reject) {
                     var script = document.createElement('script');
                     script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/lib/browser.min.js';
                     script.onload = function () {
@@ -1773,7 +1813,7 @@
                     document.head.appendChild(script);
                   }));
               }
-            }, _callee13);
+            }, _callee14);
           }));
           function ensureQRCodeLibrary() {
             return _ensureQRCodeLibrary.apply(this, arguments);
@@ -1860,19 +1900,19 @@
       }, {
         key: "refreshQR",
         value: (function () {
-          var _refreshQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(containerId) {
+          var _refreshQR = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15(containerId) {
             var options,
               result,
               _result,
-              _args14 = arguments,
+              _args15 = arguments,
               _t1;
-            return _regenerator().w(function (_context14) {
-              while (1) switch (_context14.p = _context14.n) {
+            return _regenerator().w(function (_context15) {
+              while (1) switch (_context15.p = _context15.n) {
                 case 0:
-                  options = _args14.length > 1 && _args14[1] !== undefined ? _args14[1] : {};
-                  _context14.p = 1;
+                  options = _args15.length > 1 && _args15[1] !== undefined ? _args15[1] : {};
+                  _context15.p = 1;
                   if (!this.currentQRUrl) {
-                    _context14.n = 3;
+                    _context15.n = 3;
                     break;
                   }
                   console.log('🔄 Vérification du statut du QR code existant...');
@@ -1882,31 +1922,31 @@
 
                   // Option 2: Régénérer le QR code seulement si nécessaire
                   // Pour l'instant, on régénère pour s'assurer qu'il est à jour
-                  _context14.n = 2;
+                  _context15.n = 2;
                   return this.generateQR(containerId, options);
                 case 2:
-                  result = _context14.v;
-                  return _context14.a(2, result);
+                  result = _context15.v;
+                  return _context15.a(2, result);
                 case 3:
                   console.log('🔄 Pas de QR code existant, génération d\'un nouveau...');
-                  _context14.n = 4;
+                  _context15.n = 4;
                   return this.generateQR(containerId, options);
                 case 4:
-                  _result = _context14.v;
-                  return _context14.a(2, _result);
+                  _result = _context15.v;
+                  return _context15.a(2, _result);
                 case 5:
-                  _context14.n = 7;
+                  _context15.n = 7;
                   break;
                 case 6:
-                  _context14.p = 6;
-                  _t1 = _context14.v;
+                  _context15.p = 6;
+                  _t1 = _context15.v;
                   console.error('Erreur lors du rafraîchissement:', _t1.message);
                   this.displayServiceUnavailable(containerId, this.config.type);
                   throw _t1;
                 case 7:
-                  return _context14.a(2);
+                  return _context15.a(2);
               }
-            }, _callee14, this, [[1, 6]]);
+            }, _callee15, this, [[1, 6]]);
           }));
           function refreshQR(_x22) {
             return _refreshQR.apply(this, arguments);
@@ -1920,7 +1960,7 @@
       }, {
         key: "startAutoRefresh",
         value: function startAutoRefresh(containerId, type, options) {
-          var _this3 = this;
+          var _this4 = this;
           if (!this.config.autoRefresh) return;
 
           // Arrêter le timer existant s'il y en a un
@@ -1928,26 +1968,26 @@
             clearInterval(this.refreshTimer);
             console.log('🔄 Timer de rafraîchissement précédent arrêté');
           }
-          this.refreshTimer = setInterval(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee15() {
+          this.refreshTimer = setInterval(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16() {
             var _t10;
-            return _regenerator().w(function (_context15) {
-              while (1) switch (_context15.p = _context15.n) {
+            return _regenerator().w(function (_context16) {
+              while (1) switch (_context16.p = _context16.n) {
                 case 0:
-                  _context15.p = 0;
+                  _context16.p = 0;
                   console.log('🔄 Rafraîchissement automatique du QR code...');
-                  _context15.n = 1;
-                  return _this3.refreshQR(containerId, type, options);
+                  _context16.n = 1;
+                  return _this4.refreshQR(containerId, type, options);
                 case 1:
-                  _context15.n = 3;
+                  _context16.n = 3;
                   break;
                 case 2:
-                  _context15.p = 2;
-                  _t10 = _context15.v;
+                  _context16.p = 2;
+                  _t10 = _context16.v;
                   console.warn('Erreur lors du rafraîchissement automatique:', _t10);
                 case 3:
-                  return _context15.a(2);
+                  return _context16.a(2);
               }
-            }, _callee15, null, [[0, 2]]);
+            }, _callee16, null, [[0, 2]]);
           })), this.config.refreshInterval);
           console.log("\uD83D\uDD04 Timer de rafra\xEEchissement d\xE9marr\xE9 (".concat(this.config.refreshInterval, "ms)"));
         }
@@ -1962,16 +2002,16 @@
       }, {
         key: "makeRequest",
         value: (function () {
-          var _makeRequest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee16(endpoint, data) {
+          var _makeRequest = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17(endpoint, data) {
             var _window$SunuIDConfig4,
               _window$SunuIDConfig5,
-              _this4 = this;
+              _this5 = this;
             var sanitizedData, endpointPath, url, retryCount, maxRetries, _loop, _ret;
-            return _regenerator().w(function (_context17) {
-              while (1) switch (_context17.n) {
+            return _regenerator().w(function (_context18) {
+              while (1) switch (_context18.n) {
                 case 0:
                   if (this.isInitialized) {
-                    _context17.n = 1;
+                    _context18.n = 1;
                     break;
                   }
                   this.logSecurityEvent('REQUEST_BEFORE_INIT', {
@@ -1980,12 +2020,12 @@
                   throw new Error('SDK non initialisé');
                 case 1:
                   if (!this.config.secureInit) {
-                    _context17.n = 2;
+                    _context18.n = 2;
                     break;
                   }
                   this.config.requestCount++;
                   if (!(this.config.requestCount > this.config.maxRequests)) {
-                    _context17.n = 2;
+                    _context18.n = 2;
                     break;
                   }
                   this.logSecurityEvent('API_REQUEST_LIMIT_EXCEEDED', {
@@ -2021,14 +2061,14 @@
                   maxRetries = this.config.maxRetries;
                   _loop = /*#__PURE__*/_regenerator().m(function _loop() {
                     var controller, timeoutId, headers, response, errorText, errorData, result, _t11;
-                    return _regenerator().w(function (_context16) {
-                      while (1) switch (_context16.p = _context16.n) {
+                    return _regenerator().w(function (_context17) {
+                      while (1) switch (_context17.p = _context17.n) {
                         case 0:
-                          _context16.p = 0;
+                          _context17.p = 0;
                           controller = new AbortController();
                           timeoutId = setTimeout(function () {
                             return controller.abort();
-                          }, _this4.config.requestTimeout); // Headers minimaux (API SunuID n'accepte que les headers essentiels)
+                          }, _this5.config.requestTimeout); // Headers minimaux (API SunuID n'accepte que les headers essentiels)
                           headers = {
                             'Content-Type': 'application/json'
                           }; // Note: En mode sécurisé, les credentials sont dans le body
@@ -2036,7 +2076,7 @@
                           // if (this.config.secureInit && this.config.token) {
                           //     headers['X-Secure-Token'] = this.config.token;
                           // }
-                          _context16.n = 1;
+                          _context17.n = 1;
                           return fetch(url, {
                             method: 'POST',
                             headers: headers,
@@ -2044,16 +2084,16 @@
                             signal: controller.signal
                           });
                         case 1:
-                          response = _context16.v;
+                          response = _context17.v;
                           clearTimeout(timeoutId);
                           if (response.ok) {
-                            _context16.n = 3;
+                            _context17.n = 3;
                             break;
                           }
-                          _context16.n = 2;
+                          _context17.n = 2;
                           return response.text();
                         case 2:
-                          errorText = _context16.v;
+                          errorText = _context17.v;
                           try {
                             errorData = JSON.parse(errorText);
                           } catch (e) {
@@ -2061,88 +2101,88 @@
                               message: errorText
                             };
                           }
-                          _this4.logSecurityEvent('API_REQUEST_ERROR', {
+                          _this5.logSecurityEvent('API_REQUEST_ERROR', {
                             status: response.status,
                             statusText: response.statusText,
                             error: errorData.message
                           });
                           throw new Error(errorData.message || "Erreur HTTP: ".concat(response.status));
                         case 3:
-                          _context16.n = 4;
+                          _context17.n = 4;
                           return response.json();
                         case 4:
-                          result = _context16.v;
-                          _this4.logSecurityEvent('API_REQUEST_SUCCESS', {
+                          result = _context17.v;
+                          _this5.logSecurityEvent('API_REQUEST_SUCCESS', {
                             endpoint: endpointPath,
                             responseKeys: Object.keys(result)
                           });
-                          return _context16.a(2, {
+                          return _context17.a(2, {
                             v: result
                           });
                         case 5:
-                          _context16.p = 5;
-                          _t11 = _context16.v;
+                          _context17.p = 5;
+                          _t11 = _context17.v;
                           retryCount++;
                           if (!(_t11.name === 'AbortError')) {
-                            _context16.n = 7;
+                            _context17.n = 7;
                             break;
                           }
-                          _this4.logSecurityEvent('API_REQUEST_TIMEOUT', {
+                          _this5.logSecurityEvent('API_REQUEST_TIMEOUT', {
                             retryCount: retryCount
                           });
                           if (!(retryCount > maxRetries)) {
-                            _context16.n = 6;
+                            _context17.n = 6;
                             break;
                           }
                           throw new Error('Timeout de la requête API');
                         case 6:
-                          return _context16.a(2, 0);
+                          return _context17.a(2, 0);
                         case 7:
                           if (!(retryCount > maxRetries)) {
-                            _context16.n = 8;
+                            _context17.n = 8;
                             break;
                           }
-                          _this4.logSecurityEvent('API_REQUEST_MAX_RETRIES', {
+                          _this5.logSecurityEvent('API_REQUEST_MAX_RETRIES', {
                             retryCount: retryCount,
                             error: _t11.message
                           });
                           throw _t11;
                         case 8:
-                          _context16.n = 9;
+                          _context17.n = 9;
                           return new Promise(function (resolve) {
                             return setTimeout(resolve, 1000 * retryCount);
                           });
                         case 9:
-                          return _context16.a(2);
+                          return _context17.a(2);
                       }
                     }, _loop, null, [[0, 5]]);
                   });
                 case 3:
                   if (!(retryCount <= maxRetries)) {
-                    _context17.n = 7;
+                    _context18.n = 7;
                     break;
                   }
-                  return _context17.d(_regeneratorValues(_loop()), 4);
+                  return _context18.d(_regeneratorValues(_loop()), 4);
                 case 4:
-                  _ret = _context17.v;
+                  _ret = _context18.v;
                   if (!(_ret === 0)) {
-                    _context17.n = 5;
+                    _context18.n = 5;
                     break;
                   }
-                  return _context17.a(3, 3);
+                  return _context18.a(3, 3);
                 case 5:
                   if (!_ret) {
-                    _context17.n = 6;
+                    _context18.n = 6;
                     break;
                   }
-                  return _context17.a(2, _ret.v);
+                  return _context18.a(2, _ret.v);
                 case 6:
-                  _context17.n = 3;
+                  _context18.n = 3;
                   break;
                 case 7:
-                  return _context17.a(2);
+                  return _context18.a(2);
               }
-            }, _callee16, this);
+            }, _callee17, this);
           }));
           function makeRequest(_x23, _x24) {
             return _makeRequest.apply(this, arguments);
@@ -2213,20 +2253,20 @@
       }, {
         key: "fetchPartnerInfo",
         value: (function () {
-          var _fetchPartnerInfo = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee17() {
+          var _fetchPartnerInfo = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18() {
             var response, data, partnerId, _t12;
-            return _regenerator().w(function (_context18) {
-              while (1) switch (_context18.p = _context18.n) {
+            return _regenerator().w(function (_context19) {
+              while (1) switch (_context19.p = _context19.n) {
                 case 0:
-                  _context18.p = 0;
-                  _context18.n = 1;
+                  _context19.p = 0;
+                  _context19.n = 1;
                   return this.makeRequest('/debug', {
                     type: this.config.type,
                     client_id: this.config.clientId,
                     secret_id: this.config.secretId
                   });
                 case 1:
-                  response = _context18.v;
+                  response = _context19.v;
                   console.log('📋 Réponse debug API:', response);
 
                   // Vérifier la structure de la réponse
@@ -2270,17 +2310,17 @@
                     console.warn('⚠️ Structure de réponse invalide, utilisation du partner_id par défaut');
                     this.config.partnerName = "Partner_".concat(this.config.partnerId || 'unknown');
                   }
-                  _context18.n = 3;
+                  _context19.n = 3;
                   break;
                 case 2:
-                  _context18.p = 2;
-                  _t12 = _context18.v;
+                  _context19.p = 2;
+                  _t12 = _context19.v;
                   console.warn('⚠️ Erreur lors de la récupération des informations du partenaire:', _t12.message);
                   this.config.partnerName = 'Partner_unknown';
                 case 3:
-                  return _context18.a(2);
+                  return _context19.a(2);
               }
-            }, _callee17, this, [[0, 2]]);
+            }, _callee18, this, [[0, 2]]);
           }));
           function fetchPartnerInfo() {
             return _fetchPartnerInfo.apply(this, arguments);
@@ -2318,18 +2358,18 @@
       }, {
         key: "checkConnections",
         value: (function () {
-          var _checkConnections = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee18() {
+          var _checkConnections = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19() {
             var status, testResponse, debugData, _t13;
-            return _regenerator().w(function (_context19) {
-              while (1) switch (_context19.p = _context19.n) {
+            return _regenerator().w(function (_context20) {
+              while (1) switch (_context20.p = _context20.n) {
                 case 0:
                   status = {
                     api: false,
                     websocket: false,
                     ready: false
                   }; // Vérifier l'API en utilisant l'endpoint debug avec les credentials
-                  _context19.p = 1;
-                  _context19.n = 2;
+                  _context20.p = 1;
+                  _context20.n = 2;
                   return fetch(this.config.apiUrl + '/debug', {
                     method: 'POST',
                     headers: {
@@ -2342,29 +2382,29 @@
                     })
                   });
                 case 2:
-                  testResponse = _context19.v;
+                  testResponse = _context20.v;
                   if (!testResponse.ok) {
-                    _context19.n = 4;
+                    _context20.n = 4;
                     break;
                   }
-                  _context19.n = 3;
+                  _context20.n = 3;
                   return testResponse.json();
                 case 3:
-                  debugData = _context19.v;
+                  debugData = _context20.v;
                   // L'API est accessible si on reçoit une réponse avec success: true
                   status.api = debugData.success === true;
                   console.log('🔍 API Status:', status.api ? 'accessible' : 'inaccessible');
-                  _context19.n = 5;
+                  _context20.n = 5;
                   break;
                 case 4:
                   status.api = false;
                   console.log('🔍 API Status: HTTP', testResponse.status);
                 case 5:
-                  _context19.n = 7;
+                  _context20.n = 7;
                   break;
                 case 6:
-                  _context19.p = 6;
-                  _t13 = _context19.v;
+                  _context20.p = 6;
+                  _t13 = _context20.v;
                   console.log('🔍 Test API échoué:', _t13.message);
                   status.api = false;
                 case 7:
@@ -2373,9 +2413,9 @@
 
                   // Connexions prêtes si API est accessible
                   status.ready = status.api;
-                  return _context19.a(2, status);
+                  return _context20.a(2, status);
               }
-            }, _callee18, this, [[1, 6]]);
+            }, _callee19, this, [[1, 6]]);
           }));
           function checkConnections() {
             return _checkConnections.apply(this, arguments);
@@ -2389,46 +2429,46 @@
       }, {
         key: "waitForConnections",
         value: (function () {
-          var _waitForConnections = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee19() {
+          var _waitForConnections = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee20() {
             var timeout,
               startTime,
               status,
-              _args20 = arguments;
-            return _regenerator().w(function (_context20) {
-              while (1) switch (_context20.n) {
+              _args21 = arguments;
+            return _regenerator().w(function (_context21) {
+              while (1) switch (_context21.n) {
                 case 0:
-                  timeout = _args20.length > 0 && _args20[0] !== undefined ? _args20[0] : 5000;
+                  timeout = _args21.length > 0 && _args21[0] !== undefined ? _args21[0] : 5000;
                   startTime = Date.now();
                 case 1:
                   if (!(Date.now() - startTime < timeout)) {
-                    _context20.n = 5;
+                    _context21.n = 5;
                     break;
                   }
-                  _context20.n = 2;
+                  _context21.n = 2;
                   return this.checkConnections();
                 case 2:
-                  status = _context20.v;
+                  status = _context21.v;
                   if (!status.ready) {
-                    _context20.n = 3;
+                    _context21.n = 3;
                     break;
                   }
                   console.log('✅ Connexions prêtes');
-                  return _context20.a(2, status);
+                  return _context21.a(2, status);
                 case 3:
                   console.log('⏳ Attente connexions...', status);
-                  _context20.n = 4;
+                  _context21.n = 4;
                   return new Promise(function (resolve) {
                     return setTimeout(resolve, 1000);
                   });
                 case 4:
-                  _context20.n = 1;
+                  _context21.n = 1;
                   break;
                 case 5:
                   throw new Error('Timeout connexions - Impossible de générer le QR code');
                 case 6:
-                  return _context20.a(2);
+                  return _context21.a(2);
               }
-            }, _callee19, this);
+            }, _callee20, this);
           }));
           function waitForConnections() {
             return _waitForConnections.apply(this, arguments);

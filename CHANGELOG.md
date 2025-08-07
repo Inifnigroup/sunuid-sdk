@@ -5,6 +5,31 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.42] - 2025-01-06
+
+### 🐛 Corrigé
+- **Boucle d'initialisation infinie** : Correction du problème de réinitialisation en continu
+  - Désactivation de `autoInit` par défaut pour éviter les conflits
+  - Protection contre les initialisations multiples et simultanées
+  - Ajout de délai dans le constructeur pour éviter les conflits avec d'autres scripts
+  - Gestion des promesses d'initialisation pour éviter les doublons
+
+### 🔧 Améliorations
+- **Protection d'initialisation** : 
+  - Vérification `isInitialized` avant initialisation
+  - Gestion des promesses d'initialisation simultanées
+  - Délai de 100ms pour l'auto-init
+- **autoInit** : Désactivé par défaut (`false`) au lieu de `true`
+- **Constructeur** : Initialisation plus sûre avec protection
+
+### 📋 Configuration
+```javascript
+const config = {
+    autoInit: true, // Doit être explicitement activé
+    // ... autres options
+};
+```
+
 ## [1.0.41] - 2025-01-06
 
 ### 🎉 Ajouté
