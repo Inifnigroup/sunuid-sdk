@@ -914,26 +914,51 @@ function _unsupportedIterableToArray(r, a) {
                 _context3.n = 8;
                 return this.makeRequest('/qr-generate', _objectSpread2({
                   type: this.config.type,
-                  content: qrContent,
-                  // Contenu personnalisé pour le QR
+                  data: qrContent,
+                  // Essayer data au lieu de content
                   label: "".concat(this.getTypeName(this.config.type), " ").concat(partnerName)
                 }, options));
               case 8:
                 response = _context3.v;
                 if (!response.success) {
+                  _context3.n = 11;
+                  break;
+                }
+                // Debug: Afficher la structure complète de la réponse
+                console.log('📋 Réponse QR API complète:', response);
+                console.log('📋 Structure response.data:', response.data);
+
+                // Construire l'URL complète du QR code
+                qrImageUrl = response.data.qrCodeUrl; // Si l'URL est relative, la rendre absolue
+                if (qrImageUrl && qrImageUrl.startsWith('/')) {
+                  qrImageUrl = "".concat(this.config.apiUrl).concat(qrImageUrl);
+                }
+
+                // Vérifier si l'URL du QR code existe
+                if (qrImageUrl) {
+                  _context3.n = 10;
+                  break;
+                }
+                console.warn('⚠️ qrCodeUrl non trouvé dans la réponse, recherche d\'alternatives...');
+
+                // Essayer d'autres champs possibles
+                qrImageUrl = response.data.qr_url || response.data.qrUrl || response.data.url || response.data.image_url || response.data.imageUrl;
+                if (!qrImageUrl) {
                   _context3.n = 9;
                   break;
                 }
-                // Construire l'URL complète du QR code
-                qrImageUrl = response.data.qrCodeUrl; // Si l'URL est relative, la rendre absolue
-                if (qrImageUrl.startsWith('/')) {
-                  qrImageUrl = "".concat(this.config.apiUrl).concat(qrImageUrl);
-                }
+                console.log('✅ URL QR trouvée dans un champ alternatif:', qrImageUrl);
+                _context3.n = 10;
+                break;
+              case 9:
+                console.error('❌ Aucune URL QR trouvée dans la réponse');
+                throw new Error('URL du QR code non trouvée dans la réponse API');
+              case 10:
                 this.currentQRUrl = qrImageUrl;
                 console.log('✅ QR code généré par API principale:', qrImageUrl);
                 console.log('📄 Contenu QR final:', qrContent);
-                console.log('🏷️ Label QR:', response.data.label);
-                console.log('🆔 Session ID:', response.data.sessionId);
+                console.log('🏷️ Label QR:', response.data.label || 'N/A');
+                console.log('🆔 Session ID:', response.data.sessionId || 'N/A');
 
                 // Afficher le QR code
                 this.displayQRCode(containerId, qrImageUrl, this.config.type, options);
@@ -955,13 +980,13 @@ function _unsupportedIterableToArray(r, a) {
                   label: response.data.label,
                   sessionId: response.data.sessionId
                 }));
-              case 9:
-                throw new Error(response.message || 'Erreur lors de la génération du QR code');
-              case 10:
-                _context3.n = 12;
-                break;
               case 11:
-                _context3.p = 11;
+                throw new Error(response.message || 'Erreur lors de la génération du QR code');
+              case 12:
+                _context3.n = 14;
+                break;
+              case 13:
+                _context3.p = 13;
                 _t4 = _context3.v;
                 console.error('Erreur API détectée:', _t4.message);
                 console.error('Stack trace complet:', _t4.stack);
@@ -993,10 +1018,10 @@ function _unsupportedIterableToArray(r, a) {
                 console.log('Affichage du message "Service non disponible" pour type ' + this.config.type);
                 this.displayServiceUnavailable(containerId, this.config.type);
                 throw new Error('Service non disponible');
-              case 12:
+              case 14:
                 return _context3.a(2);
             }
-          }, _callee3, this, [[7, 11], [4, 6]]);
+          }, _callee3, this, [[7, 13], [4, 6]]);
         }));
         function generateQR() {
           return _generateQR.apply(this, arguments);

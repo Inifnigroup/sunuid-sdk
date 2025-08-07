@@ -527,26 +527,49 @@
                     const partnerName = this.config.partnerName || 'Partner_unknown';
                     const response = await this.makeRequest('/qr-generate', {
                         type: this.config.type,
-                        content: qrContent, // Contenu personnalisé pour le QR
+                        data: qrContent, // Essayer data au lieu de content
                         label: `${this.getTypeName(this.config.type)} ${partnerName}`, // Label du QR avec nom du partenaire
                         ...options
                     });
 
                 if (response.success) {
+                    // Debug: Afficher la structure complète de la réponse
+                    console.log('📋 Réponse QR API complète:', response);
+                    console.log('📋 Structure response.data:', response.data);
+                    
                     // Construire l'URL complète du QR code
                     let qrImageUrl = response.data.qrCodeUrl;
                     
                     // Si l'URL est relative, la rendre absolue
-                    if (qrImageUrl.startsWith('/')) {
+                    if (qrImageUrl && qrImageUrl.startsWith('/')) {
                         qrImageUrl = `${this.config.apiUrl}${qrImageUrl}`;
+                    }
+                    
+                    // Vérifier si l'URL du QR code existe
+                    if (!qrImageUrl) {
+                        console.warn('⚠️ qrCodeUrl non trouvé dans la réponse, recherche d\'alternatives...');
+                        
+                        // Essayer d'autres champs possibles
+                        qrImageUrl = response.data.qr_url || 
+                                    response.data.qrUrl || 
+                                    response.data.url || 
+                                    response.data.image_url ||
+                                    response.data.imageUrl;
+                        
+                        if (qrImageUrl) {
+                            console.log('✅ URL QR trouvée dans un champ alternatif:', qrImageUrl);
+                        } else {
+                            console.error('❌ Aucune URL QR trouvée dans la réponse');
+                            throw new Error('URL du QR code non trouvée dans la réponse API');
+                        }
                     }
                     
                     this.currentQRUrl = qrImageUrl;
                     
                     console.log('✅ QR code généré par API principale:', qrImageUrl);
                     console.log('📄 Contenu QR final:', qrContent);
-                    console.log('🏷️ Label QR:', response.data.label);
-                    console.log('🆔 Session ID:', response.data.sessionId);
+                    console.log('🏷️ Label QR:', response.data.label || 'N/A');
+                    console.log('🆔 Session ID:', response.data.sessionId || 'N/A');
                     
                     // Afficher le QR code
                     this.displayQRCode(containerId, qrImageUrl, this.config.type, options);

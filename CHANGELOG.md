@@ -5,6 +5,84 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.40] - 2025-01-06
+
+### 🔧 Corrigé
+- **Génération QR code** : Correction de la gestion de la réponse API
+  - Ajout de logs détaillés pour identifier la structure de réponse
+  - Gestion des cas où `qrCodeUrl` n'existe pas dans la réponse
+  - Recherche automatique de champs alternatifs pour l'URL QR
+  - Protection contre les erreurs `undefined.startsWith()`
+
+### 🎨 Amélioré
+- **Debug API** : Amélioration des logs de réponse
+  - Affichage de la structure complète de la réponse QR API
+  - Affichage détaillé de `response.data`
+  - Logs pour identifier les champs disponibles
+
+### 📚 Ajouté
+- **Champs alternatifs** : Support de multiples champs pour l'URL QR
+  - `qrCodeUrl` (original)
+  - `qr_url`
+  - `qrUrl`
+  - `url`
+  - `image_url`
+  - `imageUrl`
+- **Gestion d'erreur** : Vérification de l'existence de l'URL avant traitement
+
+### 🔄 Logs améliorés
+- **Réponse API** : `📋 Réponse QR API complète:` et `📋 Structure response.data:`
+- **URL QR** : `⚠️ qrCodeUrl non trouvé` ou `✅ URL QR trouvée dans un champ alternatif`
+- **Champs N/A** : Gestion des champs manquants avec `|| 'N/A'`
+
+### 📋 Configuration recommandée
+```javascript
+const config = {
+    // ... autres options
+    // Le SDK va maintenant identifier automatiquement la structure de réponse
+    // et trouver l'URL QR dans le bon champ
+};
+```
+
+### 🧪 Test
+- Vérifier les logs pour voir la structure exacte de la réponse API
+- Confirmer que l'URL QR est trouvée dans le bon champ
+- Vérifier que le QR code s'affiche correctement
+
+## [1.0.39] - 2025-01-06
+
+### 🔧 Corrigé
+- **Génération QR code** : Correction du champ de contenu pour `/qr-generate`
+  - Changement de `content` vers `data` pour le contenu QR
+  - L'API semble attendre `data` au lieu de `content`
+  - Amélioration de la compatibilité avec l'API SunuID
+
+### 🎨 Amélioré
+- **Compatibilité API** : Test de différents champs pour le contenu QR
+  - `content` → `qr_content` → `data`
+  - Meilleure adaptation aux attentes de l'API
+
+### 📚 Ajouté
+- **Champ data** : Utilisation du champ `data` pour le contenu QR
+- **Debug amélioré** : Logs pour identifier le bon champ attendu
+
+### 🔄 Logs améliorés
+- **QR Data** : Affichage du champ `data` dans les requêtes
+- **API Response** : Meilleure traçabilité des erreurs 400
+
+### 📋 Configuration recommandée
+```javascript
+const config = {
+    // ... autres options
+    // Le QR code devrait maintenant utiliser le bon champ pour l'API
+};
+```
+
+### 🧪 Test
+- Vérifier que l'API accepte le champ `data`
+- Confirmer que le QR code se génère sans erreur 400
+- Vérifier que le contenu QR est correctement transmis
+
 ## [1.0.38] - 2025-01-06
 
 ### 🔧 Corrigé
