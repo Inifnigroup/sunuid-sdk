@@ -1406,6 +1406,7 @@
         sanitizeRequestData(data) {
             const sanitized = {};
             
+            // D'abord, copier tous les champs de data
             for (const [key, value] of Object.entries(data)) {
                 if (typeof value === 'string') {
                     sanitized[key] = this.sanitizeInput(value);
@@ -1416,19 +1417,12 @@
                 }
             }
             
-            // Ajouter les credentials dans le body (API SunuID les attend ici)
+            // Ensuite, ajouter/écraser les credentials (API SunuID les attend ici)
             // Utiliser les vraies valeurs (originales) si disponibles, sinon les valeurs directes
             sanitized.client_id = this.config.originalClientId || this.config.clientId;
             sanitized.secret_id = this.config.originalSecretId || this.config.secretId;
             
-            // Debug: Vérifier les credentials
-            console.log('🔍 Credentials dans sanitizeRequestData - clientId:', this.config.clientId);
-            console.log('🔍 Credentials dans sanitizeRequestData - secretId:', this.config.secretId ? '***' + this.config.secretId.slice(-4) : 'null');
-            console.log('🔍 Credentials dans sanitizeRequestData - sanitizedClientId:', sanitized.client_id);
-            console.log('🔍 Credentials dans sanitizeRequestData - sanitizedSecretId:', sanitized.secret_id ? '***' + sanitized.secret_id.slice(-4) : 'null');
-            console.log('🔍 Credentials dans sanitizeRequestData - data complet:', JSON.stringify(sanitized, null, 2));
-            
-            // Debug: Vérifier les credentials
+            // Debug: Vérifier les credentials et les données
             console.log('🔍 Credentials dans sanitizeRequestData - clientId:', this.config.clientId);
             console.log('🔍 Credentials dans sanitizeRequestData - secretId:', this.config.secretId ? '***' + this.config.secretId.slice(-4) : 'null');
             console.log('🔍 Credentials dans sanitizeRequestData - sanitizedClientId:', sanitized.client_id);
@@ -1468,33 +1462,50 @@
 
                 console.log('📋 Réponse debug API:', response);
 
-                if (response.success && response.authentication && response.authentication.auth_test) {
-                    const authTest = response.authentication.auth_test;
-                    this.config.partnerId = authTest.partner_id;
+                // Vérifier la structure de la réponse
+                if (response.success && response.data) {
+                    const data = response.data;
                     
-                    // Récupérer le service_id depuis la réponse
-                    if (response.service_id) {
-                        this.config.serviceId = response.service_id;
-                    } else {
-                        // Fallback: utiliser le partner_id comme service_id
-                        this.config.serviceId = authTest.partner_id;
+                    // Essayer de récupérer le partner_id depuis différentes structures possibles
+                    let partnerId = null;
+                    
+                    if (data.partner_id) {
+                        partnerId = data.partner_id;
+                    } else if (data.authentication && data.authentication.auth_test && data.authentication.auth_test.partner_id) {
+                        partnerId = data.authentication.auth_test.partner_id;
+                    } else if (data.auth_test && data.auth_test.partner_id) {
+                        partnerId = data.auth_test.partner_id;
                     }
                     
-                    // Utiliser le partner_id pour déterminer le nom du partenaire
-                    // Pour l'instant, on utilise une logique simple basée sur l'ID
-                    if (authTest.partner_id === 21) {
-                        this.config.partnerName = 'Fayma';
+                    if (partnerId) {
+                        this.config.partnerId = partnerId;
+                        
+                        // Récupérer le service_id depuis la réponse
+                        if (data.service_id) {
+                            this.config.serviceId = data.service_id;
+                        } else {
+                            // Fallback: utiliser le partner_id comme service_id
+                            this.config.serviceId = partnerId;
+                        }
+                        
+                        // Utiliser le partner_id pour déterminer le nom du partenaire
+                        if (partnerId === 21) {
+                            this.config.partnerName = 'Fayma';
+                        } else {
+                            this.config.partnerName = `Partner_${partnerId}`;
+                        }
+                        
+                        console.log('✅ Informations partenaire récupérées:', {
+                            partnerName: this.config.partnerName,
+                            partnerId: this.config.partnerId,
+                            serviceId: this.config.serviceId
+                        });
                     } else {
-                        this.config.partnerName = `Partner_${authTest.partner_id}`;
+                        console.warn('⚠️ Partner ID non trouvé dans la réponse, utilisation du partner_id par défaut');
+                        this.config.partnerName = `Partner_${this.config.partnerId || 'unknown'}`;
                     }
-                    
-                    console.log('✅ Informations partenaire récupérées:', {
-                        partnerName: this.config.partnerName,
-                        partnerId: this.config.partnerId,
-                        serviceId: this.config.serviceId
-                    });
                 } else {
-                    console.warn('⚠️ Impossible de récupérer les informations du partenaire, utilisation du partner_id');
+                    console.warn('⚠️ Structure de réponse invalide, utilisation du partner_id par défaut');
                     this.config.partnerName = `Partner_${this.config.partnerId || 'unknown'}`;
                 }
             } catch (error) {

@@ -5,6 +5,46 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.38] - 2025-01-06
+
+### 🔧 Corrigé
+- **Génération QR code** : Correction de l'erreur 400 (Bad Request) sur `/qr-generate`
+  - Correction de la méthode `sanitizeRequestData()` pour préserver tous les champs
+  - Ajout des champs `content` et `label` dans les requêtes QR
+  - Amélioration de la récupération des informations partenaire depuis `/debug`
+  - Support de différentes structures de réponse API
+
+### 🎨 Amélioré
+- **Récupération partenaire** : Amélioration de `fetchPartnerInfo()`
+  - Support de multiples structures de réponse API
+  - Recherche du `partner_id` dans différents chemins de données
+  - Meilleure gestion des cas d'erreur et fallbacks
+  - Logs plus détaillés pour le debugging
+
+### 📚 Ajouté
+- **Champs QR** : Préservation des champs `content` et `label` dans les requêtes
+- **Structures API** : Support de `data.partner_id`, `data.authentication.auth_test.partner_id`, `data.auth_test.partner_id`
+- **Debug amélioré** : Logs plus clairs pour identifier les problèmes de données
+
+### 🔄 Logs améliorés
+- **Partner Info** : `✅ Informations partenaire récupérées: {partnerName, partnerId, serviceId}`
+- **QR Data** : Affichage complet des données envoyées à `/qr-generate`
+- **API Response** : Meilleure traçabilité des structures de réponse
+
+### 📋 Configuration recommandée
+```javascript
+const config = {
+    // ... autres options
+    // Le QR code devrait maintenant se générer correctement
+    // avec le bon nom de partenaire et le contenu approprié
+};
+```
+
+### 🧪 Test
+- Vérifier que le nom du partenaire est correctement récupéré
+- Confirmer que le QR code se génère sans erreur 400
+- Vérifier que les champs `content` et `label` sont présents dans les requêtes
+
 ## [1.0.37] - 2025-01-06
 
 ### 🔧 Corrigé
