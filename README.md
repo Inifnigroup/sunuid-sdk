@@ -1,602 +1,273 @@
-# 🔐 SunuID SDK
+# SunuID PHP SDK
 
-[![npm version](https://badge.fury.io/js/sunuid-sdk.svg)](https://badge.fury.io/js/sunuid-sdk)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/sunuid/sunuid-sdk/workflows/Build/badge.svg)](https://github.com/sunuid/sunuid-sdk/actions)
-
-SDK JavaScript officiel pour intégrer facilement les QR codes d'authentification et KYC SunuID dans vos applications web.
-
-## ✨ Fonctionnalités
-
-- 🔐 **Authentification QR Code** - Connexion sécurisée avec SunuID
-- 📋 **Vérification KYC** - Collecte et validation d'identité
-- 🔒 **Mode Sécurisé** - Initialisation via PHP pour masquer les credentials
-- 🌐 **WebSocket en Temps Réel** - Connexion automatique pour les mises à jour
-- 🎨 **Thèmes personnalisables** - Support des thèmes clair et sombre
-- 🔄 **Actualisation automatique** - QR codes qui se renouvellent automatiquement
-- 📱 **Responsive design** - Compatible mobile et desktop
-- 🌍 **Multi-langue** - Support français, anglais, arabe
-- 🛡️ **Sécurisé** - Authentification par clés API avec validation renforcée
-- 🔢 **Types de services** - Support des types 1 (KYC), 2 (AUTH), 3 (SIGNATURE)
-- 🎯 **Affichage progressif** - Loader et animations fluides
-- 📊 **Logs de sécurité** - Monitoring et debugging avancés
+SDK PHP officiel pour l'intégration des QR codes d'authentification et KYC SunuID.
 
 ## 🚀 Installation
 
-### Via NPM
+### Via Composer (recommandé)
 
 ```bash
-npm install sunuid-sdk
+composer require sunuid/php-sdk
 ```
 
-### Via CDN
+### Installation manuelle
 
-```html
-<!-- Socket.IO requis pour WebSocket -->
-<script src="https://cdn.socket.io/4.7.0/socket.io.min.js"></script>
-
-<!-- CSS -->
-<link rel="stylesheet" href="https://unpkg.com/sunuid-sdk@1.0.25/dist/sunuid-sdk.css">
-
-<!-- JavaScript -->
-<script src="https://unpkg.com/sunuid-sdk@1.0.25/dist/sunuid-sdk.js"></script>
+```bash
+git clone https://github.com/sunuid/php-sdk.git
+cd php-sdk
+composer install
 ```
 
-## 📖 Utilisation Rapide
+## 📋 Prérequis
 
-> **🚀 [Démarrage en 30 secondes](GET_STARTED.md)** | **🌍 [Intégration Universelle](INTEGRATION_UNIVERSAL.md)** | **⚡ [Démarrage en 2 minutes](QUICKSTART.md)** | **💡 [Intégration simplifiée](INTEGRATION_SIMPLE.md)** | **🔒 [Intégration PHP complète](PHP_INTEGRATION.md)** | **🏭 [Migration Production](MIGRATION_PRODUCTION.md)**
+- PHP >= 7.4
+- Composer
+- Extensions PHP : `curl`, `json`, `openssl`
 
-### 1. Mode Classique (Credentials visibles)
+## 🔧 Configuration
 
-```javascript
-const sunuid = initSunuID({
-    apiUrl: 'https://api.sunuid.fayma.sn',
-    clientId: 'VOTRE_CLIENT_ID',
-    secretId: 'VOTRE_SECRET_ID',
-    type: 2, // 1 = KYC, 2 = AUTH, 3 = SIGNATURE
-    theme: 'light',
-    onSuccess: function(data) {
-        console.log('Authentification réussie:', data);
-    },
-    onError: function(error) {
-        console.error('Erreur:', error);
-    },
-    onStatusUpdate: function(data) {
-        console.log('Mise à jour statut:', data);
-    },
-    onExpired: function(data) {
-        console.log('QR expiré:', data);
-    }
-});
+### Configuration de base
+
+```php
+use SunuID\SunuID;
+
+$config = [
+    'client_id' => 'VOTRE_CLIENT_ID',
+    'secret_id' => 'VOTRE_SECRET_ID',
+    'type' => 2, // 1=KYC, 2=AUTH, 3=SIGNATURE
+    'enable_logs' => true,
+    'log_file' => 'sunuid.log'
+];
+
+$sunuid = new SunuID($config);
+$sunuid->init();
 ```
 
-### 2. Mode Sécurisé (Credentials masqués)
+### Options de configuration
 
-```javascript
-const sunuid = initSunuID({
-    apiUrl: 'https://api.sunuid.fayma.sn',
-    type: 2, // 1 = KYC, 2 = AUTH, 3 = SIGNATURE
-    secureInit: true, // Active le mode sécurisé
-    secureInitUrl: 'https://votre-serveur.com/secure-init.php',
-    theme: 'light',
-    partnerName: 'Votre Entreprise',
-    onSuccess: function(data) {
-        console.log('Authentification réussie:', data);
-    },
-    onError: function(error) {
-        console.error('Erreur:', error);
-    }
-});
+| Option | Type | Défaut | Description |
+|--------|------|--------|-------------|
+| `client_id` | string | null | ID client fourni par SunuID |
+| `secret_id` | string | null | Secret ID fourni par SunuID |
+| `type` | int | 2 | Type de service (1=KYC, 2=AUTH, 3=SIGNATURE) |
+| `api_url` | string | https://api.sunuid.fayma.sn | URL de l'API SunuID |
+| `enable_logs` | bool | true | Activer les logs |
+| `log_file` | string | sunuid.log | Fichier de log |
+| `request_timeout` | int | 10 | Timeout des requêtes en secondes |
+| `max_retries` | int | 3 | Nombre de tentatives en cas d'échec |
+| `secure_init` | bool | false | Utiliser l'initialisation sécurisée |
+
+## 📖 Utilisation
+
+### Génération d'un QR code
+
+```php
+try {
+    $sunuid = new SunuID($config);
+    $sunuid->init();
+    
+    // Générer un QR code
+    $qrResult = $sunuid->generateQR();
+    
+    echo "QR Code URL: " . $qrResult['qr_code_url'] . "\n";
+    echo "Session ID: " . $qrResult['session_id'] . "\n";
+    echo "Contenu: " . $qrResult['content'] . "\n";
+    
+} catch (Exception $e) {
+    echo "Erreur: " . $e->getMessage() . "\n";
+}
 ```
 
-### 3. Génération QR avec WebSocket
+### Génération d'un QR code local
 
-```html
-<div id="qr-container"></div>
+```php
+// Générer un QR code sans API (local)
+$content = "AUTH_" . time() . "_" . bin2hex(random_bytes(8));
+$qrResult = $sunuid->generateQRLocal($content, [
+    'size' => 300,
+    'margin' => 10,
+    'label' => 'Authentification SunuID'
+]);
+
+// L'image est retournée en base64
+$imageData = base64_decode(str_replace('data:image/png;base64,', '', $qrResult['qr_code_url']));
+file_put_contents('qr-code.png', $imageData);
 ```
 
-```javascript
-// Génère QR et émet automatiquement un événement WebSocket
-const result = await sunuid.generateQR('qr-container', {
-    metadata: {
-        customData: 'votre-donnée'
-    }
-});
+### Vérification du statut
 
-console.log('QR généré:', result.qrCodeUrl);
-console.log('Service ID:', result.service_id);
+```php
+// Vérifier le statut d'un QR code
+$status = $sunuid->checkQRStatus($sessionId);
+echo "Statut: " . json_encode($status, JSON_PRETTY_PRINT) . "\n";
 ```
 
-### 4. Écoute des événements WebSocket
-
-```javascript
-// Le SDK se connecte automatiquement au WebSocket
-// Événements disponibles :
-// - qr_status_update : Mise à jour du statut
-// - qr_scan_success : Scan réussi
-// - qr_expired : QR expiré
-
-// Émettre un événement personnalisé
-sunuid.emitWebSocketEvent('custom_event', {
-    message: 'Hello WebSocket!',
-    timestamp: Date.now()
-});
-
-// Vérifier le statut WebSocket
-const status = sunuid.getWebSocketStatus(); // 'connected', 'disconnected', 'not_initialized'
-```
-
-## 🔒 Mode Sécurisé
-
-### Configuration PHP
-
-Créez un endpoint PHP pour l'initialisation sécurisée :
+### Intégration web
 
 ```php
 <?php
-// secure-init.php
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Content-Type: application/json');
+require_once 'vendor/autoload.php';
 
-$SUNUID_CONFIG = [
+use SunuID\SunuID;
+
+$config = [
     'client_id' => 'VOTRE_CLIENT_ID',
     'secret_id' => 'VOTRE_SECRET_ID',
-    'api_url' => 'https://api.sunuid.fayma.sn',
-    'token_expiry' => 3600,
-    'max_requests_per_token' => 100
+    'type' => 2
 ];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    
-    // Validation des paramètres
-    if (!isset($input['type']) || !in_array($input['type'], [1, 2, 3])) {
-        echo json_encode(['success' => false, 'error' => 'Type invalide']);
-        exit;
-    }
-    
-    // Génération du token sécurisé
-    $payload = [
-        'client_id' => $SUNUID_CONFIG['client_id'],
-        'secret_id' => $SUNUID_CONFIG['secret_id'],
-        'api_url' => $SUNUID_CONFIG['api_url'],
-        'type' => $input['type'],
-        'partner_name' => $input['partnerName'] ?? 'SunuID',
-        'theme' => $input['theme'] ?? 'light',
-        'exp' => time() + $SUNUID_CONFIG['token_expiry'],
-        'iat' => time(),
-        'jti' => uniqid('sunuid_', true)
-    ];
-    
-    $token = base64_encode(json_encode($payload));
-    
-    echo json_encode([
-        'success' => true,
-        'data' => [
-            'token' => $token,
-            'expires_in' => $SUNUID_CONFIG['token_expiry'],
-            'api_url' => $SUNUID_CONFIG['api_url'],
-            'type' => $input['type'],
-            'partner_name' => $input['partnerName'] ?? 'SunuID',
-            'theme' => $input['theme'] ?? 'light',
-            'max_requests' => $SUNUID_CONFIG['max_requests_per_token']
-        ],
-        'message' => 'Token généré avec succès'
-    ]);
+try {
+    $sunuid = new SunuID($config);
+    $sunuid->init();
+    $qrData = $sunuid->generateQR();
+} catch (Exception $e) {
+    $error = $e->getMessage();
 }
 ?>
-```
 
-### Avantages du Mode Sécurisé
-
-- 🔐 **Credentials masqués** - Non visibles dans le code client
-- ⏰ **Tokens temporaires** - Expiration automatique
-- 📊 **Limite de requêtes** - Contrôle d'usage
-- 🛡️ **Validation côté serveur** - Sécurité renforcée
-
-## 🎨 Exemples
-
-### Exemples Universels
-
-- **[Connexion Universelle](examples/universal-login.html)** - Copier-coller en 30 secondes
-- **[KYC Universel](examples/universal-kyc.html)** - Vérification d'identité simple
-- **[Guide d'intégration universelle](INTEGRATION_UNIVERSAL.md)** - Pour tous les niveaux
-
-### Exemples Simples
-
-- **[Connexion Simple](examples/simple-login.html)** - Page de connexion basique
-- **[KYC Simple](examples/simple-kyc.html)** - Page de vérification KYC basique
-- **[Guide d'intégration rapide](INTEGRATION_SIMPLE.md)** - Intégration en 3 étapes
-
-### Intégration Côté Serveur
-
-- **[Intégration PHP complète](PHP_INTEGRATION.md)** - Gestion entièrement côté serveur
-- **Credentials sécurisés** - Jamais exposés côté client
-- **Validation serveur** - Contrôle total des requêtes
-- **Webhooks** - Notifications en temps réel
-- **Gestion des sessions** - Intégration avec votre système
-
-### Page de Connexion avec Mode Sécurisé
-
-```html
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Mon Application</title>
-    <link rel="stylesheet" href="https://unpkg.com/sunuid-sdk@1.0.25/dist/sunuid-sdk.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>SunuID QR Code</title>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Connexion Sécurisée</h1>
-        <p>Scannez le QR code avec l'application SunuID</p>
-        
-        <div id="qr-container"></div>
-        
-        <div class="login-footer">
-            <p>Pas encore d'application SunuID ?</p>
-            <a href="https://sunuid.sn/download" target="_blank">Télécharger</a>
-        </div>
-    </div>
-
-    <!-- Socket.IO requis -->
-    <script src="https://cdn.socket.io/4.7.0/socket.io.min.js"></script>
-    
-    <!-- SDK SunuID -->
-    <script src="https://unpkg.com/sunuid-sdk@1.0.25/dist/sunuid-sdk.js"></script>
-    
-    <script>
-        const sunuid = initSunuID({
-            apiUrl: 'https://api.sunuid.fayma.sn',
-            type: 2, // AUTH
-            secureInit: true, // Mode sécurisé
-            secureInitUrl: 'https://votre-serveur.com/secure-init.php',
-            theme: 'light',
-            partnerName: 'Mon Application',
-            onSuccess: function(data) {
-                console.log('✅ Authentification réussie:', data);
-                window.location.href = '/dashboard?token=' + data.token;
-            },
-            onError: function(error) {
-                console.error('❌ Erreur:', error);
-                alert('Erreur de connexion: ' + error.message);
-            },
-            onStatusUpdate: function(data) {
-                console.log('📱 Mise à jour statut:', data);
-            },
-            onExpired: function(data) {
-                console.log('⏰ QR expiré:', data);
-            }
-        });
-
-        // Générer le QR code (WebSocket se connecte automatiquement)
-        sunuid.generateQR('qr-container');
-    </script>
+    <?php if (isset($qrData)): ?>
+        <h1>QR Code SunuID</h1>
+        <img src="<?php echo htmlspecialchars($qrData['qr_code_url']); ?>" 
+             alt="QR Code SunuID" />
+        <p>Session ID: <?php echo htmlspecialchars($qrData['session_id']); ?></p>
+    <?php else: ?>
+        <p>Erreur: <?php echo htmlspecialchars($error); ?></p>
+    <?php endif; ?>
 </body>
 </html>
 ```
 
-## 🔧 Configuration
+## 🔍 Gestion des erreurs
 
-### Options disponibles
+Le SDK utilise des exceptions spécifiques :
 
-| Option | Type | Défaut | Description |
-|--------|------|--------|-------------|
-| `apiUrl` | string | `'https://api.sunuid.fayma.sn'` | URL de l'API SunuID |
-| `clientId` | string | - | Clé client (requise en mode classique) |
-| `secretId` | string | - | Clé secrète (requise en mode classique) |
-| `type` | number | `2` | Type de service: `1` (KYC), `2` (AUTH), `3` (SIGNATURE) |
-| `theme` | string | `'light'` | Thème: `'light'` ou `'dark'` |
-| `language` | string | `'fr'` | Langue: `'fr'`, `'en'`, `'ar'` |
-| `autoRefresh` | boolean | `true` | Actualisation automatique |
-| `refreshInterval` | number | `30000` | Intervalle en millisecondes |
-| `secureInit` | boolean | `false` | Active le mode sécurisé |
-| `secureInitUrl` | string | `'https://api.sunuid.fayma.sn/secure-init.php'` | URL de l'endpoint sécurisé |
-| `partnerName` | string | `'SunuID'` | Nom du partenaire |
-| `enableSecurityLogs` | boolean | `true` | Active les logs de sécurité |
-| `validateInputs` | boolean | `true` | Validation des entrées |
-| `maxRetries` | number | `3` | Nombre max de tentatives API |
-| `requestTimeout` | number | `10000` | Timeout des requêtes (ms) |
-| `onSuccess` | function | - | Callback en cas de succès |
-| `onError` | function | - | Callback en cas d'erreur |
-| `onStatusUpdate` | function | - | Callback pour mises à jour WebSocket |
-| `onExpired` | function | - | Callback quand le QR expire |
+```php
+use SunuID\Exception\SunuIDException;
 
-### Types de Services
-
-| Type | Nom | Description |
-|------|-----|-------------|
-| `1` | **KYC** | Vérification d'identité et conformité |
-| `2` | **AUTH** | Authentification utilisateur |
-| `3` | **SIGNATURE** | Signature électronique (non supporté par l'API) |
-
-### Événements WebSocket
-
-```javascript
-const sunuid = initSunuID({
-    // ... configuration
-    onSuccess: function(data) {
-        console.log('✅ Authentification réussie:', data);
-        // data contient: token, user, service_id, etc.
-    },
-    onError: function(error) {
-        console.error('❌ Erreur:', error);
-        // error contient: message, code, details
-    },
-    onStatusUpdate: function(data) {
-        console.log('📱 Mise à jour statut:', data);
-        // Mise à jour reçue via WebSocket
-    },
-    onExpired: function(data) {
-        console.log('⏰ QR expiré:', data);
-        // QR expiré, actualisation automatique
-    }
-});
+try {
+    $sunuid = new SunuID($config);
+    $sunuid->init();
+    $qrResult = $sunuid->generateQR();
+    
+} catch (SunuIDException $e) {
+    echo "Erreur SunuID: " . $e->getMessage() . "\n";
+    echo "Code d'erreur: " . $e->getErrorCode() . "\n";
+    echo "Contexte: " . json_encode($e->getContext()) . "\n";
+    
+} catch (Exception $e) {
+    echo "Erreur générale: " . $e->getMessage() . "\n";
+}
 ```
 
-## 📱 API Référence
+### Types d'exceptions
+
+- `SunuIDException::invalidConfig()` - Configuration invalide
+- `SunuIDException::initializationFailed()` - Échec d'initialisation
+- `SunuIDException::apiError()` - Erreur API
+- `SunuIDException::qrCodeError()` - Erreur QR code
+- `SunuIDException::authenticationError()` - Erreur d'authentification
+- `SunuIDException::networkError()` - Erreur réseau
+
+## 📊 Logging
+
+Le SDK utilise Monolog pour les logs :
+
+```php
+// Accéder au logger
+$logger = $sunuid->getLogger();
+
+// Les logs sont automatiquement écrits dans le fichier configuré
+// Niveau de log configurable : DEBUG, INFO, WARNING, ERROR
+```
+
+## 🧪 Tests
+
+### Exécuter les tests
+
+```bash
+composer test
+```
+
+### Exemples d'utilisation
+
+```bash
+# Exemple basique
+php examples/basic-usage.php
+
+# Exemple QR local
+php examples/local-qr.php
+
+# Exemple web
+php -S localhost:8000 examples/web-integration.php
+```
+
+## 📚 API Reference
 
 ### Méthodes principales
 
-#### `generateQR(containerId, options)`
-Génère un QR code avec le type configuré et émet un événement WebSocket.
+#### `__construct(array $config = [])`
+Constructeur du SDK.
 
-```javascript
-const result = await sunuid.generateQR('container-id', {
-    metadata: {
-        customData: 'votre-donnée',
-        timestamp: Date.now()
-    }
-});
+#### `init(): bool`
+Initialise le SDK. Doit être appelé avant toute autre méthode.
 
-console.log('QR généré:', result.qrCodeUrl);
-console.log('Service ID:', result.service_id);
-```
+#### `generateQR(string $content = null, array $options = []): array`
+Génère un QR code via l'API SunuID.
 
-#### `generateKYCQR(containerId, options)` (Alias)
-Génère un QR code KYC (type 1).
+#### `generateQRLocal(string $content, array $options = []): array`
+Génère un QR code local sans API.
 
-```javascript
-sunuid.generateKYCQR('container-id', {
-    theme: 'light',
-    kycType: 'full', // 'basic' ou 'full'
-    requiredFields: ['identity', 'address', 'phone'],
-    redirectUrl: 'https://votre-site.com/kyc-complete'
-});
-```
-
-#### `generateAuthQR(containerId, options)` (Alias)
-Génère un QR code d'authentification (type 2).
-
-```javascript
-sunuid.generateAuthQR('container-id', {
-    theme: 'light',
-    redirectUrl: 'https://votre-site.com/dashboard',
-    customData: { /* données personnalisées */ }
-});
-```
-
-#### `generateSignatureQR(containerId, options)` (Alias)
-Génère un QR code de signature (type 3) - **Non supporté par l'API**.
-
-```javascript
-sunuid.generateSignatureQR('container-id', {
-    theme: 'dark',
-    documentId: 'doc-123',
-    signatureType: 'electronic'
-});
-```
-
-#### `checkQRStatus(serviceId)`
+#### `checkQRStatus(string $sessionId): array`
 Vérifie le statut d'un QR code.
 
-```javascript
-const status = await sunuid.checkQRStatus('service-id-123');
-console.log('Statut:', status);
-```
+### Méthodes utilitaires
 
-#### `refreshQR(containerId, options)`
-Actualise un QR code.
+#### `getConfig(): array`
+Retourne la configuration actuelle.
 
-```javascript
-sunuid.refreshQR('container-id', { theme: 'light' });
-```
+#### `getPartnerInfo(): array`
+Retourne les informations du partenaire.
 
-### Méthodes WebSocket
+#### `isInitialized(): bool`
+Vérifie si le SDK est initialisé.
 
-#### `getWebSocketStatus()`
-Retourne le statut de la connexion WebSocket.
+#### `getLogger(): Logger`
+Retourne l'instance du logger.
 
-```javascript
-const status = sunuid.getWebSocketStatus();
-// 'connected', 'disconnected', 'not_initialized'
-```
+## 🔒 Sécurité
 
-#### `emitWebSocketEvent(event, data)`
-Émet un événement WebSocket personnalisé.
+- Les credentials sont automatiquement obfusqués dans les logs
+- Validation stricte des paramètres d'entrée
+- Support de l'initialisation sécurisée
+- Gestion des timeouts et retry automatique
+- Protection contre les injections
 
-```javascript
-sunuid.emitWebSocketEvent('custom_event', {
-    message: 'Hello WebSocket!',
-    timestamp: Date.now(),
-    serviceId: 'service-id'
-});
-```
+## 🌐 Support
 
-#### `forceWebSocketInit()`
-Force l'initialisation WebSocket si Socket.IO devient disponible plus tard.
-
-```javascript
-sunuid.forceWebSocketInit();
-```
-
-### Méthodes de Sécurité
-
-#### `getSecurityLogs()`
-Récupère les logs de sécurité.
-
-```javascript
-const logs = sunuid.getSecurityLogs();
-console.log('Logs de sécurité:', logs);
-```
-
-#### `clearSecurityLogs()`
-Efface les logs de sécurité.
-
-```javascript
-sunuid.clearSecurityLogs();
-```
-
-#### `destroy()`
-Nettoie les ressources du SDK et ferme la connexion WebSocket.
-
-```javascript
-sunuid.destroy();
-```
-
-## 🌐 WebSocket
-
-### Connexion Automatique
-Le SDK se connecte automatiquement au WebSocket lors de l'initialisation :
-- **Serveur :** `wss://samasocket.fayma.sn:9443`
-- **Paramètres :** token, type: 'web', userId, username
-
-### Événements Reçus
-- `qr_status_update` - Mise à jour du statut QR
-- `qr_scan_success` - Scan QR réussi
-- `qr_expired` - QR expiré
-
-### Événements Émis
-- `qr_generated` - QR généré (automatique)
-- `custom_event` - Événements personnalisés
-
-### Gestion des Erreurs
-- Tentatives limitées (5 max) si Socket.IO non disponible
-- Désactivation automatique après échec
-- Logs détaillés pour le debugging
-
-## 🛡️ Sécurité
-
-### Authentification
-Le SDK utilise les clés API pour s'authentifier :
-- `clientId` et `secretId` dans le corps des requêtes
-- Connexion WebSocket sécurisée avec token
-- Mode sécurisé avec tokens temporaires
-
-### Validation
-- Vérification des paramètres requis
-- Validation des URLs de redirection
-- Protection contre les attaques CSRF
-- Types numériques pour éviter les injections
-- Sanitisation des entrées utilisateur
-- Logs de sécurité avec obfuscation des credentials
-
-### Mode Sécurisé
-- Tokens temporaires avec expiration
-- Limite de requêtes par token
-- Validation côté serveur
-- Credentials masqués du code client
-
-## 🌐 Compatibilité
-
-- **Navigateurs** : Chrome 60+, Firefox 55+, Safari 12+, Edge 79+
-- **Mobile** : iOS Safari 12+, Chrome Mobile 60+
-- **Node.js** : 14.0.0+
-- **WebSocket** : Socket.IO 4.7.0+
-
-## 📊 Monitoring
-
-### Logs
-Le SDK génère des logs pour le debugging :
-```javascript
-console.log('SunuID SDK initialisé avec succès');
-console.log('🌐 WebSocket connecté avec succès');
-console.log('📤 Événement WebSocket émis: qr_generated');
-console.error('❌ Erreur connexion WebSocket:', error);
-```
-
-### Logs de Sécurité
-```javascript
-// Logs automatiques avec obfuscation
-🔒 [SECURITY] SDK_INIT_START
-🔒 [SECURITY] SECURE_INIT_SUCCESS
-🔒 [SECURITY] API_REQUEST_START
-🔒 [SECURITY] API_REQUEST_SUCCESS
-```
-
-### Métriques
-Les partenaires peuvent suivre :
-- Nombre de QR codes générés
-- Taux de succès d'authentification
-- Temps de réponse de l'API
-- Statut des connexions WebSocket
-- Utilisation du mode sécurisé
-
-## 🆘 Support
-
-### Documentation
-- [Guide d'intégration](https://docs.sunuid.sn)
-- [API Reference](https://api.sunuid.sn/docs)
-- [Exemples](https://github.com/sunuid/sdk-examples)
-- [Guide de sécurité](SECURITY_GUIDE.md)
-- [Guide d'initialisation sécurisée](SECURE_INIT_GUIDE.md)
-
-### Support technique
-- Email : support@sunuid.sn
-- Chat : https://chat.sunuid.sn
-- Documentation : https://docs.sunuid.sn
-
-### Communauté
-- [GitHub Issues](https://github.com/sunuid/sunuid-sdk/issues)
-- [Discussions](https://github.com/sunuid/sunuid-sdk/discussions)
-- [Stack Overflow](https://stackoverflow.com/questions/tagged/sunuid)
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! Consultez notre [guide de contribution](CONTRIBUTING.md).
-
-### Développement
-
-```bash
-# Cloner le repository
-git clone https://github.com/sunuid/sunuid-sdk.git
-cd sunuid-sdk
-
-# Installer les dépendances
-npm install
-
-# Démarrer le mode développement
-npm run dev
-
-# Construire pour la production
-npm run build
-
-# Lancer les tests
-npm test
-
-# Démarrer le serveur de démonstration
-npm run serve
-npm run demo
-```
+- **Documentation** : https://docs.sunuid.sn
+- **Issues** : https://github.com/sunuid/php-sdk/issues
+- **Email** : dev@sunuid.sn
 
 ## 📄 Licence
 
-Ce projet est distribué sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
-## 🙏 Remerciements
+## 🤝 Contribution
 
-- [FontAwesome](https://fontawesome.com/) pour les icônes
-- [Inter](https://rsms.me/inter/) pour la typographie
-- [Rollup](https://rollupjs.org/) pour le bundling
-- [Socket.IO](https://socket.io/) pour les WebSockets
-- [Endroid QR Code](https://github.com/endroid/qr-code) pour la génération QR
+Les contributions sont les bienvenues ! Veuillez :
 
----
+1. Fork le projet
+2. Créer une branche pour votre fonctionnalité
+3. Commiter vos changements
+4. Pousser vers la branche
+5. Ouvrir une Pull Request
 
-**Développé avec ❤️ par l'équipe SunuID**
+## 📋 Changelog
 
-[![SunuID](https://sunuid.sn/logo.png)](https://sunuid.sn) 
+Voir le fichier [CHANGELOG.md](CHANGELOG.md) pour l'historique des versions. 

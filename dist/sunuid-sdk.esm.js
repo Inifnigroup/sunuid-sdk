@@ -2275,12 +2275,19 @@ function _unsupportedIterableToArray(r, a) {
                   api: false,
                   websocket: false,
                   ready: false
-                }; // Vérifier l'API en utilisant l'endpoint debug
+                }; // Vérifier l'API en utilisant l'endpoint debug avec les credentials
                 _context19.p = 1;
                 _context19.n = 2;
                 return fetch(this.config.apiUrl + '/debug', {
-                  method: 'GET',
-                  timeout: 3000
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    type: this.config.type,
+                    client_id: this.config.clientId,
+                    secret_id: this.config.secretId
+                  })
                 });
               case 2:
                 testResponse = _context19.v;
@@ -2292,12 +2299,14 @@ function _unsupportedIterableToArray(r, a) {
                 return testResponse.json();
               case 3:
                 debugData = _context19.v;
-                status.api = debugData.status === 'operational';
-                console.log('🔍 API Status:', debugData.status);
+                // L'API est accessible si on reçoit une réponse avec success: true
+                status.api = debugData.success === true;
+                console.log('🔍 API Status:', status.api ? 'accessible' : 'inaccessible');
                 _context19.n = 5;
                 break;
               case 4:
                 status.api = false;
+                console.log('🔍 API Status: HTTP', testResponse.status);
               case 5:
                 _context19.n = 7;
                 break;

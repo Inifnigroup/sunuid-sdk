@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Complet SDK SunuID</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { border-color: #28a745; background-color: #d4edda; }
+        .error { border-color: #dc3545; background-color: #f8d7da; }
+        .info { border-color: #17a2b8; background-color: #d1ecf1; }
+        .warning { border-color: #ffc107; background-color: #fff3cd; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .qr-display {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qr-display img {
+            max-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .sdk-status {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .status-indicator {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-ok { background: #28a745; color: white; }
+        .status-error { background: #dc3545; color: white; }
+        .status-warning { background: #ffc107; color: black; }
+        .status-info { background: #17a2b8; color: white; }
+        .config-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .config-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .mode-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .mode-btn.active {
+            background: #007bff;
+        }
+        .mode-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Complet SDK SunuID</h1>
+    <p>Test du SDK JavaScript SunuID avec tous les modes de fonctionnement</p>
+
+    <div class="container">
+        <h2>📊 État du SDK</h2>
+        <div class="sdk-status" id="sdkStatus">
+            <div class="status-indicator status-info">Chargement...</div>
+        </div>
+        
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalTests">0</div>
+                <div>Tests Effectués</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="successRate">0%</div>
+                <div>Taux de Succès</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="qrGenerated">0</div>
+                <div>QR Codes Générés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="currentMode">-</div>
+                <div>Mode Actuel</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>⚙️ Configuration</h2>
+        <div class="info" style="padding: 15px; margin-bottom: 15px;">
+            <h4>📋 Informations sur les Modes</h4>
+            <ul>
+                <li><strong>Mode Classique</strong> : Aucun paramètre de sécurité requis</li>
+                <li><strong>Mode Sécurisé</strong> : Client ID et Secret ID requis</li>
+                <li><strong>Mode KYC</strong> : Client ID et Secret ID requis</li>
+                <li><strong>Mode Personnalisé</strong> : Client ID et Secret ID requis + options custom</li>
+            </ul>
+        </div>
+        <div class="config-section">
+            <h3>Paramètres de Test</h3>
+            <div>
+                <label>URL de l'API QR:</label>
+                <input type="text" id="qrApiUrl" class="config-input" value="http://localhost:8000/api/generate/text" placeholder="URL de l'API QR">
+            </div>
+            <div>
+                <label>Service ID (optionnel):</label>
+                <input type="text" id="serviceId" class="config-input" placeholder="Service ID pour test">
+            </div>
+            <div>
+                <label>Client ID (requis pour mode sécurisé):</label>
+                <input type="text" id="clientId" class="config-input" value="test-client-123" placeholder="Client ID">
+            </div>
+            <div>
+                <label>Secret ID (requis pour mode sécurisé):</label>
+                <input type="text" id="secretId" class="config-input" value="test-secret-456" placeholder="Secret ID">
+            </div>
+            <div>
+                <label>Code de Test (optionnel):</label>
+                <input type="text" id="testCode" class="config-input" placeholder="Code pour test">
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🎯 Modes de Test</h2>
+        <div class="mode-selector">
+            <button class="mode-btn" onclick="setMode('classic')">Mode Classique</button>
+            <button class="mode-btn" onclick="setMode('secure')">Mode Sécurisé</button>
+            <button class="mode-btn" onclick="setMode('kyc')">Mode KYC</button>
+            <button class="mode-btn" onclick="setMode('custom')">Mode Personnalisé</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔧 Tests SDK</h2>
+        
+        <div class="test-section">
+            <h3>Test 1: Initialisation du SDK</h3>
+            <button onclick="testSDKInit()" id="initBtn">Initialiser SDK</button>
+            <div id="initResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: Génération QR Code</h3>
+            <button onclick="testQRGeneration()" id="qrBtn" disabled>Générer QR Code</button>
+            <div id="qrResult" class="qr-display">
+                <div class="text-muted">
+                    <p>Cliquez sur "Générer QR Code" pour tester</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 3: Récupération QR Code</h3>
+            <button onclick="testGetQRCode()" id="getQrBtn" disabled>Récupérer QR Code</button>
+            <div id="getQrResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 4: État du SDK</h3>
+            <button onclick="testSDKStatus()" id="statusBtn">Vérifier État</button>
+            <div id="statusResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 5: Test avec API QR Externe</h3>
+            <button onclick="testExternalQR()" id="externalQrBtn">Test API QR Externe</button>
+            <div id="externalQrResult" class="qr-display">
+                <div class="text-muted">
+                    <p>Test avec l'API QR sur localhost:8000</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 6: Test Complet Automatique</h3>
+            <button onclick="runFullTest()" id="fullTestBtn">Lancer Test Complet</button>
+            <div id="fullTestResult"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📝 Logs de Test</h2>
+        <div id="log" class="log"></div>
+        <button onclick="clearLog()">Effacer les Logs</button>
+        <button onclick="exportLog()">Exporter Logs</button>
+    </div>
+
+    <!-- Chargement du SDK -->
+    <script src="dist/sunuid-sdk.min.js"></script>
+    
+    <script>
+        let sunuid = null;
+        let currentMode = 'classic';
+        let testResults = {
+            total: 0,
+            success: 0,
+            errors: 0,
+            qrGenerated: 0
+        };
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Page de test SDK SunuID chargée', 'info');
+            checkSDKAvailability();
+        });
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function exportLog() {
+            const logContent = document.getElementById('log').innerText;
+            const blob = new Blob([logContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sdk-test-log.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function updateStats() {
+            document.getElementById('totalTests').textContent = testResults.total;
+            const successRate = testResults.total > 0 ? Math.round((testResults.success / testResults.total) * 100) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            document.getElementById('qrGenerated').textContent = testResults.qrGenerated;
+            document.getElementById('currentMode').textContent = currentMode;
+        }
+
+        function updateSDKStatus(status, message) {
+            const statusDiv = document.getElementById('sdkStatus');
+            statusDiv.innerHTML = `<div class="status-indicator status-${status}">${message}</div>`;
+        }
+
+        function checkSDKAvailability() {
+            if (typeof SunuID !== 'undefined') {
+                updateSDKStatus('ok', 'SDK Disponible');
+                log('✅ SDK SunuID détecté et disponible', 'success');
+            } else {
+                updateSDKStatus('error', 'SDK Non Disponible');
+                log('❌ SDK SunuID non trouvé', 'error');
+            }
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            log(`🔄 Mode changé vers: ${mode}`, 'info');
+            updateStats();
+        }
+
+        async function testSDKInit() {
+            testResults.total++;
+            log('🧪 Test: Initialisation SDK', 'info');
+            
+            try {
+                // Validation des paramètres de sécurité
+                const clientId = document.getElementById('clientId').value;
+                const secretId = document.getElementById('secretId').value;
+                
+                if ((currentMode === 'secure' || currentMode === 'kyc' || currentMode === 'custom') && 
+                    (!clientId || !secretId)) {
+                    throw new Error('Client ID et Secret ID sont requis pour les modes sécurisés');
+                }
+                
+                // Configuration selon le mode
+                let config = {};
+                
+                switch(currentMode) {
+                    case 'classic':
+                        config = {
+                            mode: 'classic',
+                            serviceId: document.getElementById('serviceId').value || '86'
+                        };
+                        break;
+                    case 'secure':
+                        config = {
+                            mode: 'secure',
+                            serviceId: document.getElementById('serviceId').value || '80',
+                            clientId: document.getElementById('clientId').value,
+                            secretId: document.getElementById('secretId').value
+                        };
+                        break;
+                    case 'kyc':
+                        config = {
+                            mode: 'kyc',
+                            serviceId: document.getElementById('serviceId').value || '85',
+                            clientId: document.getElementById('clientId').value,
+                            secretId: document.getElementById('secretId').value
+                        };
+                        break;
+                    case 'custom':
+                        config = {
+                            mode: 'custom',
+                            serviceId: document.getElementById('serviceId').value || '90',
+                            clientId: document.getElementById('clientId').value,
+                            secretId: document.getElementById('secretId').value,
+                            customOptions: {
+                                qrApiUrl: document.getElementById('qrApiUrl').value
+                            }
+                        };
+                        break;
+                }
+
+                sunuid = new SunuID(config);
+                await sunuid.init();
+                
+                testResults.success++;
+                updateSDKStatus('ok', `SDK Initialisé (${currentMode})`);
+                
+                document.getElementById('initResult').innerHTML = `
+                    <div class="success">
+                        <p><strong>✅ SDK initialisé avec succès!</strong></p>
+                        <p>Mode: ${currentMode}</p>
+                        <p>Service ID: ${config.serviceId}</p>
+                    </div>
+                `;
+                
+                // Activer les boutons de test
+                document.getElementById('qrBtn').disabled = false;
+                document.getElementById('getQrBtn').disabled = false;
+                document.getElementById('statusBtn').disabled = false;
+                
+                log(`✅ SDK initialisé en mode ${currentMode}`, 'success');
+                
+            } catch (error) {
+                testResults.errors++;
+                updateSDKStatus('error', 'Erreur Initialisation');
+                
+                document.getElementById('initResult').innerHTML = `
+                    <div class="error">
+                        <p><strong>❌ Erreur d'initialisation!</strong></p>
+                        <p>Erreur: ${error.message}</p>
+                    </div>
+                `;
+                
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+            }
+            
+            updateStats();
+        }
+
+        async function testQRGeneration() {
+            testResults.total++;
+            log('🧪 Test: Génération QR Code', 'info');
+            
+            try {
+                const qrResult = await sunuid.generateQR();
+                
+                testResults.success++;
+                testResults.qrGenerated++;
+                
+                document.getElementById('qrResult').innerHTML = `
+                    <img src="${qrResult}" alt="QR Code" />
+                    <p><strong>QR Code généré avec succès!</strong></p>
+                `;
+                
+                log('✅ QR Code généré avec succès', 'success');
+                
+            } catch (error) {
+                testResults.errors++;
+                
+                document.getElementById('qrResult').innerHTML = `
+                    <div class="error">
+                        <p><strong>❌ Erreur de génération QR!</strong></p>
+                        <p>Erreur: ${error.message}</p>
+                    </div>
+                `;
+                
+                log(`❌ Erreur de génération QR: ${error.message}`, 'error');
+            }
+            
+            updateStats();
+        }
+
+        async function testGetQRCode() {
+            testResults.total++;
+            log('🧪 Test: Récupération QR Code', 'info');
+            
+            try {
+                const qrUrl = sunuid.getQRCode();
+                
+                testResults.success++;
+                
+                document.getElementById('getQrResult').innerHTML = `
+                    <div class="success">
+                        <p><strong>✅ QR Code récupéré!</strong></p>
+                        <p>URL: ${qrUrl}</p>
+                        <img src="${qrUrl}" alt="QR Code" style="max-width: 200px;" />
+                    </div>
+                `;
+                
+                log(`✅ QR Code récupéré: ${qrUrl}`, 'success');
+                
+            } catch (error) {
+                testResults.errors++;
+                
+                document.getElementById('getQrResult').innerHTML = `
+                    <div class="error">
+                        <p><strong>❌ Erreur de récupération QR!</strong></p>
+                        <p>Erreur: ${error.message}</p>
+                    </div>
+                `;
+                
+                log(`❌ Erreur de récupération QR: ${error.message}`, 'error');
+            }
+            
+            updateStats();
+        }
+
+        async function testSDKStatus() {
+            testResults.total++;
+            log('🧪 Test: État du SDK', 'info');
+            
+            try {
+                const status = {
+                    initialized: sunuid.isInitialized ? 'Oui' : 'Non',
+                    mode: sunuid.mode || 'Non défini',
+                    serviceId: sunuid.serviceId || 'Non défini',
+                    currentQRUrl: sunuid.currentQRUrl || 'Aucun',
+                    websocketStatus: sunuid.websocketStatus || 'Non initialisé'
+                };
+                
+                testResults.success++;
+                
+                document.getElementById('statusResult').innerHTML = `
+                    <div class="success">
+                        <p><strong>✅ État du SDK:</strong></p>
+                        <ul>
+                            <li>Initialisé: ${status.initialized}</li>
+                            <li>Mode: ${status.mode}</li>
+                            <li>Service ID: ${status.serviceId}</li>
+                            <li>QR URL actuel: ${status.currentQRUrl}</li>
+                            <li>WebSocket: ${status.websocketStatus}</li>
+                        </ul>
+                    </div>
+                `;
+                
+                log('✅ État du SDK récupéré', 'success');
+                
+            } catch (error) {
+                testResults.errors++;
+                
+                document.getElementById('statusResult').innerHTML = `
+                    <div class="error">
+                        <p><strong>❌ Erreur de récupération d'état!</strong></p>
+                        <p>Erreur: ${error.message}</p>
+                    </div>
+                `;
+                
+                log(`❌ Erreur de récupération d'état: ${error.message}`, 'error');
+            }
+            
+            updateStats();
+        }
+
+        async function testExternalQR() {
+            testResults.total++;
+            log('🧪 Test: API QR Externe', 'info');
+            
+            try {
+                const qrApiUrl = document.getElementById('qrApiUrl').value;
+                const testText = document.getElementById('testCode').value || 'Test SDK SunuID';
+                
+                const response = await fetch(qrApiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `text=${encodeURIComponent(testText)}&size=300&margin=10`
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    testResults.success++;
+                    testResults.qrGenerated++;
+                    
+                    document.getElementById('externalQrResult').innerHTML = `
+                        <img src="${result.data_uri}" alt="QR Code Externe" />
+                        <p><strong>QR Code externe généré!</strong></p>
+                        <p>Fichier: ${result.filename}</p>
+                    `;
+                    
+                    log(`✅ QR Code externe généré: ${result.filename}`, 'success');
+                } else {
+                    testResults.errors++;
+                    
+                    document.getElementById('externalQrResult').innerHTML = `
+                        <div class="error">
+                            <p><strong>❌ Erreur API QR externe!</strong></p>
+                            <p>Erreur: ${result.error}</p>
+                        </div>
+                    `;
+                    
+                    log(`❌ Erreur API QR externe: ${result.error}`, 'error');
+                }
+                
+            } catch (error) {
+                testResults.errors++;
+                
+                document.getElementById('externalQrResult').innerHTML = `
+                    <div class="error">
+                        <p><strong>❌ Erreur de connexion API!</strong></p>
+                        <p>Erreur: ${error.message}</p>
+                    </div>
+                `;
+                
+                log(`❌ Erreur de connexion API: ${error.message}`, 'error');
+            }
+            
+            updateStats();
+        }
+
+        async function runFullTest() {
+            log('🚀 Démarrage du test complet automatique', 'info');
+            
+            // Test 1: Initialisation
+            await testSDKInit();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Test 2: Génération QR
+            if (sunuid) {
+                await testQRGeneration();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Test 3: Récupération QR
+                await testGetQRCode();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Test 4: État SDK
+                await testSDKStatus();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            // Test 5: API Externe
+            await testExternalQR();
+            
+            log('🏁 Test complet terminé', 'info');
+            
+            document.getElementById('fullTestResult').innerHTML = `
+                <div class="success">
+                    <p><strong>✅ Test complet terminé!</strong></p>
+                    <p>Total: ${testResults.total} tests</p>
+                    <p>Succès: ${testResults.success}</p>
+                    <p>Erreurs: ${testResults.errors}</p>
+                    <p>QR Codes générés: ${testResults.qrGenerated}</p>
+                </div>
+            `;
+        }
+
+        // Initialisation des stats
+        updateStats();
+    </script>
+</body>
+</html> 

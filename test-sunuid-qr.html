@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Intégration SunuID QR Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { border-color: #28a745; background-color: #d4edda; }
+        .error { border-color: #dc3545; background-color: #f8d7da; }
+        .info { border-color: #17a2b8; background-color: #d1ecf1; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .qr-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .qr-display img {
+            max-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Intégration SunuID QR Generator</h1>
+    <p>Test du système de génération de QR codes sur <strong>http://localhost:8000</strong></p>
+
+    <div class="container">
+        <h2>📊 Statistiques du Système</h2>
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalQrs">-</div>
+                <div>QR Codes Générés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="successRate">-</div>
+                <div>Taux de Succès</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avgSize">-</div>
+                <div>Taille Moyenne (KB)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔧 Tests API</h2>
+        
+        <div class="test-section">
+            <h3>Test 1: Génération QR Code Texte</h3>
+            <button onclick="testTextQR()">Générer QR Texte</button>
+            <div id="textResult" class="qr-display"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 2: Génération QR Code URL</h3>
+            <button onclick="testUrlQR()">Générer QR URL</button>
+            <div id="urlResult" class="qr-display"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 3: Génération QR Code WiFi</h3>
+            <button onclick="testWifiQR()">Générer QR WiFi</button>
+            <div id="wifiResult" class="qr-display"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 4: Génération QR Code Contact</h3>
+            <button onclick="testContactQR()">Générer QR Contact</button>
+            <div id="contactResult" class="qr-display"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 5: Génération QR Code Email</h3>
+            <button onclick="testEmailQR()">Générer QR Email</button>
+            <div id="emailResult" class="qr-display"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 6: Génération QR Code Téléphone</h3>
+            <button onclick="testPhoneQR()">Générer QR Téléphone</button>
+            <div id="phoneResult" class="qr-display"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 7: Test d'Erreur</h3>
+            <button onclick="testError()">Test Erreur</button>
+            <div id="errorResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test 8: Test de Suppression</h3>
+            <button onclick="testDelete()">Test Suppression</button>
+            <div id="deleteResult"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📝 Logs de Test</h2>
+        <div id="log" class="log"></div>
+        <button onclick="clearLog()">Effacer les Logs</button>
+    </div>
+
+    <script>
+        let testResults = {
+            total: 0,
+            success: 0,
+            errors: 0,
+            generatedFiles: []
+        };
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function updateStats() {
+            document.getElementById('totalQrs').textContent = testResults.total;
+            const successRate = testResults.total > 0 ? Math.round((testResults.success / testResults.total) * 100) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+            const avgSize = testResults.generatedFiles.length > 0 ? 
+                Math.round(testResults.generatedFiles.reduce((a, b) => a + b, 0) / testResults.generatedFiles.length) : 0;
+            document.getElementById('avgSize').textContent = avgSize;
+        }
+
+        async function testQRGeneration(endpoint, data, resultId, testName) {
+            testResults.total++;
+            log(`🧪 Test: ${testName}`, 'info');
+            
+            try {
+                const formData = new URLSearchParams();
+                for (const [key, value] of Object.entries(data)) {
+                    if (value) {
+                        formData.append(key, value);
+                    }
+                }
+
+                const response = await fetch(`http://localhost:8000/api/generate/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    testResults.success++;
+                    testResults.generatedFiles.push(result.filename);
+                    
+                    const resultDiv = document.getElementById(resultId);
+                    resultDiv.innerHTML = `
+                        <img src="${result.data_uri}" alt="QR Code" />
+                        <p><strong>Fichier:</strong> ${result.filename}</p>
+                        <p><strong>Taille:</strong> ${result.size}px</p>
+                        <p><strong>Format:</strong> ${result.format}</p>
+                    `;
+                    
+                    log(`✅ ${testName} - Succès: ${result.filename}`, 'success');
+                } else {
+                    testResults.errors++;
+                    log(`❌ ${testName} - Erreur: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                testResults.errors++;
+                log(`❌ ${testName} - Exception: ${error.message}`, 'error');
+            }
+            
+            updateStats();
+        }
+
+        function testTextQR() {
+            testQRGeneration('text', {
+                text: 'Test QR Code - SunuID SDK',
+                size: 300,
+                margin: 10,
+                foreground_color: '000000',
+                background_color: 'FFFFFF'
+            }, 'textResult', 'Génération QR Texte');
+        }
+
+        function testUrlQR() {
+            testQRGeneration('url', {
+                url: 'https://sunuid.fayma.sn',
+                size: 400,
+                margin: 15,
+                foreground_color: '000000',
+                background_color: 'FFFFFF'
+            }, 'urlResult', 'Génération QR URL');
+        }
+
+        function testWifiQR() {
+            testQRGeneration('wifi', {
+                ssid: 'SunuID_WiFi',
+                password: 'MotDePasse123',
+                encryption: 'WPA',
+                size: 300,
+                margin: 10
+            }, 'wifiResult', 'Génération QR WiFi');
+        }
+
+        function testContactQR() {
+            testQRGeneration('contact', {
+                name: 'Jean Dupont',
+                phone: '+33123456789',
+                email: 'jean@sunuid.fayma.sn',
+                company: 'SunuID',
+                website: 'https://sunuid.fayma.sn',
+                size: 300,
+                margin: 10
+            }, 'contactResult', 'Génération QR Contact');
+        }
+
+        function testEmailQR() {
+            testQRGeneration('email', {
+                email: 'contact@sunuid.fayma.sn',
+                subject: 'Test Email QR',
+                body: 'Ceci est un test de génération de QR code pour email',
+                size: 300,
+                margin: 10
+            }, 'emailResult', 'Génération QR Email');
+        }
+
+        function testPhoneQR() {
+            testQRGeneration('phone', {
+                phone: '+33123456789',
+                size: 300,
+                margin: 10
+            }, 'phoneResult', 'Génération QR Téléphone');
+        }
+
+        async function testError() {
+            testResults.total++;
+            log('🧪 Test: Validation d\'erreur', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/generate/text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'text=&size=abc&margin=xyz'
+                });
+
+                const result = await response.json();
+                
+                if (!result.success) {
+                    testResults.success++; // C'est un succès car l'erreur est attendue
+                    document.getElementById('errorResult').innerHTML = `
+                        <div class="success">
+                            <p><strong>✅ Test d'erreur réussi!</strong></p>
+                            <p>Erreur attendue: ${result.error}</p>
+                        </div>
+                    `;
+                    log(`✅ Test d'erreur - Succès: ${result.error}`, 'success');
+                } else {
+                    testResults.errors++;
+                    log(`❌ Test d'erreur - Échec: Aucune erreur retournée`, 'error');
+                }
+            } catch (error) {
+                testResults.errors++;
+                log(`❌ Test d'erreur - Exception: ${error.message}`, 'error');
+            }
+            
+            updateStats();
+        }
+
+        async function testDelete() {
+            log('🧪 Test: Suppression de fichier', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'filename=test_delete.png'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('deleteResult').innerHTML = `
+                        <div class="success">
+                            <p><strong>✅ Test de suppression réussi!</strong></p>
+                            <p>Message: ${result.message}</p>
+                        </div>
+                    `;
+                    log(`✅ Test de suppression - Succès: ${result.message}`, 'success');
+                } else {
+                    document.getElementById('deleteResult').innerHTML = `
+                        <div class="error">
+                            <p><strong>❌ Test de suppression échoué!</strong></p>
+                            <p>Erreur: ${result.error}</p>
+                        </div>
+                    `;
+                    log(`❌ Test de suppression - Erreur: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                document.getElementById('deleteResult').innerHTML = `
+                    <div class="error">
+                        <p><strong>❌ Test de suppression - Exception!</strong></p>
+                        <p>Erreur: ${error.message}</p>
+                    </div>
+                `;
+                log(`❌ Test de suppression - Exception: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialisation
+        log('🚀 Test d\'intégration SunuID QR Generator démarré', 'info');
+        log('📍 Endpoint: http://localhost:8000', 'info');
+        updateStats();
+    </script>
+</body>
+</html> 

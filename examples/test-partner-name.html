@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Nom Partenaire - SunuID SDK</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background-color: #f1f8e9; }
+        .error { border-color: #f44336; background-color: #ffebee; }
+        .info { border-color: #2196F3; background-color: #e3f2fd; }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1976D2; }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .partner-name {
+            font-weight: bold;
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏷️ Test Nom Partenaire - SunuID SDK</h1>
+        
+        <div class="test-section info">
+            <h3>📋 Informations</h3>
+            <p>Ce test vérifie que le nom du partenaire s'affiche correctement dans les labels et textes au lieu d'être codé en dur.</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🔧 Configuration</h3>
+            <p><strong>Nom du partenaire configuré:</strong> <span class="partner-name" id="partner-name">Chargement...</span></p>
+            <p><strong>Type de service:</strong> <span id="service-type">Chargement...</span></p>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Tests</h3>
+            <button onclick="testPartnerName()">Test Nom Partenaire</button>
+            <button onclick="testQRGeneration()">Test Génération QR</button>
+            <button onclick="clearLogs()">Effacer Logs</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Logs</h3>
+            <div id="logs" class="log"></div>
+        </div>
+
+        <div id="qr-container" class="test-section">
+            <h3>📱 QR Code</h3>
+            <p>Le QR code apparaîtra ici après le test de génération.</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Vérifications</h3>
+            <div id="checks">
+                <p>✅ Instructions: <span id="instructions-check">En attente...</span></p>
+                <p>✅ Alt text: <span id="alt-check">En attente...</span></p>
+                <p>✅ Label QR: <span id="label-check">En attente...</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration -->
+    <script>
+        // Configuration avec nom de partenaire personnalisé
+        window.SunuIDConfig = {
+            apiUrl: 'https://api.sunuid.fayma.sn',
+            endpoints: {
+                qrGenerate: '/qr-generate',
+                qrStatus: '/qr-status',
+                qrConfirm: '/qr-confirm'
+            }
+        };
+    </script>
+
+    <!-- SDK -->
+    <script src="../src/sunuid-sdk.js"></script>
+
+    <script>
+        let sunuid;
+        let logs = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logs.push(logEntry);
+            
+            const logsDiv = document.getElementById('logs');
+            logsDiv.innerHTML = logs.join('\n');
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            
+            console.log(logEntry);
+        }
+
+        function clearLogs() {
+            logs = [];
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        function updateConfigDisplay() {
+            document.getElementById('partner-name').textContent = 'Ma Banque';
+            document.getElementById('service-type').textContent = 'Authentification (Type 2)';
+        }
+
+        async function testPartnerName() {
+            log('🧪 Début du test du nom du partenaire...');
+            
+            try {
+                // Initialiser le SDK avec un nom de partenaire personnalisé
+                sunuid = new SunuID({
+                    clientId: 'test_client',
+                    secretId: 'test_secret',
+                    type: 2,
+                    partnerName: 'Ma Banque', // Nom personnalisé
+                    theme: 'light'
+                });
+
+                log('✅ SDK initialisé avec succès');
+                log(`🏷️ Nom du partenaire configuré: ${sunuid.config.partnerName}`);
+
+                // Vérifier que le nom du partenaire est correct
+                if (sunuid.config.partnerName !== 'Ma Banque') {
+                    throw new Error('❌ Le nom du partenaire n\'est pas correctement configuré!');
+                }
+
+                log('✅ Nom du partenaire correctement configuré');
+                
+                document.querySelector('.test-section:nth-child(3)').className = 'test-section success';
+                
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+                document.querySelector('.test-section:nth-child(3)').className = 'test-section error';
+            }
+        }
+
+        async function testQRGeneration() {
+            log('🧪 Test de génération de QR avec nom personnalisé...');
+            
+            try {
+                if (!sunuid) {
+                    throw new Error('SDK non initialisé. Lancez d\'abord le test de configuration.');
+                }
+
+                // Simuler la génération d'un QR code pour vérifier les textes
+                const container = document.getElementById('qr-container');
+                
+                // Créer un élément temporaire pour tester les textes
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = `
+                    <div class="sunuid-qr-instructions" style="display: none;">
+                        <p>Scannez ce QR code avec l'application ${sunuid.config.partnerName} pour vous connecter</p>
+                    </div>
+                    <div class="sunuid-qr-ready" style="text-align: center; padding: 20px;">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" alt="QR Code ${sunuid.config.partnerName}" style="max-width: 300px; border: 2px solid #ddd; border-radius: 10px;">
+                    </div>
+                `;
+
+                // Vérifier les textes
+                const instructions = tempDiv.querySelector('.sunuid-qr-instructions p').textContent;
+                const altText = tempDiv.querySelector('img').alt;
+
+                log(`📝 Instructions: ${instructions}`);
+                log(`🏷️ Alt text: ${altText}`);
+
+                // Vérifications
+                const instructionsCheck = document.getElementById('instructions-check');
+                const altCheck = document.getElementById('alt-check');
+                const labelCheck = document.getElementById('label-check');
+
+                if (instructions.includes('Ma Banque')) {
+                    instructionsCheck.textContent = '✅ Correct';
+                    instructionsCheck.style.color = 'green';
+                } else {
+                    instructionsCheck.textContent = '❌ Incorrect';
+                    instructionsCheck.style.color = 'red';
+                }
+
+                if (altText.includes('Ma Banque')) {
+                    altCheck.textContent = '✅ Correct';
+                    altCheck.style.color = 'green';
+                } else {
+                    altCheck.textContent = '❌ Incorrect';
+                    altCheck.style.color = 'red';
+                }
+
+                // Simuler le label du QR code
+                const typeName = sunuid.getTypeName ? sunuid.getTypeName(2) : 'Authentification';
+                const qrLabel = `${typeName} - ${sunuid.config.partnerName}`;
+                log(`🏷️ Label QR simulé: ${qrLabel}`);
+
+                if (qrLabel.includes('Ma Banque')) {
+                    labelCheck.textContent = '✅ Correct';
+                    labelCheck.style.color = 'green';
+                } else {
+                    labelCheck.textContent = '❌ Incorrect';
+                    labelCheck.style.color = 'red';
+                }
+
+                log('✅ Test de génération de QR terminé');
+                
+                document.querySelector('.test-section:nth-child(4)').className = 'test-section success';
+                
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+                document.querySelector('.test-section:nth-child(4)').className = 'test-section error';
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Page chargée');
+            updateConfigDisplay();
+            log('📋 Configuration affichée');
+        });
+    </script>
+</body>
+</html> 

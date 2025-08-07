@@ -5,6 +5,44 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.37] - 2025-01-06
+
+### 🔧 Corrigé
+- **Vérification des connexions API** : Correction de la méthode `checkConnections()`
+  - Changement de GET vers POST pour l'endpoint `/debug`
+  - Ajout des credentials dans la requête de test
+  - Correction de la vérification du statut API (success: true au lieu de status: 'operational')
+  - Amélioration des logs de debug pour le statut API
+
+### 🎨 Amélioré
+- **Logs de debug** : Amélioration des messages de statut API
+  - Affichage "accessible" ou "inaccessible" au lieu de "undefined"
+  - Affichage du code HTTP en cas d'erreur
+  - Meilleure traçabilité des problèmes de connexion
+
+### 📚 Ajouté
+- **Headers Content-Type** : Ajout du header JSON pour les requêtes de test
+- **Credentials dans les tests** : Inclusion des credentials dans les requêtes de vérification
+
+### 🔄 Logs améliorés
+- **API Status** : `🔍 API Status: accessible` ou `🔍 API Status: inaccessible`
+- **HTTP Status** : `🔍 API Status: HTTP 200` en cas d'erreur
+- **Test API** : Messages plus clairs pour les échecs de connexion
+
+### 📋 Configuration recommandée
+```javascript
+const config = {
+    // ... autres options
+    // La vérification des connexions fonctionne maintenant correctement
+    // Le QR code se génère automatiquement après vérification
+};
+```
+
+### 🧪 Test
+- Vérifier que l'API est détectée comme accessible
+- Confirmer que le QR code se génère après la vérification
+- Vérifier les logs de debug dans la console
+
 ## [1.0.36] - 2025-01-06
 
 ### 🔧 Corrigé
