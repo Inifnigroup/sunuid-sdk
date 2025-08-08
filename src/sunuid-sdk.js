@@ -1817,6 +1817,7 @@
          */
         extractAuthDataFromWebSocket(websocketData) {
             console.log('🔍 Extraction des données d\'authentification du WebSocket:', websocketData);
+        console.log('🔍 Structure complète de websocketData:', JSON.stringify(websocketData, null, 2));
             
             // Si les données sont déjà dans le bon format (callback), les retourner directement
             if (websocketData.token && websocketData.session_id) {
@@ -1861,6 +1862,51 @@
                     partner_id: authDataObj.partner_id || authDataObj.partnerId || authDataObj.partner,
                     type: authDataObj.type,
                     timestamp: authDataObj.timestamp || responseData.timestamp || websocketData.timestamp,
+                    signature: authDataObj.signature || 
+                              (authDataObj.callback_data && authDataObj.callback_data.signature),
+                    user_info: authDataObj.user_info || authDataObj.userInfo || authDataObj.user_data ||
+                              (authDataObj.user_data_sent && authDataObj.user_data_sent.user_info) ||
+                              (authDataObj.session_data && authDataObj.session_data.user_info),
+                    redirect_url: authDataObj.redirect_url || authDataObj.redirectUrl || authDataObj.redirect ||
+                                 (authDataObj.session_data && authDataObj.session_data.redirect_url)
+                };
+                
+                console.log('📋 Données d\'authentification extraites:', authData);
+                return authData;
+            }
+            
+            // Si les données sont directement dans data
+            if (websocketData.data) {
+                console.log('✅ Format WebSocket détecté, extraction directe de data');
+                console.log('🔍 Contenu complet de data:', websocketData.data);
+                console.log('🔍 Clés disponibles dans data:', Object.keys(websocketData.data));
+                
+                const authDataObj = websocketData.data;
+                
+                // Debug des sous-objets qui pourraient contenir le token
+                if (authDataObj.callback_data) {
+                    console.log('🔍 Contenu de callback_data:', authDataObj.callback_data);
+                }
+                if (authDataObj.session_data) {
+                    console.log('🔍 Contenu de session_data:', authDataObj.session_data);
+                }
+                if (authDataObj.user_data_sent) {
+                    console.log('🔍 Contenu de user_data_sent:', authDataObj.user_data_sent);
+                }
+                
+                const authData = {
+                    token: authDataObj.token || authDataObj.auth_token || authDataObj.jwt_token || 
+                           (authDataObj.callback_data && authDataObj.callback_data.jwt) ||
+                           (authDataObj.callback_data && authDataObj.callback_data.token) ||
+                           (authDataObj.session_data && authDataObj.session_data.token) ||
+                           (authDataObj.user_data_sent && authDataObj.user_data_sent.token),
+                    session_id: authDataObj.session_id || authDataObj.sessionId || authDataObj.session ||
+                               (authDataObj.callback_data && authDataObj.callback_data.session_id) ||
+                               (authDataObj.session_data && authDataObj.session_data.session_id),
+                    user_id: authDataObj.user_id || authDataObj.userId || authDataObj.user,
+                    partner_id: authDataObj.partner_id || authDataObj.partnerId || authDataObj.partner,
+                    type: authDataObj.type,
+                    timestamp: authDataObj.timestamp || websocketData.timestamp,
                     signature: authDataObj.signature || 
                               (authDataObj.callback_data && authDataObj.callback_data.signature),
                     user_info: authDataObj.user_info || authDataObj.userInfo || authDataObj.user_data ||

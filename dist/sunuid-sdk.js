@@ -2606,6 +2606,7 @@
         key: "extractAuthDataFromWebSocket",
         value: function extractAuthDataFromWebSocket(websocketData) {
           console.log('🔍 Extraction des données d\'authentification du WebSocket:', websocketData);
+          console.log('🔍 Structure complète de websocketData:', JSON.stringify(websocketData, null, 2));
 
           // Si les données sont déjà dans le bon format (callback), les retourner directement
           if (websocketData.token && websocketData.session_id) {
@@ -2650,6 +2651,38 @@
             };
             console.log('📋 Données d\'authentification extraites:', authData);
             return authData;
+          }
+
+          // Si les données sont directement dans data
+          if (websocketData.data) {
+            console.log('✅ Format WebSocket détecté, extraction directe de data');
+            console.log('🔍 Contenu complet de data:', websocketData.data);
+            console.log('🔍 Clés disponibles dans data:', Object.keys(websocketData.data));
+            var _authDataObj = websocketData.data;
+
+            // Debug des sous-objets qui pourraient contenir le token
+            if (_authDataObj.callback_data) {
+              console.log('🔍 Contenu de callback_data:', _authDataObj.callback_data);
+            }
+            if (_authDataObj.session_data) {
+              console.log('🔍 Contenu de session_data:', _authDataObj.session_data);
+            }
+            if (_authDataObj.user_data_sent) {
+              console.log('🔍 Contenu de user_data_sent:', _authDataObj.user_data_sent);
+            }
+            var _authData = {
+              token: _authDataObj.token || _authDataObj.auth_token || _authDataObj.jwt_token || _authDataObj.callback_data && _authDataObj.callback_data.jwt || _authDataObj.callback_data && _authDataObj.callback_data.token || _authDataObj.session_data && _authDataObj.session_data.token || _authDataObj.user_data_sent && _authDataObj.user_data_sent.token,
+              session_id: _authDataObj.session_id || _authDataObj.sessionId || _authDataObj.session || _authDataObj.callback_data && _authDataObj.callback_data.session_id || _authDataObj.session_data && _authDataObj.session_data.session_id,
+              user_id: _authDataObj.user_id || _authDataObj.userId || _authDataObj.user,
+              partner_id: _authDataObj.partner_id || _authDataObj.partnerId || _authDataObj.partner,
+              type: _authDataObj.type,
+              timestamp: _authDataObj.timestamp || websocketData.timestamp,
+              signature: _authDataObj.signature || _authDataObj.callback_data && _authDataObj.callback_data.signature,
+              user_info: _authDataObj.user_info || _authDataObj.userInfo || _authDataObj.user_data || _authDataObj.user_data_sent && _authDataObj.user_data_sent.user_info || _authDataObj.session_data && _authDataObj.session_data.user_info,
+              redirect_url: _authDataObj.redirect_url || _authDataObj.redirectUrl || _authDataObj.redirect || _authDataObj.session_data && _authDataObj.session_data.redirect_url
+            };
+            console.log('📋 Données d\'authentification extraites:', _authData);
+            return _authData;
           }
 
           // Fallback : essayer d'extraire directement des champs principaux

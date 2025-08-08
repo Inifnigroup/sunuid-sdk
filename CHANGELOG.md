@@ -5,6 +5,34 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.50] - 2025-01-07
+
+### 🎯 Fixed
+- **Support du format WebSocket avec `data` direct** : Le SDK gère maintenant les deux formats d'événements WebSocket
+- **Logs détaillés de la structure des données** : Ajout de logs JSON pour débugger la structure exacte
+- **Extraction depuis `websocketData.data`** : Support du cas où les données sont directement dans `data` et non dans `responseData`
+
+### 📋 Formats supportés
+```javascript
+// Format 1: avec responseData
+{
+    responseData: {
+        data: {
+            callback_data: { jwt: '...', signature: '...' },
+            session_data: { session_id: '...', user_info: {...} }
+        }
+    }
+}
+
+// Format 2: avec data direct (NOUVEAU)
+{
+    data: {
+        callback_data: { jwt: '...', signature: '...' },
+        session_data: { session_id: '...', user_info: {...} }
+    }
+}
+```
+
 ## [1.0.49] - 2025-01-07
 
 ### 🎯 Fixed
