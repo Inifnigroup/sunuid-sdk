@@ -5,6 +5,26 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.48] - 2025-01-07
+
+### 🔍 Debug avancé
+- **Debug des sous-objets** : Ajout de logs pour examiner `callback_data`, `session_data`, et `user_data_sent`
+- **Extraction depuis les sous-objets** : Recherche du token JWT dans les sous-objets de la réponse
+- **Support de structures imbriquées** : Extraction depuis `callback_data.token`, `session_data.token`, etc.
+
+### 📋 Debug étendu
+```javascript
+// Nouveaux logs pour diagnostiquer où se trouve le token
+console.log('🔍 Contenu de callback_data:', authDataObj.callback_data);
+console.log('🔍 Contenu de session_data:', authDataObj.session_data);
+console.log('🔍 Contenu de user_data_sent:', authDataObj.user_data_sent);
+
+// Extraction depuis les sous-objets
+token: authDataObj.token || 
+       (authDataObj.callback_data && authDataObj.callback_data.token) ||
+       (authDataObj.session_data && authDataObj.session_data.token)
+```
+
 ## [1.0.47] - 2025-01-07
 
 ### 🔧 Fixed

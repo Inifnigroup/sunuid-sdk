@@ -2624,15 +2624,26 @@
             var authDataObj = responseData.data || responseData;
             console.log('🔍 Données d\'authentification dans data:', authDataObj);
             console.log('🔍 Clés disponibles dans data:', Object.keys(authDataObj));
+
+            // Debug des sous-objets qui pourraient contenir le token
+            if (authDataObj.callback_data) {
+              console.log('🔍 Contenu de callback_data:', authDataObj.callback_data);
+            }
+            if (authDataObj.session_data) {
+              console.log('🔍 Contenu de session_data:', authDataObj.session_data);
+            }
+            if (authDataObj.user_data_sent) {
+              console.log('🔍 Contenu de user_data_sent:', authDataObj.user_data_sent);
+            }
             var authData = {
-              token: authDataObj.token || authDataObj.auth_token || authDataObj.jwt_token,
-              session_id: authDataObj.session_id || authDataObj.sessionId || authDataObj.session,
+              token: authDataObj.token || authDataObj.auth_token || authDataObj.jwt_token || authDataObj.callback_data && authDataObj.callback_data.token || authDataObj.session_data && authDataObj.session_data.token || authDataObj.user_data_sent && authDataObj.user_data_sent.token,
+              session_id: authDataObj.session_id || authDataObj.sessionId || authDataObj.session || authDataObj.callback_data && authDataObj.callback_data.session_id || authDataObj.session_data && authDataObj.session_data.session_id,
               user_id: authDataObj.user_id || authDataObj.userId || authDataObj.user,
               partner_id: authDataObj.partner_id || authDataObj.partnerId || authDataObj.partner,
               type: authDataObj.type,
               timestamp: authDataObj.timestamp || responseData.timestamp || websocketData.timestamp,
               signature: authDataObj.signature,
-              user_info: authDataObj.user_info || authDataObj.userInfo || authDataObj.user_data,
+              user_info: authDataObj.user_info || authDataObj.userInfo || authDataObj.user_data || authDataObj.user_data_sent && authDataObj.user_data_sent.user_info,
               redirect_url: authDataObj.redirect_url || authDataObj.redirectUrl || authDataObj.redirect
             };
             console.log('📋 Données d\'authentification extraites:', authData);
