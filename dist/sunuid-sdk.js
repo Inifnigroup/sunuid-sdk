@@ -2616,6 +2616,8 @@
           // Si c'est un format WebSocket, extraire les données de responseData
           if (websocketData.responseData) {
             console.log('✅ Format WebSocket détecté, extraction de responseData');
+            console.log('🔍 Contenu complet de responseData:', websocketData.responseData);
+            console.log('🔍 Clés disponibles dans responseData:', Object.keys(websocketData.responseData));
             var authData = {
               token: websocketData.responseData.token || websocketData.responseData.auth_token,
               session_id: websocketData.responseData.session_id || websocketData.responseData.sessionId,

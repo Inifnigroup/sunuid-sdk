@@ -5,6 +5,19 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.46] - 2025-01-07
+
+### 🔍 Debug
+- **Logs détaillés pour responseData** : Ajout de logs pour voir la structure exacte des données envoyées par l'API
+- **Affichage des clés disponibles** : Debug des champs disponibles dans responseData pour adapter l'extraction
+
+### 📋 Debug
+```javascript
+// Logs ajoutés pour diagnostiquer la structure des données
+console.log('🔍 Contenu complet de responseData:', websocketData.responseData);
+console.log('🔍 Clés disponibles dans responseData:', Object.keys(websocketData.responseData));
+```
+
 ## [1.0.45] - 2025-01-07
 
 ### 🔧 Fixed
