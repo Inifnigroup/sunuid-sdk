@@ -5,6 +5,29 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.47] - 2025-01-07
+
+### 🔧 Fixed
+- **Extraction des données depuis `responseData.data`** : Correction de l'extraction pour récupérer les données depuis le bon niveau de l'objet
+- **Support de multiples formats de noms** : Ajout de variantes pour les noms de champs (token/auth_token/jwt_token, session_id/sessionId/session, etc.)
+- **Logs détaillés pour debugging** : Affichage du contenu de `responseData.data` et de ses clés disponibles
+
+### 📋 Structure corrigée
+```javascript
+// Structure réelle de responseData
+{
+    success: true,
+    data: {  // ← Les vraies données d'authentification sont ici !
+        token: 'jwt_token_here',
+        session_id: 'sess_123',
+        user_info: { name: 'John', email: 'john@example.com' }
+        // ... autres données
+    },
+    timestamp: '2025-08-08 05:49:45',
+    api_version: '2.0.0'
+}
+```
+
 ## [1.0.46] - 2025-01-07
 
 ### 🔍 Debug

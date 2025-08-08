@@ -2618,16 +2618,22 @@
             console.log('✅ Format WebSocket détecté, extraction de responseData');
             console.log('🔍 Contenu complet de responseData:', websocketData.responseData);
             console.log('🔍 Clés disponibles dans responseData:', Object.keys(websocketData.responseData));
+
+            // Les données d'authentification sont dans responseData.data
+            var responseData = websocketData.responseData;
+            var authDataObj = responseData.data || responseData;
+            console.log('🔍 Données d\'authentification dans data:', authDataObj);
+            console.log('🔍 Clés disponibles dans data:', Object.keys(authDataObj));
             var authData = {
-              token: websocketData.responseData.token || websocketData.responseData.auth_token,
-              session_id: websocketData.responseData.session_id || websocketData.responseData.sessionId,
-              user_id: websocketData.responseData.user_id || websocketData.responseData.userId,
-              partner_id: websocketData.responseData.partner_id || websocketData.responseData.partnerId,
-              type: websocketData.responseData.type,
-              timestamp: websocketData.responseData.timestamp || websocketData.timestamp,
-              signature: websocketData.responseData.signature,
-              user_info: websocketData.responseData.user_info || websocketData.responseData.userInfo,
-              redirect_url: websocketData.responseData.redirect_url || websocketData.responseData.redirectUrl
+              token: authDataObj.token || authDataObj.auth_token || authDataObj.jwt_token,
+              session_id: authDataObj.session_id || authDataObj.sessionId || authDataObj.session,
+              user_id: authDataObj.user_id || authDataObj.userId || authDataObj.user,
+              partner_id: authDataObj.partner_id || authDataObj.partnerId || authDataObj.partner,
+              type: authDataObj.type,
+              timestamp: authDataObj.timestamp || responseData.timestamp || websocketData.timestamp,
+              signature: authDataObj.signature,
+              user_info: authDataObj.user_info || authDataObj.userInfo || authDataObj.user_data,
+              redirect_url: authDataObj.redirect_url || authDataObj.redirectUrl || authDataObj.redirect
             };
             console.log('📋 Données d\'authentification extraites:', authData);
             return authData;
