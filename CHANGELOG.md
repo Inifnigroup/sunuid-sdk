@@ -5,6 +5,24 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.51] - 2025-01-07
+
+### 🎯 Fixed
+- **Priorité au JWT dans l'extraction des tokens** : Le SDK priorise maintenant `callback_data.jwt` avant `auth_token` pour éviter les erreurs de décodage
+- **Amélioration de la robustesse** : Évite les erreurs quand le premier événement contient `auth_token` au lieu du JWT
+
+### 📋 Ordre de priorité des tokens
+```javascript
+// Nouvel ordre de priorité
+token: callback_data.jwt ||        // ← Priorité 1: JWT dans callback_data
+       jwt_token ||                // ← Priorité 2: JWT direct
+       token ||                    // ← Priorité 3: Token générique
+       auth_token ||               // ← Priorité 4: Auth token (fallback)
+       callback_data.token ||      // ← Priorité 5: Token dans callback_data
+       session_data.token ||       // ← Priorité 6: Token dans session_data
+       user_data_sent.token        // ← Priorité 7: Token dans user_data_sent
+```
+
 ## [1.0.50] - 2025-01-07
 
 ### 🎯 Fixed

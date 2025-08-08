@@ -1850,8 +1850,10 @@
                 }
                 
                 const authData = {
-                    token: authDataObj.token || authDataObj.auth_token || authDataObj.jwt_token || 
-                           (authDataObj.callback_data && authDataObj.callback_data.jwt) ||  // ← JWT ici !
+                    token: (authDataObj.callback_data && authDataObj.callback_data.jwt) ||  // ← Priorité au JWT
+                           authDataObj.jwt_token ||
+                           authDataObj.token || 
+                           authDataObj.auth_token ||
                            (authDataObj.callback_data && authDataObj.callback_data.token) ||
                            (authDataObj.session_data && authDataObj.session_data.token) ||
                            (authDataObj.user_data_sent && authDataObj.user_data_sent.token),
@@ -1895,8 +1897,10 @@
                 }
                 
                 const authData = {
-                    token: authDataObj.token || authDataObj.auth_token || authDataObj.jwt_token || 
-                           (authDataObj.callback_data && authDataObj.callback_data.jwt) ||
+                    token: (authDataObj.callback_data && authDataObj.callback_data.jwt) ||  // ← Priorité au JWT
+                           authDataObj.jwt_token ||
+                           authDataObj.token || 
+                           authDataObj.auth_token ||
                            (authDataObj.callback_data && authDataObj.callback_data.token) ||
                            (authDataObj.session_data && authDataObj.session_data.token) ||
                            (authDataObj.user_data_sent && authDataObj.user_data_sent.token),

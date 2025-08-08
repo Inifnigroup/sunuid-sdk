@@ -2637,9 +2637,9 @@
               console.log('🔍 Contenu de user_data_sent:', authDataObj.user_data_sent);
             }
             var authData = {
-              token: authDataObj.token || authDataObj.auth_token || authDataObj.jwt_token || authDataObj.callback_data && authDataObj.callback_data.jwt ||
-              // ← JWT ici !
-              authDataObj.callback_data && authDataObj.callback_data.token || authDataObj.session_data && authDataObj.session_data.token || authDataObj.user_data_sent && authDataObj.user_data_sent.token,
+              token: authDataObj.callback_data && authDataObj.callback_data.jwt ||
+              // ← Priorité au JWT
+              authDataObj.jwt_token || authDataObj.token || authDataObj.auth_token || authDataObj.callback_data && authDataObj.callback_data.token || authDataObj.session_data && authDataObj.session_data.token || authDataObj.user_data_sent && authDataObj.user_data_sent.token,
               session_id: authDataObj.session_id || authDataObj.sessionId || authDataObj.session || authDataObj.callback_data && authDataObj.callback_data.session_id || authDataObj.session_data && authDataObj.session_data.session_id,
               user_id: authDataObj.user_id || authDataObj.userId || authDataObj.user,
               partner_id: authDataObj.partner_id || authDataObj.partnerId || authDataObj.partner,
@@ -2671,7 +2671,9 @@
               console.log('🔍 Contenu de user_data_sent:', _authDataObj.user_data_sent);
             }
             var _authData = {
-              token: _authDataObj.token || _authDataObj.auth_token || _authDataObj.jwt_token || _authDataObj.callback_data && _authDataObj.callback_data.jwt || _authDataObj.callback_data && _authDataObj.callback_data.token || _authDataObj.session_data && _authDataObj.session_data.token || _authDataObj.user_data_sent && _authDataObj.user_data_sent.token,
+              token: _authDataObj.callback_data && _authDataObj.callback_data.jwt ||
+              // ← Priorité au JWT
+              _authDataObj.jwt_token || _authDataObj.token || _authDataObj.auth_token || _authDataObj.callback_data && _authDataObj.callback_data.token || _authDataObj.session_data && _authDataObj.session_data.token || _authDataObj.user_data_sent && _authDataObj.user_data_sent.token,
               session_id: _authDataObj.session_id || _authDataObj.sessionId || _authDataObj.session || _authDataObj.callback_data && _authDataObj.callback_data.session_id || _authDataObj.session_data && _authDataObj.session_data.session_id,
               user_id: _authDataObj.user_id || _authDataObj.userId || _authDataObj.user,
               partner_id: _authDataObj.partner_id || _authDataObj.partnerId || _authDataObj.partner,
