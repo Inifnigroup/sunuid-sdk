@@ -857,9 +857,26 @@
       }, {
         key: "handleQRScanSuccess",
         value: function handleQRScanSuccess(data) {
-          console.log('✅ QR Scan Success:', data);
-          if (this.config.onSuccess) {
-            this.config.onSuccess(data);
+          console.log('✅ QR Scan Success reçu:', data);
+          try {
+            // Traiter l'authentification comme un callback
+            this.processAuthentication(data);
+
+            // Afficher un message de succès
+            this.showSuccessMessage(data);
+
+            // Appeler le callback de succès (pour compatibilité)
+            if (this.config.onSuccess) {
+              this.config.onSuccess(data);
+            }
+            console.log('✅ Authentification WebSocket traitée avec succès');
+          } catch (error) {
+            console.error('❌ Erreur lors du traitement WebSocket:', error);
+
+            // Appeler le callback d'erreur
+            if (this.config.onAuthenticationError) {
+              this.config.onAuthenticationError(error, data);
+            }
           }
         }
 
@@ -2577,6 +2594,37 @@
           // Remplacer le contenu par un loader animé
           container.innerHTML = "\n                <div style=\"\n                    text-align: center;\n                    padding: 40px 20px;\n                    background: #f8f9fa;\n                    border: 2px solid #007bff;\n                    border-radius: 10px;\n                    color: #007bff;\n                    font-family: Arial, sans-serif;\n                \">\n                    <div style=\"\n                        width: 60px;\n                        height: 60px;\n                        border: 4px solid #e3f2fd;\n                        border-top: 4px solid #007bff;\n                        border-radius: 50%;\n                        animation: spin 1s linear infinite;\n                        margin: 0 auto 20px auto;\n                    \"></div>\n                    <h3 style=\"margin: 0 0 10px 0; color: #007bff;\">\uD83D\uDD0D Scan en cours...</h3>\n                    <p style=\"margin: 0; font-size: 14px;\">\n                        Veuillez patienter pendant la v\xE9rification de votre identit\xE9.\n                    </p>\n                    <div style=\"margin-top: 15px; font-size: 12px; color: #6c757d;\">\n                        \u23F1\uFE0F Traitement en cours...\n                    </div>\n                </div>\n                <style>\n                    @keyframes spin {\n                        0% { transform: rotate(0deg); }\n                        100% { transform: rotate(360deg); }\n                    }\n                </style>\n            ";
           console.log('✅ Loader affiché avec succès');
+        }
+
+        /**
+         * Afficher un message de succès après authentification
+         */
+      }, {
+        key: "showSuccessMessage",
+        value: function showSuccessMessage(data) {
+          console.log('✅ Affichage du message de succès');
+
+          // Chercher le conteneur QR dans différents IDs possibles
+          var containerIds = ['qr-area', 'qr-container', 'sunuid-qr-container'];
+          var container = null;
+          for (var _i3 = 0, _containerIds2 = containerIds; _i3 < _containerIds2.length; _i3++) {
+            var id = _containerIds2[_i3];
+            container = document.getElementById(id);
+            if (container) break;
+          }
+          if (!container) {
+            console.warn('⚠️ Conteneur QR non trouvé pour afficher le message de succès');
+            return;
+          }
+
+          // Extraire les informations utilisateur
+          var userInfo = data.user_info || {};
+          var userName = userInfo.name || userInfo.username || 'Utilisateur';
+          var userEmail = userInfo.email || '';
+
+          // Remplacer le contenu par un message de succès
+          container.innerHTML = "\n                <div style=\"\n                    text-align: center;\n                    padding: 40px 20px;\n                    background: #d4edda;\n                    border: 2px solid #28a745;\n                    border-radius: 10px;\n                    color: #155724;\n                    font-family: Arial, sans-serif;\n                \">\n                    <div style=\"\n                        width: 60px;\n                        height: 60px;\n                        background: #28a745;\n                        border-radius: 50%;\n                        display: flex;\n                        align-items: center;\n                        justify-content: center;\n                        margin: 0 auto 20px auto;\n                        font-size: 30px;\n                        color: white;\n                    \">\u2705</div>\n                    <h3 style=\"margin: 0 0 10px 0; color: #155724;\">\uD83C\uDF89 Authentification r\xE9ussie !</h3>\n                    <p style=\"margin: 0 0 15px 0; font-size: 16px; font-weight: bold;\">\n                        Bienvenue, ".concat(userName, " !\n                    </p>\n                    ").concat(userEmail ? "<p style=\"margin: 0 0 15px 0; font-size: 14px; color: #6c757d;\">".concat(userEmail, "</p>") : '', "\n                    <p style=\"margin: 0; font-size: 14px;\">\n                        Votre identit\xE9 a \xE9t\xE9 v\xE9rifi\xE9e avec succ\xE8s.\n                    </p>\n                    <div style=\"margin-top: 20px; font-size: 12px; color: #6c757d;\">\n                        \uD83D\uDD04 Redirection en cours...\n                    </div>\n                </div>\n            ");
+          console.log('✅ Message de succès affiché');
         }
 
         /**

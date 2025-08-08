@@ -5,6 +5,34 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.44] - 2025-01-07
+
+### 🎉 Ajouté
+- **Gestion complète de l'événement `qr_scan_success`** : Le SDK traite maintenant correctement l'événement WebSocket envoyé par l'API
+- **Méthode `showSuccessMessage()`** : Affichage d'un message de succès avec les informations utilisateur après authentification
+- **Intégration avec `processAuthentication()`** : Le gestionnaire WebSocket utilise la même logique que les callbacks
+
+### 🔧 Améliorations
+- **Gestionnaire `handleQRScanSuccess()`** : Maintenant traite l'authentification complète au lieu de juste logger l'événement
+- **Interface utilisateur** : Affichage d'un message de succès avec nom d'utilisateur et email au lieu de rester sur le loader
+- **Gestion des erreurs** : Meilleure gestion des erreurs dans le processus d'authentification WebSocket
+
+### 📋 Fonctionnement
+```javascript
+// L'API envoie l'événement WebSocket
+socket.emit('qr_scan_success', {
+    user_id: "1",
+    session_id: "sess_123",
+    user_info: { name: "John Doe", email: "john@example.com" },
+    // ... autres données
+});
+
+// Le SDK traite automatiquement l'événement
+// 1. Appelle processAuthentication()
+// 2. Affiche showSuccessMessage()
+// 3. Gère la redirection si configurée
+```
+
 ## [1.0.43] - 2025-01-06
 
 ### 🚨 CRITIQUE - Correction boucle infinie

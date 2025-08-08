@@ -488,9 +488,29 @@
          * Gérer le succès du scan QR
          */
         handleQRScanSuccess(data) {
-            console.log('✅ QR Scan Success:', data);
-            if (this.config.onSuccess) {
-                this.config.onSuccess(data);
+            console.log('✅ QR Scan Success reçu:', data);
+            
+            try {
+                // Traiter l'authentification comme un callback
+                this.processAuthentication(data);
+                
+                // Afficher un message de succès
+                this.showSuccessMessage(data);
+                
+                // Appeler le callback de succès (pour compatibilité)
+                if (this.config.onSuccess) {
+                    this.config.onSuccess(data);
+                }
+                
+                console.log('✅ Authentification WebSocket traitée avec succès');
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du traitement WebSocket:', error);
+                
+                // Appeler le callback d'erreur
+                if (this.config.onAuthenticationError) {
+                    this.config.onAuthenticationError(error, data);
+                }
             }
         }
 
@@ -1787,6 +1807,71 @@
             `;
             
             console.log('✅ Loader affiché avec succès');
+        }
+
+        /**
+         * Afficher un message de succès après authentification
+         */
+        showSuccessMessage(data) {
+            console.log('✅ Affichage du message de succès');
+            
+            // Chercher le conteneur QR dans différents IDs possibles
+            const containerIds = ['qr-area', 'qr-container', 'sunuid-qr-container'];
+            let container = null;
+            
+            for (const id of containerIds) {
+                container = document.getElementById(id);
+                if (container) break;
+            }
+            
+            if (!container) {
+                console.warn('⚠️ Conteneur QR non trouvé pour afficher le message de succès');
+                return;
+            }
+            
+            // Extraire les informations utilisateur
+            const userInfo = data.user_info || {};
+            const userName = userInfo.name || userInfo.username || 'Utilisateur';
+            const userEmail = userInfo.email || '';
+            
+            // Remplacer le contenu par un message de succès
+            container.innerHTML = `
+                <div style="
+                    text-align: center;
+                    padding: 40px 20px;
+                    background: #d4edda;
+                    border: 2px solid #28a745;
+                    border-radius: 10px;
+                    color: #155724;
+                    font-family: Arial, sans-serif;
+                ">
+                    <div style="
+                        width: 60px;
+                        height: 60px;
+                        background: #28a745;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 20px auto;
+                        font-size: 30px;
+                        color: white;
+                    ">✅</div>
+                    <h3 style="margin: 0 0 10px 0; color: #155724;">🎉 Authentification réussie !</h3>
+                    <p style="margin: 0 0 15px 0; font-size: 16px; font-weight: bold;">
+                        Bienvenue, ${userName} !
+                    </p>
+                    ${userEmail ? `<p style="margin: 0 0 15px 0; font-size: 14px; color: #6c757d;">${userEmail}</p>` : ''}
+                    <p style="margin: 0; font-size: 14px;">
+                        Votre identité a été vérifiée avec succès.
+                    </p>
+                    <div style="margin-top: 20px; font-size: 12px; color: #6c757d;">
+                        🔄 Redirection en cours...
+                    </div>
+                </div>
+            `;
+            
+            console.log('✅ Message de succès affiché');
         }
 
         /**
