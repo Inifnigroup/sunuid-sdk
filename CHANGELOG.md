@@ -5,6 +5,31 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.49] - 2025-01-07
+
+### 🎯 Fixed
+- **Extraction du JWT depuis `callback_data.jwt`** : Le SDK trouve maintenant le token JWT dans le bon champ
+- **Support de la signature** : Extraction de la signature depuis `callback_data.signature`
+- **Support des informations utilisateur** : Extraction depuis `session_data.user_info`
+- **Support de l'URL de redirection** : Extraction depuis `session_data.redirect_url`
+
+### 📋 Structure corrigée
+```javascript
+// Le JWT était dans callback_data.jwt
+callback_data: {
+    jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',  // ← JWT trouvé !
+    state: '75efb6079aa93449c6d2c5db87b18f31e0e82a55c846df9a54cfb21e108065ad',
+    signature: 'c55444391f4daa5397a4fb9e479eb3277351ac6908e4f3b98b2a30a60f4c9fcd',
+    timestamp: 1754633118
+}
+
+// Le SDK extrait maintenant correctement
+token: authDataObj.callback_data.jwt
+signature: authDataObj.callback_data.signature
+user_info: authDataObj.session_data.user_info
+redirect_url: authDataObj.session_data.redirect_url
+```
+
 ## [1.0.48] - 2025-01-07
 
 ### 🔍 Debug avancé
