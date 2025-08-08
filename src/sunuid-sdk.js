@@ -491,15 +491,18 @@
             console.log('✅ QR Scan Success reçu:', data);
             
             try {
+                // Extraire les données d'authentification du format WebSocket
+                const authData = this.extractAuthDataFromWebSocket(data);
+                
                 // Traiter l'authentification comme un callback
-                this.processAuthentication(data);
+                this.processAuthentication(authData);
                 
                 // Afficher un message de succès
-                this.showSuccessMessage(data);
+                this.showSuccessMessage(authData);
                 
                 // Appeler le callback de succès (pour compatibilité)
                 if (this.config.onSuccess) {
-                    this.config.onSuccess(data);
+                    this.config.onSuccess(authData);
                 }
                 
                 console.log('✅ Authentification WebSocket traitée avec succès');
@@ -1807,6 +1810,52 @@
             `;
             
             console.log('✅ Loader affiché avec succès');
+        }
+
+        /**
+         * Extraire les données d'authentification du format WebSocket
+         */
+        extractAuthDataFromWebSocket(websocketData) {
+            console.log('🔍 Extraction des données d\'authentification du WebSocket:', websocketData);
+            
+            // Si les données sont déjà dans le bon format (callback), les retourner directement
+            if (websocketData.token && websocketData.session_id) {
+                console.log('✅ Données déjà au bon format (callback)');
+                return websocketData;
+            }
+            
+            // Si c'est un format WebSocket, extraire les données de responseData
+            if (websocketData.responseData) {
+                console.log('✅ Format WebSocket détecté, extraction de responseData');
+                const authData = {
+                    token: websocketData.responseData.token || websocketData.responseData.auth_token,
+                    session_id: websocketData.responseData.session_id || websocketData.responseData.sessionId,
+                    user_id: websocketData.responseData.user_id || websocketData.responseData.userId,
+                    partner_id: websocketData.responseData.partner_id || websocketData.responseData.partnerId,
+                    type: websocketData.responseData.type,
+                    timestamp: websocketData.responseData.timestamp || websocketData.timestamp,
+                    signature: websocketData.responseData.signature,
+                    user_info: websocketData.responseData.user_info || websocketData.responseData.userInfo,
+                    redirect_url: websocketData.responseData.redirect_url || websocketData.responseData.redirectUrl
+                };
+                
+                console.log('📋 Données d\'authentification extraites:', authData);
+                return authData;
+            }
+            
+            // Fallback : essayer d'extraire directement des champs principaux
+            console.log('⚠️ Format non reconnu, tentative d\'extraction directe');
+            return {
+                token: websocketData.token || websocketData.auth_token,
+                session_id: websocketData.session_id || websocketData.sessionId,
+                user_id: websocketData.user_id || websocketData.userId,
+                partner_id: websocketData.partner_id || websocketData.partnerId,
+                type: websocketData.type,
+                timestamp: websocketData.timestamp,
+                signature: websocketData.signature,
+                user_info: websocketData.user_info || websocketData.userInfo,
+                redirect_url: websocketData.redirect_url || websocketData.redirectUrl
+            };
         }
 
         /**

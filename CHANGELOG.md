@@ -5,6 +5,32 @@ Toutes les modifications notables de ce projet seront documentées dans ce fichi
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.45] - 2025-01-07
+
+### 🔧 Fixed
+- **Extraction des données WebSocket** : Ajout de la méthode `extractAuthDataFromWebSocket()` pour traiter le format des données envoyées par l'API
+- **Gestion du format `responseData`** : Le SDK extrait maintenant correctement les données d'authentification du champ `responseData` dans l'événement WebSocket
+- **Compatibilité des formats** : Support des formats callback et WebSocket avec fallback intelligent
+
+### 📋 Fonctionnement
+```javascript
+// Format WebSocket reçu de l'API
+{
+    type: 'qr_scan_success',
+    socketID: 'dNr9Fg_LPdvmlY2pAAAb',
+    responseData: {
+        token: 'jwt_token_here',
+        session_id: 'sess_123',
+        user_id: '1',
+        user_info: { name: 'John', email: 'john@example.com' }
+        // ... autres données
+    }
+}
+
+// Le SDK extrait automatiquement les données de responseData
+// et les transforme au format attendu par processAuthentication()
+```
+
 ## [1.0.44] - 2025-01-07
 
 ### 🎉 Ajouté

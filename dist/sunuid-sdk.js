@@ -859,15 +859,18 @@
         value: function handleQRScanSuccess(data) {
           console.log('✅ QR Scan Success reçu:', data);
           try {
+            // Extraire les données d'authentification du format WebSocket
+            var authData = this.extractAuthDataFromWebSocket(data);
+
             // Traiter l'authentification comme un callback
-            this.processAuthentication(data);
+            this.processAuthentication(authData);
 
             // Afficher un message de succès
-            this.showSuccessMessage(data);
+            this.showSuccessMessage(authData);
 
             // Appeler le callback de succès (pour compatibilité)
             if (this.config.onSuccess) {
-              this.config.onSuccess(data);
+              this.config.onSuccess(authData);
             }
             console.log('✅ Authentification WebSocket traitée avec succès');
           } catch (error) {
@@ -2594,6 +2597,53 @@
           // Remplacer le contenu par un loader animé
           container.innerHTML = "\n                <div style=\"\n                    text-align: center;\n                    padding: 40px 20px;\n                    background: #f8f9fa;\n                    border: 2px solid #007bff;\n                    border-radius: 10px;\n                    color: #007bff;\n                    font-family: Arial, sans-serif;\n                \">\n                    <div style=\"\n                        width: 60px;\n                        height: 60px;\n                        border: 4px solid #e3f2fd;\n                        border-top: 4px solid #007bff;\n                        border-radius: 50%;\n                        animation: spin 1s linear infinite;\n                        margin: 0 auto 20px auto;\n                    \"></div>\n                    <h3 style=\"margin: 0 0 10px 0; color: #007bff;\">\uD83D\uDD0D Scan en cours...</h3>\n                    <p style=\"margin: 0; font-size: 14px;\">\n                        Veuillez patienter pendant la v\xE9rification de votre identit\xE9.\n                    </p>\n                    <div style=\"margin-top: 15px; font-size: 12px; color: #6c757d;\">\n                        \u23F1\uFE0F Traitement en cours...\n                    </div>\n                </div>\n                <style>\n                    @keyframes spin {\n                        0% { transform: rotate(0deg); }\n                        100% { transform: rotate(360deg); }\n                    }\n                </style>\n            ";
           console.log('✅ Loader affiché avec succès');
+        }
+
+        /**
+         * Extraire les données d'authentification du format WebSocket
+         */
+      }, {
+        key: "extractAuthDataFromWebSocket",
+        value: function extractAuthDataFromWebSocket(websocketData) {
+          console.log('🔍 Extraction des données d\'authentification du WebSocket:', websocketData);
+
+          // Si les données sont déjà dans le bon format (callback), les retourner directement
+          if (websocketData.token && websocketData.session_id) {
+            console.log('✅ Données déjà au bon format (callback)');
+            return websocketData;
+          }
+
+          // Si c'est un format WebSocket, extraire les données de responseData
+          if (websocketData.responseData) {
+            console.log('✅ Format WebSocket détecté, extraction de responseData');
+            var authData = {
+              token: websocketData.responseData.token || websocketData.responseData.auth_token,
+              session_id: websocketData.responseData.session_id || websocketData.responseData.sessionId,
+              user_id: websocketData.responseData.user_id || websocketData.responseData.userId,
+              partner_id: websocketData.responseData.partner_id || websocketData.responseData.partnerId,
+              type: websocketData.responseData.type,
+              timestamp: websocketData.responseData.timestamp || websocketData.timestamp,
+              signature: websocketData.responseData.signature,
+              user_info: websocketData.responseData.user_info || websocketData.responseData.userInfo,
+              redirect_url: websocketData.responseData.redirect_url || websocketData.responseData.redirectUrl
+            };
+            console.log('📋 Données d\'authentification extraites:', authData);
+            return authData;
+          }
+
+          // Fallback : essayer d'extraire directement des champs principaux
+          console.log('⚠️ Format non reconnu, tentative d\'extraction directe');
+          return {
+            token: websocketData.token || websocketData.auth_token,
+            session_id: websocketData.session_id || websocketData.sessionId,
+            user_id: websocketData.user_id || websocketData.userId,
+            partner_id: websocketData.partner_id || websocketData.partnerId,
+            type: websocketData.type,
+            timestamp: websocketData.timestamp,
+            signature: websocketData.signature,
+            user_info: websocketData.user_info || websocketData.userInfo,
+            redirect_url: websocketData.redirect_url || websocketData.redirectUrl
+          };
         }
 
         /**
